@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { User } from "@/types/auth";
 import { Task, TaskStatus, Stack } from "@/types/task";
 import TaskCard from "./TaskCard";
@@ -254,13 +255,14 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
   const renderSemesterView = () => {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="space-y-8">
         {[1, 2].map((semester) => {
           const semesterTasks = getTasksBySemester(selectedYear, semester);
           const monthsInSemester = semester === 1 ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12];
+          const monthsWithTasks = monthsInSemester.filter(month => getTasksByMonth(selectedYear, month).length > 0);
           
           return (
-            <div key={semester} className="rounded-lg border-2 border-gray-200 bg-gray-50 min-h-96">
+            <div key={semester} className="rounded-lg border-2 border-gray-200 bg-gray-50">
               <div className="p-4 border-b border-gray-200 bg-white rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium text-gray-900">{getSemesterName(semester)} {selectedYear}</h3>
@@ -268,20 +270,85 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                 </div>
               </div>
               
-              <div className="p-4 space-y-4">
-                {monthsInSemester.map((month) => {
+              <div className="p-4">
+                {monthsWithTasks.length > 0 ? (
+                  <ScrollArea className="w-full whitespace-nowrap">
+                    <div className="flex space-x-4 pb-4">
+                      {monthsWithTasks.map((month) => {
+                        const monthTasks = getTasksByMonth(selectedYear, month);
+                        
+                        return (
+                          <div key={month} className="flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 p-4">
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="font-medium text-sm text-gray-700">{getMonthName(month)}</h4>
+                              <Badge variant="secondary" className="text-xs">{monthTasks.length}</Badge>
+                            </div>
+                            
+                            <div className="space-y-3 max-h-96 overflow-y-auto">
+                              {monthTasks.map((task) => (
+                                <div key={task.id} className="space-y-2">
+                                  <TaskCard
+                                    task={task}
+                                    onEdit={setEditingTask}
+                                    onDelete={handleDeleteTask}
+                                    onStatusChange={handleStatusChange}
+                                    userRole={user.role}
+                                  />
+                                  <div className="flex justify-center">
+                                    <Badge className={getStatusColor(task.status)}>
+                                      {task.status}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-sm">Nenhuma tarefa neste semestre</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderYearView = () => {
+    const yearTasks = getTasksByYear(selectedYear);
+    const monthsWithTasks = Array.from(new Set(yearTasks.map(task => getMonthFromDate(task.startDate)))).sort();
+    
+    return (
+      <div className="rounded-lg border-2 border-gray-200 bg-gray-50">
+        <div className="p-4 border-b border-gray-200 bg-white rounded-t-lg">
+          <div className="flex items-center justify-between">
+            <h3 className="font-medium text-gray-900">Ano {selectedYear}</h3>
+            <Badge variant="outline">{yearTasks.length}</Badge>
+          </div>
+        </div>
+        
+        <div className="p-4">
+          {monthsWithTasks.length > 0 ? (
+            <ScrollArea className="w-full whitespace-nowrap">
+              <div className="flex space-x-4 pb-4">
+                {monthsWithTasks.map((month) => {
                   const monthTasks = getTasksByMonth(selectedYear, month);
                   
-                  if (monthTasks.length === 0) return null;
-                  
                   return (
-                    <div key={month} className="bg-white rounded-lg border border-gray-200 p-3">
-                      <div className="flex items-center justify-between mb-3">
+                    <div key={month} className="flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 p-4">
+                      <div className="flex items-center justify-between mb-4">
                         <h4 className="font-medium text-sm text-gray-700">{getMonthName(month)}</h4>
                         <Badge variant="secondary" className="text-xs">{monthTasks.length}</Badge>
                       </div>
                       
-                      <div className="space-y-2">
+                      <div className="space-y-3 max-h-96 overflow-y-auto">
                         {monthTasks.map((task) => (
                           <div key={task.id} className="space-y-2">
                             <TaskCard
@@ -302,55 +369,14 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                     </div>
                   );
                 })}
-                
-                {semesterTasks.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <p className="text-sm">Nenhuma tarefa neste semestre</p>
-                  </div>
-                )}
               </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p className="text-sm">Nenhuma tarefa neste ano</p>
             </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const renderYearView = () => {
-    return (
-      <div className="rounded-lg border-2 border-gray-200 bg-gray-50 min-h-96">
-        <div className="p-4 border-b border-gray-200 bg-white rounded-t-lg">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-gray-900">Ano {selectedYear}</h3>
-            <Badge variant="outline">{getTasksByYear(selectedYear).length}</Badge>
-          </div>
-        </div>
-        
-        <div className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {getTasksByYear(selectedYear).map((task) => (
-              <div key={task.id} className="space-y-2">
-                <TaskCard
-                  task={task}
-                  onEdit={setEditingTask}
-                  onDelete={handleDeleteTask}
-                  onStatusChange={handleStatusChange}
-                  userRole={user.role}
-                />
-                <div className="flex justify-center">
-                  <Badge className={getStatusColor(task.status)}>
-                    {task.status}
-                  </Badge>
-                </div>
-              </div>
-            ))}
-            
-            {getTasksByYear(selectedYear).length === 0 && (
-              <div className="col-span-full text-center py-8 text-gray-500">
-                <p className="text-sm">Nenhuma tarefa neste ano</p>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
     );
