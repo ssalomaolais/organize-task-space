@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -184,6 +183,19 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     return month <= 6 ? 1 : 2;
   };
 
+  const getMonthFromDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.getMonth() + 1;
+  };
+
+  const getMonthName = (month: number) => {
+    const months = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    return months[month - 1];
+  };
+
   const getTasksBySemester = (year: number, semester: number) => {
     return filteredTasks.filter(task => {
       const startDate = new Date(task.startDate);
@@ -191,12 +203,22 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
       const taskYear = startDate.getFullYear();
       const taskSemester = getSemesterFromDate(task.startDate);
       
-      // Verifica se a tarefa está no ano e semestre especificados
       return taskYear === year && (
         taskSemester === semester || 
         (startDate.getFullYear() === year && endDate.getFullYear() === year && 
          getSemesterFromDate(task.endDate) === semester)
       );
+    });
+  };
+
+  const getTasksByMonth = (year: number, month: number) => {
+    return filteredTasks.filter(task => {
+      const startDate = new Date(task.startDate);
+      const endDate = new Date(task.endDate);
+      const taskStartMonth = getMonthFromDate(task.startDate);
+      const taskStartYear = startDate.getFullYear();
+      
+      return taskStartYear === year && taskStartMonth === month;
     });
   };
 
@@ -233,41 +255,63 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const renderSemesterView = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {[1, 2].map((semester) => (
-          <div key={semester} className="rounded-lg border-2 border-gray-200 bg-gray-50 min-h-96">
-            <div className="p-4 border-b border-gray-200 bg-white rounded-t-lg">
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium text-gray-900">{getSemesterName(semester)} {selectedYear}</h3>
-                <Badge variant="outline">{getTasksBySemester(selectedYear, semester).length}</Badge>
+        {[1, 2].map((semester) => {
+          const semesterTasks = getTasksBySemester(selectedYear, semester);
+          const monthsInSemester = semester === 1 ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12];
+          
+          return (
+            <div key={semester} className="rounded-lg border-2 border-gray-200 bg-gray-50 min-h-96">
+              <div className="p-4 border-b border-gray-200 bg-white rounded-t-lg">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium text-gray-900">{getSemesterName(semester)} {selectedYear}</h3>
+                  <Badge variant="outline">{semesterTasks.length}</Badge>
+                </div>
+              </div>
+              
+              <div className="p-4 space-y-4">
+                {monthsInSemester.map((month) => {
+                  const monthTasks = getTasksByMonth(selectedYear, month);
+                  
+                  if (monthTasks.length === 0) return null;
+                  
+                  return (
+                    <div key={month} className="bg-white rounded-lg border border-gray-200 p-3">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium text-sm text-gray-700">{getMonthName(month)}</h4>
+                        <Badge variant="secondary" className="text-xs">{monthTasks.length}</Badge>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        {monthTasks.map((task) => (
+                          <div key={task.id} className="space-y-2">
+                            <TaskCard
+                              task={task}
+                              onEdit={setEditingTask}
+                              onDelete={handleDeleteTask}
+                              onStatusChange={handleStatusChange}
+                              userRole={user.role}
+                            />
+                            <div className="flex justify-center">
+                              <Badge className={getStatusColor(task.status)}>
+                                {task.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {semesterTasks.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-sm">Nenhuma tarefa neste semestre</p>
+                  </div>
+                )}
               </div>
             </div>
-            
-            <div className="p-4 space-y-3">
-              {getTasksBySemester(selectedYear, semester).map((task) => (
-                <div key={task.id} className="space-y-2">
-                  <TaskCard
-                    task={task}
-                    onEdit={setEditingTask}
-                    onDelete={handleDeleteTask}
-                    onStatusChange={handleStatusChange}
-                    userRole={user.role}
-                  />
-                  <div className="flex justify-center">
-                    <Badge className={getStatusColor(task.status)}>
-                      {task.status}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-              
-              {getTasksBySemester(selectedYear, semester).length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <p className="text-sm">Nenhuma tarefa neste semestre</p>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
