@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { User } from "@/types/auth";
 import { Task, TaskStatus, Stack } from "@/types/task";
 import TaskCard from "./TaskCard";
@@ -17,12 +18,16 @@ interface DashboardProps {
   onLogout: () => void;
 }
 
+type ViewMode = "semester" | "year";
+
 const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [stackFilter, setStackFilter] = useState<Stack | "all">("all");
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("semester");
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -34,42 +39,56 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
         title: "Implementar API de autenticação",
         description: "Desenvolver sistema de login e registro de usuários",
         responsible: "João Silva",
-        startDate: "2024-06-01",
-        endDate: "2024-06-15",
+        startDate: "2024-01-15",
+        endDate: "2024-04-15",
         hours: 40,
         people: 2,
         status: "Em Andamento",
         stack: "Java",
-        createdAt: "2024-06-01",
-        updatedAt: "2024-06-01",
+        createdAt: "2024-01-15",
+        updatedAt: "2024-01-15",
       },
       {
         id: "2",
         title: "Dashboard de métricas",
         description: "Criar dashboard com gráficos de performance",
         responsible: "Maria Santos",
-        startDate: "2024-06-10",
-        endDate: "2024-06-25",
+        startDate: "2024-07-10",
+        endDate: "2024-09-25",
         hours: 60,
         people: 3,
         status: "Pendente",
         stack: "Python",
-        createdAt: "2024-06-01",
-        updatedAt: "2024-06-01",
+        createdAt: "2024-07-01",
+        updatedAt: "2024-07-01",
       },
       {
         id: "3",
         title: "Migração de banco de dados",
         description: "Migrar dados do sistema legado",
         responsible: "Carlos Lima",
-        startDate: "2024-05-15",
-        endDate: "2024-05-30",
+        startDate: "2024-08-15",
+        endDate: "2024-12-30",
         hours: 80,
         people: 1,
         status: "Completo",
         stack: ".NET",
-        createdAt: "2024-05-15",
-        updatedAt: "2024-05-30",
+        createdAt: "2024-08-15",
+        updatedAt: "2024-11-30",
+      },
+      {
+        id: "4",
+        title: "Sistema de relatórios",
+        description: "Desenvolver módulo de relatórios automáticos",
+        responsible: "Ana Costa",
+        startDate: "2025-01-01",
+        endDate: "2025-06-30",
+        hours: 120,
+        people: 4,
+        status: "Pendente",
+        stack: "PHP",
+        createdAt: "2024-12-01",
+        updatedAt: "2024-12-01",
       },
     ];
     setTasks(mockTasks);
@@ -159,21 +178,138 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     });
   };
 
-  const getTasksByStatus = (status: TaskStatus) => {
-    return filteredTasks.filter(task => task.status === status);
+  const getSemesterFromDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const month = date.getMonth() + 1;
+    return month <= 6 ? 1 : 2;
+  };
+
+  const getTasksBySemester = (year: number, semester: number) => {
+    return filteredTasks.filter(task => {
+      const startDate = new Date(task.startDate);
+      const endDate = new Date(task.endDate);
+      const taskYear = startDate.getFullYear();
+      const taskSemester = getSemesterFromDate(task.startDate);
+      
+      // Verifica se a tarefa está no ano e semestre especificados
+      return taskYear === year && (
+        taskSemester === semester || 
+        (startDate.getFullYear() === year && endDate.getFullYear() === year && 
+         getSemesterFromDate(task.endDate) === semester)
+      );
+    });
+  };
+
+  const getTasksByYear = (year: number) => {
+    return filteredTasks.filter(task => {
+      const startDate = new Date(task.startDate);
+      const endDate = new Date(task.endDate);
+      return startDate.getFullYear() === year || endDate.getFullYear() === year;
+    });
+  };
+
+  const getAvailableYears = () => {
+    const years = new Set<number>();
+    tasks.forEach(task => {
+      years.add(new Date(task.startDate).getFullYear());
+      years.add(new Date(task.endDate).getFullYear());
+    });
+    return Array.from(years).sort();
+  };
+
+  const getSemesterName = (semester: number) => {
+    return semester === 1 ? "1º Semestre" : "2º Semestre";
   };
 
   const getStatusColor = (status: TaskStatus) => {
     switch (status) {
-      case "Pendente": return "bg-gray-100 border-gray-300";
-      case "Em Andamento": return "bg-blue-50 border-blue-300";
-      case "Completo": return "bg-green-50 border-green-300";
-      case "Cancelado": return "bg-red-50 border-red-300";
+      case "Pendente": return "bg-yellow-100 text-yellow-800";
+      case "Em Andamento": return "bg-blue-100 text-blue-800";
+      case "Completo": return "bg-green-100 text-green-800";
+      case "Cancelado": return "bg-red-100 text-red-800";
     }
   };
 
-  const getStatusCount = (status: TaskStatus) => {
-    return getTasksByStatus(status).length;
+  const renderSemesterView = () => {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {[1, 2].map((semester) => (
+          <div key={semester} className="rounded-lg border-2 border-gray-200 bg-gray-50 min-h-96">
+            <div className="p-4 border-b border-gray-200 bg-white rounded-t-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-gray-900">{getSemesterName(semester)} {selectedYear}</h3>
+                <Badge variant="outline">{getTasksBySemester(selectedYear, semester).length}</Badge>
+              </div>
+            </div>
+            
+            <div className="p-4 space-y-3">
+              {getTasksBySemester(selectedYear, semester).map((task) => (
+                <div key={task.id} className="space-y-2">
+                  <TaskCard
+                    task={task}
+                    onEdit={setEditingTask}
+                    onDelete={handleDeleteTask}
+                    onStatusChange={handleStatusChange}
+                    userRole={user.role}
+                  />
+                  <div className="flex justify-center">
+                    <Badge className={getStatusColor(task.status)}>
+                      {task.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+              
+              {getTasksBySemester(selectedYear, semester).length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <p className="text-sm">Nenhuma tarefa neste semestre</p>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderYearView = () => {
+    return (
+      <div className="rounded-lg border-2 border-gray-200 bg-gray-50 min-h-96">
+        <div className="p-4 border-b border-gray-200 bg-white rounded-t-lg">
+          <div className="flex items-center justify-between">
+            <h3 className="font-medium text-gray-900">Ano {selectedYear}</h3>
+            <Badge variant="outline">{getTasksByYear(selectedYear).length}</Badge>
+          </div>
+        </div>
+        
+        <div className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {getTasksByYear(selectedYear).map((task) => (
+              <div key={task.id} className="space-y-2">
+                <TaskCard
+                  task={task}
+                  onEdit={setEditingTask}
+                  onDelete={handleDeleteTask}
+                  onStatusChange={handleStatusChange}
+                  userRole={user.role}
+                />
+                <div className="flex justify-center">
+                  <Badge className={getStatusColor(task.status)}>
+                    {task.status}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+            
+            {getTasksByYear(selectedYear).length === 0 && (
+              <div className="col-span-full text-center py-8 text-gray-500">
+                <p className="text-sm">Nenhuma tarefa neste ano</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -248,6 +384,17 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                 <SelectItem value="Cancelado">Cancelado</SelectItem>
               </SelectContent>
             </Select>
+
+            <Select onValueChange={(value: string) => setSelectedYear(parseInt(value))} defaultValue={selectedYear.toString()}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Ano" />
+              </SelectTrigger>
+              <SelectContent>
+                {getAvailableYears().map((year) => (
+                  <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           <Button onClick={() => setShowTaskForm(true)} className="flex items-center gap-2">
@@ -257,39 +404,22 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
         </div>
       </div>
 
-      {/* Kanban Board */}
+      {/* View Mode Toggle and Content */}
       <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {(["Pendente", "Em Andamento", "Completo", "Cancelado"] as TaskStatus[]).map((status) => (
-            <div key={status} className={`rounded-lg border-2 ${getStatusColor(status)} min-h-96`}>
-              <div className="p-4 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-medium text-gray-900">{status}</h3>
-                  <Badge variant="outline">{getStatusCount(status)}</Badge>
-                </div>
-              </div>
-              
-              <div className="p-4 space-y-3">
-                {getTasksByStatus(status).map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onEdit={setEditingTask}
-                    onDelete={handleDeleteTask}
-                    onStatusChange={handleStatusChange}
-                    userRole={user.role}
-                  />
-                ))}
-                
-                {getTasksByStatus(status).length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <p className="text-sm">Nenhuma tarefa</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+        <Tabs value={viewMode} onValueChange={(value: ViewMode) => setViewMode(value)} className="space-y-4">
+          <TabsList className="grid w-fit grid-cols-2">
+            <TabsTrigger value="semester">Visualização Semestral</TabsTrigger>
+            <TabsTrigger value="year">Visualização Anual</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="semester">
+            {renderSemesterView()}
+          </TabsContent>
+          
+          <TabsContent value="year">
+            {renderYearView()}
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Task Form Modal */}
