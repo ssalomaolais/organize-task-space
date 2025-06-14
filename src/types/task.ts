@@ -8,15 +8,16 @@ export interface Task {
   title: string;
   description: string;
   responsible: string;
-  startDate: string;
-  endDate: string;
+  start_date: string;
+  end_date: string;
   hours: number;
   people: number;
-  status: TaskStatus;
+  status: string;
   stack: string;
-  eventType: EventType;
-  createdAt: string;
-  updatedAt: string;
+  event_type: EventType;
+  user_id?: string;
+  created_at: string;
+  updated_at: string;
   comments?: Comment[];
   attachments?: string[];
 }
@@ -25,5 +26,5 @@ export interface Comment {
   id: string;
   author: string;
   content: string;
-  createdAt: string;
+  created_at: string;
 }

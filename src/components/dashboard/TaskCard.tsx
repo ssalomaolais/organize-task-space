@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Task } from "@/types/task";
 import { TaskStatus, Stacks, getStatusColor } from "@/lib/utils";
 import { UserRole } from "@/types/auth";
-import { Calendar, Clock, User, Edit, Trash, User as UserIcon, AlertCircle, Play, CheckCircle, XCircle } from "lucide-react";
+import { Calendar, Clock, User, Edit, User as UserIcon } from "lucide-react";
 
 interface TaskCardProps {
   task: Task;
@@ -13,15 +14,16 @@ interface TaskCardProps {
   onDelete: (taskId: string) => void;
   onStatusChange: (taskId: string, status: string) => void;
   userRole: UserRole;
-  showContent?: boolean; // Nova propriedade para controlar a visibilidade do CardContent
+  showContent?: boolean;
 }
 
 const TaskCard = ({ task, onEdit, onDelete, onStatusChange, userRole, showContent = true }: TaskCardProps) => {
   const getStackColor = (stack: string) => {
     return Stacks.find((s) => s.value === stack)?.color || "bg-gray-100 text-gray-800";
   };
-  const getEventTypeColor = (stack: string) => {
-    switch (stack) {
+  
+  const getEventTypeColor = (eventType: string) => {
+    switch (eventType) {
       case "Forum Técnico":
         return "bg-orange-100 text-orange-500";
       case "Meetup Interno":
@@ -49,7 +51,6 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, userRole, showConten
     return diffDays;
   };
 
-
   const daysRemaining = getDaysRemaining();
 
   return (
@@ -58,22 +59,23 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, userRole, showConten
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h4 className="font-medium text-sm mb-2 leading-tight">{task.title}</h4>
-            <Badge className={`text-xs ${getStackColor(task.stack)}`}>{task.stack}</Badge>
-            <Badge className={`text-xs ${getEventTypeColor(task.eventType)}`}>{task.eventType}</Badge>
+            <div className="flex gap-1 flex-wrap mb-2">
+              <Badge className={`text-xs ${getStackColor(task.stack)}`}>{task.stack}</Badge>
+              <Badge className={`text-xs ${getEventTypeColor(task.eventType)}`}>{task.eventType}</Badge>
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger>
                 <Badge className={`text-xs ${getStatusColor(task.status)}`}>
                   <span className="text-xs">{task.status}</span>
                 </Badge>
               </DropdownMenuTrigger>
-
               <DropdownMenuContent>
-                {(TaskStatus.filter((status) => status.value !== task.status)
+                {TaskStatus.filter((status) => status.value !== task.status)
                   .map((status) => (
                     <DropdownMenuItem key={status.value} onClick={() => onStatusChange(task.id, status.value)}>
                       <span className="text-xs h-6 px-2">{status.label}</span>
                     </DropdownMenuItem>
-                  )))}
+                  ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

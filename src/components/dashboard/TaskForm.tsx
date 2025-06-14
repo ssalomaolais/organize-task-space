@@ -70,7 +70,12 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
       return;
     }
 
-    onSubmit(formData);
+    onSubmit({
+      ...formData,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      eventType: formData.eventType,
+    });
   };
 
   const handleInputChange = (field: keyof typeof formData, value: any) => {
@@ -197,16 +202,15 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
                   <SelectValue placeholder="Selecione o status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {TaskStatus.map((stack) => (
-                    <SelectItem key={stack.value} value={stack.value}>
-                      {stack.label}
+                  {TaskStatus.map((status) => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             
-            {/* Adicionar após o campo de Stack */}
             <div>
               <Label htmlFor="eventType">Tipo de Evento</Label>
               <Select 

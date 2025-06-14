@@ -1,25 +1,29 @@
 
-import { useState } from "react";
-import LoginForm from "@/components/auth/LoginForm";
+import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "@/components/dashboard/Dashboard";
-import { User, UserRole } from "@/types/auth";
+import AuthPage from "@/components/auth/AuthPage";
 
 const Index = () => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { user, loading, signOut } = useAuth();
 
-  const handleLogin = (user: User) => {
-    setCurrentUser(user);
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-  };
-
-  if (!currentUser) {
-    return <LoginForm onLogin={handleLogin} />;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold">TF</span>
+          </div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
   }
 
-  return <Dashboard user={currentUser} onLogout={handleLogout} />;
+  if (!user) {
+    return <AuthPage />;
+  }
+
+  return <Dashboard user={user} onLogout={signOut} />;
 };
 
 export default Index;
