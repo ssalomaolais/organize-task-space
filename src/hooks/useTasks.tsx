@@ -17,16 +17,7 @@ export const useTasks = () => {
 
       if (error) throw error;
 
-      const formattedTasks = data?.map(task => ({
-        ...task,
-        startDate: task.start_date,
-        endDate: task.end_date,
-        eventType: task.event_type,
-        createdAt: task.created_at,
-        updatedAt: task.updated_at
-      })) || [];
-
-      setTasks(formattedTasks);
+      setTasks(data || []);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast({
@@ -43,7 +34,7 @@ export const useTasks = () => {
     fetchTasks();
   }, []);
 
-  const createTask = async (taskData: Omit<Task, "id" | "createdAt" | "updatedAt">) => {
+  const createTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
     try {
       const { data, error } = await supabase
         .from('tasks')
@@ -51,29 +42,20 @@ export const useTasks = () => {
           title: taskData.title,
           description: taskData.description,
           responsible: taskData.responsible,
-          start_date: taskData.startDate,
-          end_date: taskData.endDate,
+          start_date: taskData.start_date,
+          end_date: taskData.end_date,
           hours: taskData.hours,
           people: taskData.people,
           status: taskData.status,
           stack: taskData.stack,
-          event_type: taskData.eventType
+          event_type: taskData.event_type
         }])
         .select()
         .single();
 
       if (error) throw error;
 
-      const newTask = {
-        ...data,
-        startDate: data.start_date,
-        endDate: data.end_date,
-        eventType: data.event_type,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at
-      };
-
-      setTasks(prev => [...prev, newTask]);
+      setTasks(prev => [...prev, data]);
       
       toast({
         title: "Sucesso!",
@@ -96,13 +78,13 @@ export const useTasks = () => {
       if (taskData.title) updateData.title = taskData.title;
       if (taskData.description) updateData.description = taskData.description;
       if (taskData.responsible) updateData.responsible = taskData.responsible;
-      if (taskData.startDate) updateData.start_date = taskData.startDate;
-      if (taskData.endDate) updateData.end_date = taskData.endDate;
+      if (taskData.start_date) updateData.start_date = taskData.start_date;
+      if (taskData.end_date) updateData.end_date = taskData.end_date;
       if (taskData.hours !== undefined) updateData.hours = taskData.hours;
       if (taskData.people !== undefined) updateData.people = taskData.people;
       if (taskData.status) updateData.status = taskData.status;
       if (taskData.stack) updateData.stack = taskData.stack;
-      if (taskData.eventType) updateData.event_type = taskData.eventType;
+      if (taskData.event_type) updateData.event_type = taskData.event_type;
 
       const { data, error } = await supabase
         .from('tasks')
@@ -113,17 +95,8 @@ export const useTasks = () => {
 
       if (error) throw error;
 
-      const updatedTask = {
-        ...data,
-        startDate: data.start_date,
-        endDate: data.end_date,
-        eventType: data.event_type,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at
-      };
-
       setTasks(prev => prev.map(task => 
-        task.id === taskId ? updatedTask : task
+        task.id === taskId ? data : task
       ));
 
       toast({

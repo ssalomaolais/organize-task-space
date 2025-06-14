@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,8 @@ import { Task } from "@/types/task";
 import { TaskStatus, Stacks } from "@/lib/utils";
 import TaskCard from "./TaskCard";
 import TaskForm from "./TaskForm";
-import { Search, Plus, User as UserIcon } from "lucide-react";
+import UsersPage from "@/components/users/UsersPage";
+import { Search, Plus, User as UserIcon, Users } from "lucide-react";
 import { useTasks } from "@/hooks/useTasks";
 
 interface DashboardProps {
@@ -31,12 +33,18 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [showCardContent, setShowCardContent] = useState<boolean>(true);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [showUsersPage, setShowUsersPage] = useState(false);
+
+  // Show Users Page if requested
+  if (showUsersPage) {
+    return <UsersPage onBack={() => setShowUsersPage(false)} />;
+  }
 
   // Filtros e funções de utilidade
 
   useEffect(() => {
     let filtered = tasks.sort((a, b) => {
-      const dateComparison = new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+      const dateComparison = new Date(a.start_date).getTime() - new Date(b.start_date).getTime();
       if (dateComparison === 0) {
         return (a.stack || '').localeCompare(b.stack || '');
       }
@@ -63,12 +71,12 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     setFilteredTasks(filtered);
   }, [tasks, searchTerm, stackFilter, statusFilter]);
 
-  const handleCreateTask = async (taskData: Omit<Task, "id" | "createdAt" | "updatedAt">) => {
+  const handleCreateTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
     await createTask(taskData);
     setShowTaskForm(false);
   };
 
-  const handleUpdateTask = async (taskData: Omit<Task, "id" | "createdAt" | "updatedAt">) => {
+  const handleUpdateTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
     if (!editingTask) return;
     await updateTask(editingTask.id, taskData);
     setEditingTask(null);
@@ -102,17 +110,17 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
   const getTasksBySemester = (year: number, semester: number) => {
     return filteredTasks.filter((task) => {
-      const startDate = new Date(task.startDate);
+      const startDate = new Date(task.start_date);
       const taskYear = startDate.getFullYear();
-      const taskSemester = getSemesterFromDate(task.startDate);
+      const taskSemester = getSemesterFromDate(task.start_date);
       return taskYear === year && taskSemester === semester;
     });
   };
 
   const getTasksByMonth = (year: number, month: number) => {
     return filteredTasks.filter((task) => {
-      const startDate = new Date(task.startDate);
-      const taskStartMonth = getMonthFromDate(task.startDate);
+      const startDate = new Date(task.start_date);
+      const taskStartMonth = getMonthFromDate(task.start_date);
       const taskStartYear = startDate.getFullYear();
       return taskStartYear === year && taskStartMonth === month;
     });
@@ -120,7 +128,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
   const getTasksByYear = (year: number) => {
     return filteredTasks.filter((task) => {
-      const startDate = new Date(task.startDate);
+      const startDate = new Date(task.start_date);
       return startDate.getFullYear() === year;
     });
   };
@@ -128,7 +136,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const getAvailableYears = () => {
     const years = new Set<number>();
     tasks.forEach((task) => {
-      years.add(new Date(task.startDate).getFullYear());
+      years.add(new Date(task.start_date).getFullYear());
     });
     return Array.from(years).sort();
   };
@@ -217,7 +225,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
   const renderYearView = () => {
     const yearTasks = getTasksByYear(selectedYear);
-    const monthsWithTasks = Array.from(new Set(yearTasks.map((task) => getMonthFromDate(task.startDate)))).sort();
+    const monthsWithTasks = Array.from(new Set(yearTasks.map((task) => getMonthFromDate(task.start_date)))).sort();
 
     return (
       <div className="rounded-lg border-2 border-gray-200 bg-gray-50">
@@ -298,6 +306,12 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
           </div>
 
           <div className="flex items-center space-x-4">
+            {user.role === 'admin' && (
+              <Button variant="outline" onClick={() => setShowUsersPage(true)}>
+                <Users className="w-4 h-4 mr-2" />
+                Usuários
+              </Button>
+            )}
             <div className="flex items-center space-x-2">
               <UserIcon className="w-4 h-4 text-gray-500" />
               <span className="text-sm text-gray-700">{user.name}</span>

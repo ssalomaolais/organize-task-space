@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { User } from "@/types/auth";
+import { User, UserRole } from "@/types/auth";
 import { Session } from "@supabase/supabase-js";
 
 export const useAuth = () => {
@@ -27,8 +27,9 @@ export const useAuth = () => {
               id: profile.id,
               name: profile.name,
               email: profile.email,
-              role: profile.role,
-              stack: profile.stack
+              role: profile.role as UserRole,
+              stack: profile.stack,
+              active: profile.active
             });
           }
         } else {
@@ -53,8 +54,9 @@ export const useAuth = () => {
                 id: profile.id,
                 name: profile.name,
                 email: profile.email,
-                role: profile.role,
-                stack: profile.stack
+                role: profile.role as UserRole,
+                stack: profile.stack,
+                active: profile.active
               });
             }
             setLoading(false);

@@ -44,7 +44,7 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, userRole, showConten
   };
 
   const getDaysRemaining = () => {
-    const endDate = new Date(task.endDate);
+    const endDate = new Date(task.end_date);
     const today = new Date();
     const diffTime = endDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -61,7 +61,7 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, userRole, showConten
             <h4 className="font-medium text-sm mb-2 leading-tight">{task.title}</h4>
             <div className="flex gap-1 flex-wrap mb-2">
               <Badge className={`text-xs ${getStackColor(task.stack)}`}>{task.stack}</Badge>
-              <Badge className={`text-xs ${getEventTypeColor(task.eventType)}`}>{task.eventType}</Badge>
+              <Badge className={`text-xs ${getEventTypeColor(task.event_type)}`}>{task.event_type}</Badge>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger>
@@ -100,7 +100,7 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, userRole, showConten
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <Calendar className="w-3 h-3" />
               <span>
-                {formatDate(task.startDate)} - {formatDate(task.endDate)}
+                {formatDate(task.start_date)} - {formatDate(task.end_date)}
               </span>
             </div>
 
