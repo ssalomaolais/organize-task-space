@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Task } from "@/types/task";
+import { Task, EventType } from "@/types/task";
 import { toast } from "@/hooks/use-toast";
 
 export const useTasks = () => {
@@ -17,7 +17,13 @@ export const useTasks = () => {
 
       if (error) throw error;
 
-      setTasks(data || []);
+      // Cast the data to match our Task interface
+      const typedTasks: Task[] = (data || []).map((task: any) => ({
+        ...task,
+        event_type: task.event_type as EventType
+      }));
+
+      setTasks(typedTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast({
@@ -55,7 +61,13 @@ export const useTasks = () => {
 
       if (error) throw error;
 
-      setTasks(prev => [...prev, data]);
+      // Cast the returned data to match our Task interface
+      const typedTask: Task = {
+        ...data,
+        event_type: data.event_type as EventType
+      };
+
+      setTasks(prev => [...prev, typedTask]);
       
       toast({
         title: "Sucesso!",
@@ -95,8 +107,14 @@ export const useTasks = () => {
 
       if (error) throw error;
 
+      // Cast the returned data to match our Task interface
+      const typedTask: Task = {
+        ...data,
+        event_type: data.event_type as EventType
+      };
+
       setTasks(prev => prev.map(task => 
-        task.id === taskId ? data : task
+        task.id === taskId ? typedTask : task
       ));
 
       toast({

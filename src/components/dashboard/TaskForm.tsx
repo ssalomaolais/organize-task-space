@@ -14,7 +14,7 @@ import { toast } from "@/hooks/use-toast";
 interface TaskFormProps {
   task?: Task | null;
   user: User;
-  onSubmit: (taskData: Omit<Task, "id" | "createdAt" | "updatedAt">) => void;
+  onSubmit: (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => void;
   onCancel: () => void;
 }
 
@@ -23,13 +23,13 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
     title: "",
     description: "",
     responsible: "",
-    startDate: "",
-    endDate: "",
+    start_date: "",
+    end_date: "",
     hours: 0,
     people: 1,
     status: "Pendente",
     stack: (user.role === "user" ? user.stack : "Java"),
-    eventType: "Outros" as EventType,
+    event_type: "Outros" as EventType,
   });
 
   useEffect(() => {
@@ -38,13 +38,13 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
         title: task.title,
         description: task.description,
         responsible: task.responsible,
-        startDate: task.startDate,
-        endDate: task.endDate,
+        start_date: task.start_date,
+        end_date: task.end_date,
         hours: task.hours,
         people: task.people,
         status: task.status,
         stack: task.stack,
-        eventType: task.eventType || "Outros",
+        event_type: task.event_type || "Outros",
       });
     }
   }, [task]);
@@ -61,7 +61,7 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
       return;
     }
 
-    if (new Date(formData.endDate) < new Date(formData.startDate)) {
+    if (new Date(formData.end_date) < new Date(formData.start_date)) {
       toast({
         title: "Erro",
         description: "A data de fim deve ser posterior à data de início.",
@@ -72,9 +72,9 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
 
     onSubmit({
       ...formData,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      eventType: formData.eventType,
+      start_date: formData.start_date,
+      end_date: formData.end_date,
+      event_type: formData.event_type,
     });
   };
 
@@ -147,23 +147,23 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
             </div>
             
             <div>
-              <Label htmlFor="startDate">Data de Início</Label>
+              <Label htmlFor="start_date">Data de Início</Label>
               <Input
-                id="startDate"
+                id="start_date"
                 type="date"
-                value={formData.startDate}
-                onChange={(e) => handleInputChange("startDate", e.target.value)}
+                value={formData.start_date}
+                onChange={(e) => handleInputChange("start_date", e.target.value)}
                 required
               />
             </div>
             
             <div>
-              <Label htmlFor="endDate">Data de Fim</Label>
+              <Label htmlFor="end_date">Data de Fim</Label>
               <Input
-                id="endDate"
+                id="end_date"
                 type="date"
-                value={formData.endDate}
-                onChange={(e) => handleInputChange("endDate", e.target.value)}
+                value={formData.end_date}
+                onChange={(e) => handleInputChange("end_date", e.target.value)}
                 required
               />
             </div>
@@ -212,10 +212,10 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
             </div>
             
             <div>
-              <Label htmlFor="eventType">Tipo de Evento</Label>
+              <Label htmlFor="event_type">Tipo de Evento</Label>
               <Select 
-                onValueChange={(value: EventType) => handleInputChange("eventType", value)} 
-                defaultValue={formData.eventType}
+                onValueChange={(value: EventType) => handleInputChange("event_type", value)} 
+                defaultValue={formData.event_type}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo de evento" />

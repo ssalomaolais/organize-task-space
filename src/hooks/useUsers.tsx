@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Profile } from "@/types/auth";
+import { Profile, UserRole } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
 
 export const useUsers = () => {
@@ -45,7 +45,13 @@ export const useUsers = () => {
 
       if (error) throw error;
 
-      setUsers(data || []);
+      // Cast the data to match our Profile interface
+      const typedUsers: Profile[] = (data || []).map((user: any) => ({
+        ...user,
+        role: user.role as UserRole
+      }));
+
+      setUsers(typedUsers);
       setTotalCount(count || 0);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -70,8 +76,14 @@ export const useUsers = () => {
 
       if (error) throw error;
 
+      // Cast the returned data to match our Profile interface
+      const typedUser: Profile = {
+        ...data,
+        role: data.role as UserRole
+      };
+
       setUsers(prev => prev.map(user => 
-        user.id === userId ? data : user
+        user.id === userId ? typedUser : user
       ));
 
       toast({
@@ -79,7 +91,7 @@ export const useUsers = () => {
         description: "Usuário atualizado com sucesso.",
       });
 
-      return { data, error: null };
+      return { data: typedUser, error: null };
     } catch (error) {
       console.error('Error updating user:', error);
       toast({
@@ -120,14 +132,20 @@ export const useUsers = () => {
 
       if (error) throw error;
 
-      setUsers(prev => [data, ...prev]);
+      // Cast the returned data to match our Profile interface
+      const typedUser: Profile = {
+        ...data,
+        role: data.role as UserRole
+      };
+
+      setUsers(prev => [typedUser, ...prev]);
 
       toast({
         title: "Sucesso!",
         description: "Usuário criado com sucesso.",
       });
 
-      return { data, error: null };
+      return { data: typedUser, error: null };
     } catch (error) {
       console.error('Error creating user:', error);
       toast({
