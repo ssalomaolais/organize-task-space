@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Task, TaskStatus, Stack } from "@/types/task";
+import { Task, EventType } from "@/types/task";
+import { TaskStatus, Stacks } from '@/lib/utils';
 import { User } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
 
@@ -26,8 +27,9 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
     endDate: "",
     hours: 0,
     people: 1,
-    status: "Pendente" as TaskStatus,
-    stack: (user.role === "user" ? user.stack : "Java") as Stack,
+    status: "Pendente",
+    stack: (user.role === "user" ? user.stack : "Java"),
+    eventType: "Outros" as EventType,
   });
 
   useEffect(() => {
@@ -42,6 +44,7 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
         people: task.people,
         status: task.status,
         stack: task.stack,
+        eventType: task.eventType || "Outros",
       });
     }
   }, [task]);
@@ -120,21 +123,20 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
             </div>
             
             <div>
-              <Label htmlFor="stack">Stack Tecnológica</Label>
+              <Label htmlFor="stack">Comunidade</Label>
               <Select 
-                onValueChange={(value: Stack) => handleInputChange("stack", value)} 
-                defaultValue={formData.stack}
-                disabled={user.role === "user"}
+                onValueChange={(value) => handleInputChange("stack", value)} 
+                defaultValue={formData.stack}                
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a stack" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Java">Java</SelectItem>
-                  <SelectItem value=".NET">.NET</SelectItem>
-                  <SelectItem value="PHP">PHP</SelectItem>
-                  <SelectItem value="Python">Python</SelectItem>
-                  <SelectItem value="Dados">Dados</SelectItem>
+                  {Stacks.filter((t) => t.value !== "all").map((stack) => (
+                    <SelectItem key={stack.value} value={stack.value}>
+                      {stack.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -188,17 +190,39 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
             <div>
               <Label htmlFor="status">Status</Label>
               <Select 
-                onValueChange={(value: TaskStatus) => handleInputChange("status", value)} 
+                onValueChange={(value) => handleInputChange("status", value)} 
                 defaultValue={formData.status}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Pendente">Pendente</SelectItem>
-                  <SelectItem value="Em Andamento">Em Andamento</SelectItem>
-                  <SelectItem value="Completo">Completo</SelectItem>
-                  <SelectItem value="Cancelado">Cancelado</SelectItem>
+                  {TaskStatus.map((stack) => (
+                    <SelectItem key={stack.value} value={stack.value}>
+                      {stack.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Adicionar após o campo de Stack */}
+            <div>
+              <Label htmlFor="eventType">Tipo de Evento</Label>
+              <Select 
+                onValueChange={(value: EventType) => handleInputChange("eventType", value)} 
+                defaultValue={formData.eventType}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo de evento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Forum Técnico">Forum Técnico</SelectItem>
+                  <SelectItem value="Meetup Interno">Meetup Interno</SelectItem>
+                  <SelectItem value="Meetup Externo">Meetup Externo</SelectItem>
+                  <SelectItem value="Techup Interno">Techup Interno</SelectItem>
+                  <SelectItem value="Techup Externo">Techup Externo</SelectItem>
+                  <SelectItem value="Outros">Outros</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -1,7 +1,7 @@
 
-export type TaskStatus = 'Pendente' | 'Em Andamento' | 'Completo' | 'Cancelado';
+import { TaskStatus } from '@/lib/utils';
 
-export type Stack = 'Java' | '.NET' | 'PHP' | 'Python' | 'Dados';
+export type EventType = 'Forum Técnico' | 'Meetup Interno' | 'Meetup Externo' | 'Techup Interno' | 'Techup Externo' | 'Outros';
 
 export interface Task {
   id: string;
@@ -13,7 +13,8 @@ export interface Task {
   hours: number;
   people: number;
   status: TaskStatus;
-  stack: Stack;
+  stack: string;
+  eventType: EventType;
   createdAt: string;
   updatedAt: string;
   comments?: Comment[];
