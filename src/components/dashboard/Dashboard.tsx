@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { User } from "@/types/auth";
 import { Task } from "@/types/task";
-import { TaskStatus, Stacks } from "@/lib/utils";
+import { TaskStatus, TypeOptions, Stacks } from "@/lib/utils";
 import TaskCard from "./TaskCard";
 import TaskForm from "./TaskForm";
 import UsersPage from "@/components/users/UsersPage";
@@ -28,6 +28,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [stackFilter, setStackFilter] = useState<string | "all">("all");
   const [statusFilter, setStatusFilter] = useState<string | "all">("all");
+  const [eventTypeFilter, setEventTypeFilter] = useState<string | "all">("all");
   const [viewMode, setViewMode] = useState<ViewMode>("semester");
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [showCardContent, setShowCardContent] = useState<boolean>(true);
@@ -63,8 +64,12 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
       filtered = filtered.filter((task) => task.status === statusFilter);
     }
 
+    if (eventTypeFilter !== "all") {
+      filtered = filtered.filter((task) => task.event_type === eventTypeFilter);
+    }
+
     setFilteredTasks(filtered);
-  }, [tasks, searchTerm, stackFilter, statusFilter]);
+  }, [tasks, searchTerm, stackFilter, statusFilter,eventTypeFilter]);
 
   // Show Users Page if requested - moved after all hooks
   if (showUsersPage) {
@@ -372,6 +377,19 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
               </SelectContent>
             </Select>
 
+            <Select onValueChange={(value: string | "all") => setEventTypeFilter(value)} defaultValue="all">
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Evento" />
+              </SelectTrigger>
+              <SelectContent>
+                {TypeOptions.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
             <Select onValueChange={(value: string) => setSelectedYear(parseInt(value))} defaultValue={selectedYear.toString()}>
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Ano" />

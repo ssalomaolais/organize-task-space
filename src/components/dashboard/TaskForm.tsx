@@ -245,9 +245,9 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
                   <SelectValue placeholder="Selecione o tipo de evento" />
                 </SelectTrigger>
                 <SelectContent>
-                  {TypeOptions.map((status) => (
-                    <SelectItem key={status.value} value={status.value}>
-                      {status.label}
+                  {TypeOptions.filter((item) => item.value !== "all").map((item2) => (
+                    <SelectItem key={item2.value} value={item2.value}>
+                      {item2.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

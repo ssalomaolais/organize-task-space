@@ -27,6 +27,7 @@ export const TaskStatus = [
 ];
 
 export const TypeOptions = [
+  { value: "all", label: "Todos" },
   { value: "FT", label: "Forum Técnico" },
   { value: "MI", label: "Meetup Interno" },
   { value: "ME", label: "Meetup Externo" },
