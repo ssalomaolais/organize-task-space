@@ -1,8 +1,6 @@
 
 import { TaskStatus } from '@/lib/utils';
 
-export type EventType = 'Forum Técnico' | 'Meetup Interno' | 'Meetup Externo' | 'Techup Interno' | 'Techup Externo' | 'Outros';
-
 export interface Task {
   id: string;
   title: string;
@@ -14,7 +12,7 @@ export interface Task {
   people: number;
   status: string;
   stack: string;
-  event_type: EventType;
+  event_type: string;
   user_id: string; // Now required since it's NOT NULL in database
   created_at: string;
   updated_at: string;

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Task, EventType } from "@/types/task";
+import { Task } from "@/types/task";
 import { toast } from "@/hooks/use-toast";
 
 export const useTasks = () => {
@@ -20,7 +20,7 @@ export const useTasks = () => {
       // Cast the data to match our Task interface
       const typedTasks: Task[] = (data || []).map((task: any) => ({
         ...task,
-        event_type: task.event_type as EventType
+        event_type: task.event_type as string
       }));
 
       setTasks(typedTasks);
@@ -72,7 +72,7 @@ export const useTasks = () => {
       // Cast the returned data to match our Task interface
       const typedTask: Task = {
         ...data,
-        event_type: data.event_type as EventType
+        event_type: data.event_type as string
       };
 
       setTasks(prev => [...prev, typedTask]);
@@ -118,7 +118,7 @@ export const useTasks = () => {
       // Cast the returned data to match our Task interface
       const typedTask: Task = {
         ...data,
-        event_type: data.event_type as EventType
+        event_type: data.event_type as string
       };
 
       setTasks(prev => prev.map(task => 
@@ -168,6 +168,10 @@ export const useTasks = () => {
     await updateTask(taskId, { status: newStatus });
   };
 
+  const updateTaskType = async (taskId: string, newStatus: string) => {
+    await updateTask(taskId, { event_type: newStatus });
+  };
+  
   return {
     tasks,
     loading,
@@ -175,6 +179,7 @@ export const useTasks = () => {
     updateTask,
     deleteTask,
     updateTaskStatus,
+    updateTaskType,
     refetch: fetchTasks
   };
 };

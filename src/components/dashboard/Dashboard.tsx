@@ -23,7 +23,7 @@ interface DashboardProps {
 type ViewMode = "semester" | "year";
 
 const Dashboard = ({ user, onLogout }: DashboardProps) => {
-  const { tasks, loading, createTask, updateTask, deleteTask, updateTaskStatus } = useTasks();
+  const { tasks, loading, createTask, updateTask, deleteTask, updateTaskStatus, updateTaskType } = useTasks();
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [stackFilter, setStackFilter] = useState<string | "all">("all");
@@ -89,7 +89,9 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const handleStatusChange = async (taskId: string, newStatus: string) => {
     await updateTaskStatus(taskId, newStatus);
   };
-
+  const handleTypeChange = async (taskId: string, newType: string) => {
+    await updateTaskType(taskId, newType);
+  };
   // Funções de utilitários e helper functions
 
   const getSemesterFromDate = (dateString: string) => {
@@ -198,6 +200,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                                     onEdit={setEditingTask}
                                     onDelete={handleDeleteTask}
                                     onStatusChange={handleStatusChange}
+                                    onTypeChange={handleTypeChange}
                                     userRole={user.role}
                                     showContent={showCardContent}
                                   />
@@ -260,6 +263,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                               onEdit={setEditingTask}
                               onDelete={handleDeleteTask}
                               onStatusChange={handleStatusChange}
+                              onTypeChange={handleTypeChange}
                               userRole={user.role}
                               showContent={showCardContent}
                             />
@@ -306,12 +310,6 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
           </div>
 
           <div className="flex items-center space-x-4">
-            {user.role === 'admin' && (
-              <Button variant="outline" onClick={() => setShowUsersPage(true)}>
-                <Users className="w-4 h-4 mr-2" />
-                Usuários
-              </Button>
-            )}
             <div className="flex items-center space-x-2">
               <UserIcon className="w-4 h-4 text-gray-500" />
               <span className="text-sm text-gray-700">{user.name}</span>
@@ -319,6 +317,12 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                 {user.role === "admin" ? "Admin" : user.stack}
               </Badge>
             </div>
+            {user.role === 'admin' && (
+              <Button variant="outline" onClick={() => setShowUsersPage(true)}>
+                <Users className="w-4 h-4 mr-2" />
+                Usuários
+              </Button>
+            )}
             <Button variant="outline" onClick={onLogout}>
               Sair
             </Button>

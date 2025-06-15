@@ -6,8 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Task, EventType } from "@/types/task";
-import { TaskStatus, Stacks } from '@/lib/utils';
+import { Task } from "@/types/task";
+import { TaskStatus, TypeOptions, Stacks } from '@/lib/utils';
 import { User } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
 
@@ -29,17 +29,20 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
     people: 1,
     status: "Pendente",
     stack: (user.role === "user" ? user.stack : "Java"),
-    event_type: "Outros" as EventType,
+    event_type: "Outros",
   });
 
   useEffect(() => {
     if (task) {
+      const formattedStartDate = task.start_date ? new Date(task.start_date).toISOString().split('T')[0] : ''
+      const formattedEndDate = task.end_date ? new Date(task.end_date).toISOString().split('T')[0] : ''
+
       setFormData({
         title: task.title,
         description: task.description,
         responsible: task.responsible,
-        start_date: task.start_date,
-        end_date: task.end_date,
+        start_date: formattedStartDate,
+        end_date: formattedEndDate,
         hours: task.hours,
         people: task.people,
         status: task.status,
@@ -105,14 +108,13 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
             </div>
             
             <div className="md:col-span-2">
-              <Label htmlFor="description">Descrição *</Label>
+              <Label htmlFor="description">Descrição</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleInputChange("description", e.target.value)}
                 placeholder="Descreva a tarefa em detalhes"
-                rows={3}
-                required
+                rows={3}                
               />
             </div>
             
@@ -131,7 +133,7 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
               <Label htmlFor="stack">Comunidade</Label>
               <Select 
                 onValueChange={(value) => handleInputChange("stack", value)} 
-                defaultValue={formData.stack}                
+                value={formData.stack}                
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a stack" />
@@ -196,7 +198,7 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
               <Label htmlFor="status">Status</Label>
               <Select 
                 onValueChange={(value) => handleInputChange("status", value)} 
-                defaultValue={formData.status}
+                value={formData.status}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o status" />
@@ -215,18 +217,17 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
               <Label htmlFor="event_type">Tipo de Evento</Label>
               <Select 
                 onValueChange={(value: EventType) => handleInputChange("event_type", value)} 
-                defaultValue={formData.event_type}
+                value={formData.event_type}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo de evento" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Forum Técnico">Forum Técnico</SelectItem>
-                  <SelectItem value="Meetup Interno">Meetup Interno</SelectItem>
-                  <SelectItem value="Meetup Externo">Meetup Externo</SelectItem>
-                  <SelectItem value="Techup Interno">Techup Interno</SelectItem>
-                  <SelectItem value="Techup Externo">Techup Externo</SelectItem>
-                  <SelectItem value="Outros">Outros</SelectItem>
+                  {TypeOptions.map((status) => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -27,10 +27,11 @@ export const TaskStatus = [
 ];
 
 export const TypeOptions = [
-  { value: "Forum Técnico", label: "Forum Técnico" },
-  { value: "Meetup Interno", label: "Meetup Interno" },
-  { value: "Meetup Externo", label: "Meetup Externo" },
-  { value: "Techup Interno", label: "Techup Interno" },
-  { value: "Techup Externo", label: "Techup Externo" },
+  { value: "FT", label: "Forum Técnico" },
+  { value: "MI", label: "Meetup Interno" },
+  { value: "ME", label: "Meetup Externo" },
+  { value: "TI", label: "Techup Interno" },
+  { value: "TE", label: "Techup Externo" },
+  { value: "ON", label: "Onboarding" },
   { value: "Outros", label: "Outros" }
 ];

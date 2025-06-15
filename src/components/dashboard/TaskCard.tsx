@@ -1,10 +1,9 @@
-
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Task } from "@/types/task";
-import { TaskStatus, Stacks, getStatusColor } from "@/lib/utils";
+import { TaskStatus, TypeOptions, Stacks, getStatusColor } from "@/lib/utils";
 import { UserRole } from "@/types/auth";
 import { Calendar, Clock, User, Edit, User as UserIcon } from "lucide-react";
 
@@ -13,26 +12,27 @@ interface TaskCardProps {
   onEdit: (task: Task) => void;
   onDelete: (taskId: string) => void;
   onStatusChange: (taskId: string, status: string) => void;
+  onTypeChange: (taskId: string, type: string) => void;
   userRole: UserRole;
   showContent?: boolean;
 }
 
-const TaskCard = ({ task, onEdit, onDelete, onStatusChange, userRole, showContent = true }: TaskCardProps) => {
+const TaskCard = ({ task, onEdit, onDelete, onStatusChange, onTypeChange: onStatusType, userRole, showContent = true }: TaskCardProps) => {
   const getStackColor = (stack: string) => {
     return Stacks.find((s) => s.value === stack)?.color || "bg-gray-100 text-gray-800";
   };
-  
+
   const getEventTypeColor = (eventType: string) => {
     switch (eventType) {
-      case "Forum Técnico":
+      case "FT":
         return "bg-orange-100 text-orange-500";
-      case "Meetup Interno":
+      case "MI":
         return "bg-purple-100 text-purple-800";
-      case "Meetup Externo":
+      case "ME":
         return "bg-blue-100 text-blue-800";
-      case "Techup Interno":
+      case "TI":
         return "bg-green-100 text-green-800";
-      case "Techup Externo":
+      case "TE":
         return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -61,23 +61,37 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, userRole, showConten
             <h4 className="font-medium text-sm mb-2 leading-tight">{task.title}</h4>
             <div className="flex gap-1 flex-wrap mb-2">
               <Badge className={`text-xs ${getStackColor(task.stack)}`}>{task.stack}</Badge>
-              <Badge className={`text-xs ${getEventTypeColor(task.event_type)}`}>{task.event_type}</Badge>
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Badge className={`text-xs ${getStatusColor(task.status)}`}>
-                  <span className="text-xs">{task.status}</span>
-                </Badge>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {TaskStatus.filter((status) => status.value !== task.status)
-                  .map((status) => (
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Badge className={`text-xs ${getEventTypeColor(task.event_type)}`}>
+                    <span className="text-xs">{task.event_type}</span>
+                  </Badge>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {TypeOptions.filter((status) => status.value !== task.status).map((status) => (
+                    <DropdownMenuItem key={status.value} onClick={() => onStatusType(task.id, status.value)}>
+                      <span className="text-xs h-6 px-2">{status.label}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Badge className={`text-xs ${getStatusColor(task.status)}`}>
+                    <span className="text-xs">{task.status}</span>
+                  </Badge>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {TaskStatus.filter((status) => status.value !== task.status).map((status) => (
                     <DropdownMenuItem key={status.value} onClick={() => onStatusChange(task.id, status.value)}>
                       <span className="text-xs h-6 px-2">{status.label}</span>
                     </DropdownMenuItem>
                   ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Badge className={`text-xs bg-gray-100 text-gray-800`}>{task.people}</Badge>
+            </div>
           </div>
 
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0 m-0" onClick={() => onEdit(task)}>
