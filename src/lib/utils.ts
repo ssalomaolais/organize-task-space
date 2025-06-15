@@ -5,6 +5,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const getFormatDate = (data:string) =>{
+  const formattedStartDate = new Date(data).toISOString().slice(0, 16)
+  //const formattedStartDate = data ? new Date(data).toISOString().split('T')[0] : ''
+
+    return formattedStartDate;
+}
+
 export const getStatusColor = (status) => {
   return TaskStatus.find((t) => t.value == status).color;
 };

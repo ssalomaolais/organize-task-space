@@ -18,3 +18,39 @@
   background-color: #007bff;
   color: white;
 }
+
+.event-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  position: relative;
+  padding-right: 20px;
+}
+
+.edit-button {
+  position: absolute;
+  top: -18px;
+  right: -20px;
+  opacity: 0.7;
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  min-height: 20px;
+}
+
+.edit-button:hover {
+  opacity: 1;
+}
+
+/* Make sure the event content has proper spacing */
+.rbc-event-content {
+  position: relative;
+  padding-right: 24px;
+}

@@ -149,7 +149,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   };
 
   const renderCalendarView = () => {
-    return <CalendarView tasks={tasks} />;
+    return <CalendarView tasks={tasks} user={user} onUpdateTask={handleUpdateTask}/>;
   };
 
   if (loading) {
