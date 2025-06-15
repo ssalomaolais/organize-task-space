@@ -19,6 +19,13 @@ interface TaskFormProps {
 }
 
 const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
+  const [startDateTime, setStartDateTime] = useState(
+    new Date().toISOString().slice(0, 16)
+  );
+  const [endDateTime, setEndDateTime] = useState(
+    new Date().toISOString().slice(0, 16)
+  );
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -36,6 +43,8 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
     if (task) {
       const formattedStartDate = task.start_date ? new Date(task.start_date).toISOString().split('T')[0] : ''
       const formattedEndDate = task.end_date ? new Date(task.end_date).toISOString().split('T')[0] : ''
+      setStartDateTime(new Date(task.start_date).toISOString().slice(0, 16));
+      setEndDateTime(new Date(task.end_date).toISOString().slice(0, 16));
 
       setFormData({
         title: task.title,
@@ -84,6 +93,16 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
   const handleInputChange = (field: keyof typeof formData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  const handleInputDataStartChange = (field: keyof typeof formData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setStartDateTime(value);    
+  };
+
+  const handleInputDataEndChange = (field: keyof typeof formData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setEndDateTime(value);    
+  };  
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
@@ -149,23 +168,26 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
             </div>
             
             <div>
-              <Label htmlFor="start_date">Data de Início</Label>
+              <Label htmlFor="start_date">Data e Hora de Início *</Label>
               <Input
-                id="start_date"
-                type="date"
-                value={formData.start_date}
-                onChange={(e) => handleInputChange("start_date", e.target.value)}
+                type="datetime-local"
+                className="form-control"
+                id="startDateTime"
+                name="startDateTime"
+                value={startDateTime}
+                onChange={(e) => handleInputDataStartChange("start_date", e.target.value)}
                 required
-              />
+              />              
             </div>
             
             <div>
-              <Label htmlFor="end_date">Data de Fim</Label>
+              <Label htmlFor="end_date">Data e Hora Fim * </Label>
               <Input
+                type="datetime-local"
+                className="form-control"
                 id="end_date"
-                type="date"
-                value={formData.end_date}
-                onChange={(e) => handleInputChange("end_date", e.target.value)}
+                value={endDateTime}
+                onChange={(e) => handleInputDataEndChange("end_date", e.target.value)}
                 required
               />
             </div>
@@ -216,7 +238,7 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
             <div>
               <Label htmlFor="event_type">Tipo de Evento</Label>
               <Select 
-                onValueChange={(value: EventType) => handleInputChange("event_type", value)} 
+                onValueChange={(value) => handleInputChange("event_type", value)} 
                 value={formData.event_type}
               >
                 <SelectTrigger>
