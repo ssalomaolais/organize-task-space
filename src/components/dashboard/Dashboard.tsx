@@ -35,11 +35,6 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showUsersPage, setShowUsersPage] = useState(false);
 
-  // Show Users Page if requested
-  if (showUsersPage) {
-    return <UsersPage onBack={() => setShowUsersPage(false)} />;
-  }
-
   // Filtros e funções de utilidade
 
   useEffect(() => {
@@ -70,6 +65,11 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
     setFilteredTasks(filtered);
   }, [tasks, searchTerm, stackFilter, statusFilter]);
+
+  // Show Users Page if requested - moved after all hooks
+  if (showUsersPage) {
+    return <UsersPage onBack={() => setShowUsersPage(false)} />;
+  }
 
   const handleCreateTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
     await createTask(taskData);
