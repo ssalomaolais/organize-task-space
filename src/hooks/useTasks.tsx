@@ -42,6 +42,13 @@ export const useTasks = () => {
 
   const createTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
     try {
+      // Get the current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
       const { data, error } = await supabase
         .from('tasks')
         .insert([{
@@ -54,7 +61,8 @@ export const useTasks = () => {
           people: taskData.people,
           status: taskData.status,
           stack: taskData.stack,
-          event_type: taskData.event_type
+          event_type: taskData.event_type,
+          user_id: user.id // Set the user_id to the authenticated user
         }])
         .select()
         .single();

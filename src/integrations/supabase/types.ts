@@ -11,53 +11,35 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
-          created_at: string | null;
-          email: string | null;
-          id: string;
-          journey: string | null;
-          name: string | null;
-          role: string | null;
-          total_activity_points: number;
-          total_checkpoint_points: number;
-          total_hours_points: number;
-          total_points: number;
-          total_quiz_points: number;
-          updated_at: string | null;
-          active: boolean | null;
-          stack: string | null;
-        };
+          active: boolean | null
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          role: string
+          stack: string | null
+          updated_at: string | null
+        }
         Insert: {
-          created_at?: string | null;
-          email?: string | null;
-          id: string;
-          journey?: string | null;
-          name?: string | null;
-          role?: string | null;
-          total_activity_points?: number;
-          total_checkpoint_points?: number;
-          total_hours_points?: number;
-          total_points?: number;
-          total_quiz_points?: number;
-          updated_at?: string | null;
-          active: boolean | null;
-          stack: string | null;
-        };
+          active?: boolean | null
+          created_at?: string | null
+          email: string
+          id: string
+          name: string
+          role: string
+          stack?: string | null
+          updated_at?: string | null
+        }
         Update: {
-          created_at?: string | null;
-          email?: string | null;
-          id?: string;
-          journey?: string | null;
-          name?: string | null;
-          role?: string | null;
-          total_activity_points?: number;
-          total_checkpoint_points?: number;
-          total_hours_points?: number;
-          total_points?: number;
-          total_quiz_points?: number;
-          updated_at?: string | null;
-          active: boolean | null;
-          stack: string | null;
-        };
+          active?: boolean | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          role?: string
+          stack?: string | null
+          updated_at?: string | null
+        }
         Relationships: []
       }
       tasks: {
@@ -75,7 +57,7 @@ export type Database = {
           status: string
           title: string
           updated_at: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string | null
@@ -91,7 +73,7 @@ export type Database = {
           status: string
           title: string
           updated_at?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string | null
@@ -107,7 +89,7 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {

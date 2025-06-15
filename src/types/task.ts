@@ -15,7 +15,7 @@ export interface Task {
   status: string;
   stack: string;
   event_type: EventType;
-  user_id?: string;
+  user_id: string; // Now required since it's NOT NULL in database
   created_at: string;
   updated_at: string;
   comments?: Comment[];
