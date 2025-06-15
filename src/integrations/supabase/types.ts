@@ -11,35 +11,53 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
-          active: boolean | null
-          created_at: string | null
-          email: string
-          id: string
-          name: string
-          role: string
-          stack: string | null
-          updated_at: string | null
-        }
+          created_at: string | null;
+          email: string | null;
+          id: string;
+          journey: string | null;
+          name: string | null;
+          role: string | null;
+          total_activity_points: number;
+          total_checkpoint_points: number;
+          total_hours_points: number;
+          total_points: number;
+          total_quiz_points: number;
+          updated_at: string | null;
+          active: boolean | null;
+          stack: string | null;
+        };
         Insert: {
-          active?: boolean | null
-          created_at?: string | null
-          email: string
-          id: string
-          name: string
-          role: string
-          stack?: string | null
-          updated_at?: string | null
-        }
+          created_at?: string | null;
+          email?: string | null;
+          id: string;
+          journey?: string | null;
+          name?: string | null;
+          role?: string | null;
+          total_activity_points?: number;
+          total_checkpoint_points?: number;
+          total_hours_points?: number;
+          total_points?: number;
+          total_quiz_points?: number;
+          updated_at?: string | null;
+          active: boolean | null;
+          stack: string | null;
+        };
         Update: {
-          active?: boolean | null
-          created_at?: string | null
-          email?: string
-          id?: string
-          name?: string
-          role?: string
-          stack?: string | null
-          updated_at?: string | null
-        }
+          created_at?: string | null;
+          email?: string | null;
+          id?: string;
+          journey?: string | null;
+          name?: string | null;
+          role?: string | null;
+          total_activity_points?: number;
+          total_checkpoint_points?: number;
+          total_hours_points?: number;
+          total_points?: number;
+          total_quiz_points?: number;
+          updated_at?: string | null;
+          active: boolean | null;
+          stack: string | null;
+        };
         Relationships: []
       }
       tasks: {
