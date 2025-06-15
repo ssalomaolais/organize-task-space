@@ -14,7 +14,7 @@ import { toast } from "@/hooks/use-toast";
 interface TaskFormProps {
   task?: Task | null;
   user: User;
-  onSubmit: (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => void;
+  onSubmit: (taskData: Omit<Task, "id" | "created_at" | "updated_at" | "user_id">) => void;
   onCancel: () => void;
 }
 
