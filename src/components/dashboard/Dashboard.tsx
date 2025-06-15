@@ -1,26 +1,26 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { User } from "@/types/auth";
 import { Task } from "@/types/task";
-import { TaskStatus, TypeOptions, Stacks } from "@/lib/utils";
-import TaskCard from "./TaskCard";
+import { TaskStatus, TypeOptions, Stacks} from "@/lib/utils";
 import TaskForm from "./TaskForm";
 import UsersPage from "@/components/users/UsersPage";
 import { Search, Plus, User as UserIcon, Users } from "lucide-react";
 import { useTasks } from "@/hooks/useTasks";
+import { CalendarView } from "@/components/dashboard/CalendarView";
+import { YearView } from "@/components/dashboard/YearView";
+import { SemesterView} from "@/components/dashboard/SemesterView";
 
 interface DashboardProps {
   user: User;
   onLogout: () => void;
 }
 
-type ViewMode = "semester" | "year";
+type ViewMode = "semester" | "year" | "canlendar" | "list";
 
 const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const { tasks, loading, createTask, updateTask, deleteTask, updateTaskStatus, updateTaskType } = useTasks();
@@ -42,7 +42,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     let filtered = tasks.sort((a, b) => {
       const dateComparison = new Date(a.start_date).getTime() - new Date(b.start_date).getTime();
       if (dateComparison === 0) {
-        return (a.stack || '').localeCompare(b.stack || '');
+        return (a.stack || "").localeCompare(b.stack || "");
       }
       return dateComparison;
     });
@@ -69,7 +69,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     }
 
     setFilteredTasks(filtered);
-  }, [tasks, searchTerm, stackFilter, statusFilter,eventTypeFilter]);
+  }, [tasks, searchTerm, stackFilter, statusFilter, eventTypeFilter]);
 
   // Show Users Page if requested - moved after all hooks
   if (showUsersPage) {
@@ -99,47 +99,6 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   };
   // Funções de utilitários e helper functions
 
-  const getSemesterFromDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const month = date.getMonth() + 1;
-    return month <= 6 ? 1 : 2;
-  };
-
-  const getMonthFromDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.getMonth() + 1;
-  };
-
-  const getMonthName = (month: number) => {
-    const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-    return months[month - 1];
-  };
-
-  const getTasksBySemester = (year: number, semester: number) => {
-    return filteredTasks.filter((task) => {
-      const startDate = new Date(task.start_date);
-      const taskYear = startDate.getFullYear();
-      const taskSemester = getSemesterFromDate(task.start_date);
-      return taskYear === year && taskSemester === semester;
-    });
-  };
-
-  const getTasksByMonth = (year: number, month: number) => {
-    return filteredTasks.filter((task) => {
-      const startDate = new Date(task.start_date);
-      const taskStartMonth = getMonthFromDate(task.start_date);
-      const taskStartYear = startDate.getFullYear();
-      return taskStartYear === year && taskStartMonth === month;
-    });
-  };
-
-  const getTasksByYear = (year: number) => {
-    return filteredTasks.filter((task) => {
-      const startDate = new Date(task.start_date);
-      return startDate.getFullYear() === year;
-    });
-  };
-
   const getAvailableYears = () => {
     const years = new Set<number>();
     tasks.forEach((task) => {
@@ -148,9 +107,6 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     return Array.from(years).sort();
   };
 
-  const getSemesterName = (semester: number) => {
-    return semester === 1 ? "1º Semestre" : "2º Semestre";
-  };
 
   const taskStatuses = [
     { value: "all", label: "Todos Status" },
@@ -164,131 +120,36 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
   const renderSemesterView = () => {
     return (
-      <div className="space-y-8">
-        {[1, 2].map((semester) => {
-          const semesterTasks = getTasksBySemester(selectedYear, semester);
-          const monthsInSemester = semester === 1 ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12];
-          const monthsWithTasks = monthsInSemester.filter((month) => getTasksByMonth(selectedYear, month).length > 0);
-
-          return (
-            <div key={semester} className="rounded-lg border-2 border-gray-200 bg-gray-50">
-              <div className="p-4 border-b border-gray-200 bg-white rounded-t-lg">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-medium text-gray-900">
-                    {getSemesterName(semester)} {selectedYear}
-                  </h3>
-                  <Badge variant="outline">{semesterTasks.length}</Badge>
-                </div>
-              </div>
-
-              <div className="p-4">
-                {monthsWithTasks.length > 0 ? (
-                  <ScrollArea className="w-full whitespace-nowrap">
-                    <div className="flex space-x-1 pb-4">
-                      {monthsWithTasks.map((month) => {
-                        const monthTasks = getTasksByMonth(selectedYear, month);
-
-                        return (
-                          <div key={month} className="flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 p-1">
-                            <div className="flex items-center justify-between mb-4">
-                              <h4 className="font-medium text-sm text-gray-700">{getMonthName(month)}</h4>
-                              <Badge variant="secondary" className="text-xs">
-                                {monthTasks.length}
-                              </Badge>
-                            </div>
-
-                            <div className="space-y-1">
-                              {monthTasks.map((task) => (
-                                <div key={task.id} className="space-y-1">
-                                  <TaskCard
-                                    task={task}
-                                    onEdit={setEditingTask}
-                                    onDelete={handleDeleteTask}
-                                    onStatusChange={handleStatusChange}
-                                    onTypeChange={handleTypeChange}
-                                    userRole={user.role}
-                                    showContent={showCardContent}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <ScrollBar orientation="horizontal" />
-                  </ScrollArea>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <p className="text-sm">Nenhuma tarefa neste semestre</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <SemesterView
+        filteredTasks={filteredTasks}
+        selectedYear={selectedYear}
+        role={user.role}
+        showCardContent={showCardContent}
+        setEditingTask={setEditingTask}
+        handleDeleteTask={handleDeleteTask}
+        handleStatusChange={handleStatusChange}
+        handleTypeChange={handleTypeChange}
+      />
     );
   };
 
   const renderYearView = () => {
-    const yearTasks = getTasksByYear(selectedYear);
-    const monthsWithTasks = Array.from(new Set(yearTasks.map((task) => getMonthFromDate(task.start_date)))).sort();
-
     return (
-      <div className="rounded-lg border-2 border-gray-200 bg-gray-50">
-        <div className="p-4 border-b border-gray-200 bg-white rounded-t-lg">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-gray-900">Ano {selectedYear}</h3>
-            <Badge variant="outline">{yearTasks.length}</Badge>
-          </div>
-        </div>
-
-        <div className="p-4">
-          {monthsWithTasks.length > 0 ? (
-            <ScrollArea className="w-full whitespace-nowrap">
-              <div className="flex space-x-4 pb-4">
-                {monthsWithTasks.map((month) => {
-                  const monthTasks = getTasksByMonth(selectedYear, month);
-
-                  return (
-                    <div key={month} className="flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 p-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium text-sm text-gray-700">{getMonthName(month)}</h4>
-                        <Badge variant="secondary" className="text-xs">
-                          {monthTasks.length}
-                        </Badge>
-                      </div>
-
-                      <div className="space-y-3">
-                        {monthTasks.map((task) => (
-                          <div key={task.id} className="space-y-2">
-                            <TaskCard
-                              task={task}
-                              onEdit={setEditingTask}
-                              onDelete={handleDeleteTask}
-                              onStatusChange={handleStatusChange}
-                              onTypeChange={handleTypeChange}
-                              userRole={user.role}
-                              showContent={showCardContent}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <p className="text-sm">Nenhuma tarefa neste ano</p>
-            </div>
-          )}
-        </div>
-      </div>
+      <YearView
+        filteredTasks={filteredTasks}
+        selectedYear={selectedYear}
+        role={user.role}
+        showCardContent={showCardContent}
+        setEditingTask={setEditingTask}
+        handleDeleteTask={handleDeleteTask}
+        handleStatusChange={handleStatusChange}
+        handleTypeChange={handleTypeChange}
+      />
     );
+  };
+
+  const renderCalendarView = () => {
+    return <CalendarView tasks={tasks} />;
   };
 
   if (loading) {
@@ -318,11 +179,9 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
             <div className="flex items-center space-x-2">
               <UserIcon className="w-4 h-4 text-gray-500" />
               <span className="text-sm text-gray-700">{user.name}</span>
-              <Badge variant={user.role === "admin" ? "default" : "secondary"}>
-                {user.role === "admin" ? "Admin" : user.stack}
-              </Badge>
+              <Badge variant={user.role === "admin" ? "default" : "secondary"}>{user.role === "admin" ? "Admin" : user.stack}</Badge>
             </div>
-            {user.role === 'admin' && (
+            {user.role === "admin" && (
               <Button variant="outline" onClick={() => setShowUsersPage(true)}>
                 <Users className="w-4 h-4 mr-2" />
                 Usuários
@@ -341,12 +200,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
           <div className="flex flex-col sm:flex-row gap-4 flex-1">
             <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input 
-                placeholder="Buscar tarefas..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-                className="pl-10" 
-              />
+              <Input placeholder="Buscar tarefas..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
             </div>
 
             {user.role === "admin" && (
@@ -389,7 +243,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                 ))}
               </SelectContent>
             </Select>
-            
+
             <Select onValueChange={(value: string) => setSelectedYear(parseInt(value))} defaultValue={selectedYear.toString()}>
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Ano" />
@@ -410,6 +264,8 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
               <SelectContent>
                 <SelectItem value="semester">Semestral</SelectItem>
                 <SelectItem value="year">Anual</SelectItem>
+                <SelectItem value="calendar">Calendário</SelectItem>
+                <SelectItem value="list">Lista</SelectItem>
               </SelectContent>
             </Select>
 
@@ -432,10 +288,12 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
       </div>
 
       {/* View Mode Toggle and Content */}
-      <div className="p-6">
-        <Tabs value={viewMode} onValueChange={(value: string) => setViewMode(value as ViewMode)} className="space-y-4">
+      <div className="p-0">
+        <Tabs value={viewMode} onValueChange={(value: string) => setViewMode(value as ViewMode)} className="space-y-2">
           <TabsContent value="semester">{renderSemesterView()}</TabsContent>
           <TabsContent value="year">{renderYearView()}</TabsContent>
+          <TabsContent value="calendar">{renderCalendarView()}</TabsContent>
+          <TabsContent value="list">{renderYearView()}</TabsContent>
         </Tabs>
       </div>
 
