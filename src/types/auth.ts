@@ -1,8 +1,6 @@
 
 export type UserRole = 'admin' | 'user';
 
-export type Stack = 'Java' | 'Python' | 'JavaScript' | 'React' | 'Angular' | 'Vue' | 'Node.js' | 'PHP' | 'C#' | '.NET';
-
 export interface User {
   id: string;
   name: string;
