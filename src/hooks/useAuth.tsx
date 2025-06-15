@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { User, UserRole } from "@/types/auth";
 import { Session } from "@supabase/supabase-js";
@@ -8,6 +9,7 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -29,6 +31,16 @@ export const useAuth = () => {
     }
   };
 
+  // Use React Query for caching profile data with 5 minutes cache
+  const { data: profileData, isLoading: profileLoading } = useQuery({
+    queryKey: ['userProfile', session?.user?.id],
+    queryFn: () => fetchUserProfile(session!.user.id),
+    enabled: !!session?.user?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
+    refetchOnWindowFocus: false,
+  });
+
   useEffect(() => {
     let mounted = true;
 
@@ -39,24 +51,10 @@ export const useAuth = () => {
 
       setSession(session);
       
-      if (session?.user) {
-        // Only fetch profile if we don't already have user data or if it's a new user
-        if (!user || user.id !== session.user.id) {
-          const profile = await fetchUserProfile(session.user.id);
-          
-          if (mounted && profile) {
-            setUser({
-              id: profile.id,
-              name: profile.name,
-              email: profile.email,
-              role: profile.role as UserRole,
-              stack: profile.stack,
-              active: profile.active
-            });
-          }
-        }
-      } else {
+      if (!session?.user) {
         setUser(null);
+        // Clear cached profile data when user logs out
+        queryClient.removeQueries({ queryKey: ['userProfile'] });
       }
       
       if (mounted) {
@@ -80,18 +78,6 @@ export const useAuth = () => {
 
         if (session?.user && mounted) {
           setSession(session);
-          const profile = await fetchUserProfile(session.user.id);
-          
-          if (mounted && profile) {
-            setUser({
-              id: profile.id,
-              name: profile.name,
-              email: profile.email,
-              role: profile.role as UserRole,
-              stack: profile.stack,
-              active: profile.active
-            });
-          }
         }
         
         if (mounted) {
@@ -111,7 +97,21 @@ export const useAuth = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []); // Remove user dependency to avoid loops
+  }, [queryClient]);
+
+  // Update user state when profile data changes
+  useEffect(() => {
+    if (profileData && session?.user) {
+      setUser({
+        id: profileData.id,
+        name: profileData.name,
+        email: profileData.email,
+        role: profileData.role as UserRole,
+        stack: profileData.stack,
+        active: profileData.active
+      });
+    }
+  }, [profileData, session?.user]);
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
@@ -151,6 +151,8 @@ export const useAuth = () => {
       if (!error) {
         setUser(null);
         setSession(null);
+        // Clear cached profile data on logout
+        queryClient.removeQueries({ queryKey: ['userProfile'] });
       }
       return { error };
     } catch (error) {
@@ -159,10 +161,13 @@ export const useAuth = () => {
     }
   };
 
+  // Combine loading states - only show loading if auth is loading OR if we have a session but profile is still loading
+  const isLoading = loading || (session?.user && profileLoading && !profileData);
+
   return {
     user,
     session,
-    loading,
+    loading: isLoading,
     signUp,
     signIn,
     signOut
