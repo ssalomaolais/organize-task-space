@@ -44,7 +44,7 @@ export const SemesterView = ({ role, showCardContent, filteredTasks, selectedYea
 
           return (
             <div key={semester} className="rounded-lg border-2 border-gray-200 bg-gray-50">
-              <div className="p-4 border-b border-gray-200 bg-white rounded-t-lg">
+              <div className="p-2 border-b border-gray-200 bg-white rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium text-gray-900">
                     {getSemesterName(semester)} {selectedYear}
@@ -53,7 +53,7 @@ export const SemesterView = ({ role, showCardContent, filteredTasks, selectedYea
                 </div>
               </div>
 
-              <div className="p-4">
+              <div className="p-2">
                 {monthsWithTasks.length > 0 ? (
                   <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex space-x-1 pb-4">

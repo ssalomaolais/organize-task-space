@@ -39,22 +39,22 @@ export const YearView = ({ role, showCardContent, filteredTasks, selectedYear, s
 
   return (
     <div className="rounded-lg border-2 border-gray-200 bg-gray-50">
-      <div className="p-4 border-b border-gray-200 bg-white rounded-t-lg">
+      <div className="p-2 border-b border-gray-200 bg-white rounded-t-lg">
         <div className="flex items-center justify-between">
           <h3 className="font-medium text-gray-900">Ano {selectedYear}</h3>
           <Badge variant="outline">{yearTasks.length}</Badge>
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-2">
         {monthsWithTasks.length > 0 ? (
           <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex space-x-4 pb-4">
+            <div className="flex space-x-1 pb-4">
               {monthsWithTasks.map((month) => {
                 const monthTasks = getTasksByMonth(selectedYear, month);
 
                 return (
-                  <div key={month} className="flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 p-4">
+                  <div key={month} className="flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 p-1">
                     <div className="flex items-center justify-between mb-4">
                       <h4 className="font-medium text-sm text-gray-700">{getMonthName(month)}</h4>
                       <Badge variant="secondary" className="text-xs">
@@ -62,9 +62,9 @@ export const YearView = ({ role, showCardContent, filteredTasks, selectedYear, s
                       </Badge>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-1">
                       {monthTasks.map((task) => (
-                        <div key={task.id} className="space-y-2">
+                        <div key={task.id} className="space-y-1">
                           <TaskCard
                             task={task}
                             onEdit={setEditingTask}

@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 
@@ -15,12 +14,6 @@ const AuthPage = () => {
   const [loginData, setLoginData] = useState({
     email: "",
     password: ""
-  });
-
-  const [signupData, setSignupData] = useState({
-    email: "",
-    password: "",
-    name: ""
   });
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -40,28 +33,6 @@ const AuthPage = () => {
     setIsLoading(false);
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    const { error } = await signUp(signupData.email, signupData.password, signupData.name);
-    
-    if (error) {
-      toast({
-        title: "Erro no cadastro",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Cadastro realizado!",
-        description: "Verifique seu email para confirmar a conta.",
-      });
-    }
-    
-    setIsLoading(false);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -74,13 +45,6 @@ const AuthPage = () => {
         </CardHeader>
         
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Cadastro</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
                   <Label htmlFor="email">Email</Label>
@@ -106,46 +70,6 @@ const AuthPage = () => {
                   {isLoading ? "Entrando..." : "Entrar"}
                 </Button>
               </form>
-            </TabsContent>
-            
-            <TabsContent value="signup">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div>
-                  <Label htmlFor="signup-name">Nome</Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    value={signupData.name}
-                    onChange={(e) => setSignupData(prev => ({ ...prev, name: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    value={signupData.email}
-                    onChange={(e) => setSignupData(prev => ({ ...prev, email: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="signup-password">Senha</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={signupData.password}
-                    onChange={(e) => setSignupData(prev => ({ ...prev, password: e.target.value }))}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Cadastrando..." : "Cadastrar"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
         </CardContent>
       </Card>
     </div>

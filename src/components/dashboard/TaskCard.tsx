@@ -66,16 +66,27 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, onTypeChange: onStat
 
   return (
     <Card className="hover:shadow-md transition-shadow cursor-pointer">
-      <CardHeader className="pb-3">
+      <CardHeader className="flex flex-col space-y-1.5 p-2 pb-1">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h4 className="font-medium text-sm mb-2 leading-tight">{task.title}</h4>
-            <div className="flex gap-1 flex-wrap mb-2">
-              <Badge className={`text-xs ${getStackColor(task.stack)}`}>{task.stack}</Badge>
+            <div className="flex gap-1 flex-wrap">
+              <div id="dvButton">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 m-0" onClick={() => onEdit(task)}>
+                  <span className="sr-only">Editar</span>
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </div>              
+              <div id="dvTitle" className="flex items-center">
+                <h4 className="font-medium text-sm leading-tight">{task.title}</h4>
+              </div>
+            </div>
+            <div className="flex gap-1 flex-wrap">
+              <Badge className={`text-xs ${getStackColor(task.stack)}`} style={{ borderRadius: "3px" }}>{task.stack}</Badge>
+              <Badge className={`text-xs bg-gray-100 text-gray-800`} style={{ borderRadius: "3px" }}>{task.people}</Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger>
-                  <Badge className={`text-xs ${getEventTypeColor(task.event_type)}`}>
-                    <span className="text-xs">{task.event_type}</span>
+                  <Badge className={`text-xs ${getEventTypeColor(task.event_type)}`} style={{ borderRadius: "3px" }}>
+                    <span>{task.event_type}</span>
                   </Badge>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
@@ -89,7 +100,7 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, onTypeChange: onStat
 
               <DropdownMenu>
                 <DropdownMenuTrigger>
-                  <Badge className={`text-xs ${getStatusColor(task.status)}`}>
+                  <Badge className={`text-xs ${getStatusColor(task.status)}`} style={{ borderRadius: "3px" }}>
                     <span className="text-xs">{task.status}</span>
                   </Badge>
                 </DropdownMenuTrigger>
@@ -101,20 +112,14 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, onTypeChange: onStat
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Badge className={`text-xs bg-gray-100 text-gray-800`}>{task.people}</Badge>
             </div>
           </div>
-
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 m-0" onClick={() => onEdit(task)}>
-            <span className="sr-only">Editar</span>
-            <Edit className="h-4 w-4" />
-          </Button>
         </div>
       </CardHeader>
 
       {showContent && (
-        <CardContent className="pt-0">
-          <p className="text-xs text-gray-600 mb-3 line-clamp-2">{task.description}</p>
+        <CardContent className="flex flex-col space-y-1.5 p-3 pt-0">
+          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{task.description}</p>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs text-gray-500">

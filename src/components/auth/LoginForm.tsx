@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, UserRole, Stack } from "@/types/auth";
+import { User, UserRole } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
 
 interface LoginFormProps {
@@ -17,7 +17,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<UserRole>("user");
-  const [stack, setStack] = useState<Stack>("Java");
+  const [stack, setStack] = useState<string>("Java");
   const [isRegistering, setIsRegistering] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -120,7 +120,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
                 {role === "user" && (
                   <div className="space-y-2">
                     <Label htmlFor="stack">Stack Tecnológica</Label>
-                    <Select onValueChange={(value: Stack) => setStack(value)} defaultValue="Java">
+                    <Select onValueChange={(value) => setStack(value)} defaultValue="Java">
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione sua stack" />
                       </SelectTrigger>

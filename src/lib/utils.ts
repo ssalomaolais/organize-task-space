@@ -55,11 +55,15 @@ export const TaskStatus = [
 
 export const TypeOptions = [
   { value: "all", label: "Todos" },
+  { value: "AP", label: "Apresentação" },  
+  { value: "CT", label: "Capacitação Técnica" },
+  { value: "CF", label: "Café" },
   { value: "FT", label: "Forum Técnico" },
   { value: "MI", label: "Meetup Interno" },
   { value: "ME", label: "Meetup Externo" },
   { value: "TI", label: "Techup Interno" },
   { value: "TE", label: "Techup Externo" },
+  { value: "PT", label: "Postagem Técnica" },
   { value: "ON", label: "Onboarding" },
   { value: "Outros", label: "Outros" },
 ];
