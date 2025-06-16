@@ -15,10 +15,11 @@ interface TaskFormProps {
   task?: Task | null;
   user: User;
   onSubmit: (taskData: Omit<Task, "id" | "created_at" | "updated_at" | "user_id">) => void;
+  onDelete: (taskId: string) => void;
   onCancel: () => void;
 }
 
-const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
+const TaskForm = ({ task, user, onSubmit, onCancel, onDelete }: TaskFormProps) => {
   const [startDateTime, setStartDateTime] = useState(
     new Date().toISOString().slice(0, 16)
   );
@@ -30,10 +31,10 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
     title: "",
     description: "",
     responsible: "",
-    start_date: "",
-    end_date: "",
+    start_date: startDateTime,
+    end_date: endDateTime,
     hours: 0,
-    people: 1,
+    people: 0,
     status: "Pendente",
     stack: (user.role === "user" ? user.stack : "Java"),
     event_type: "Outros",
@@ -209,9 +210,9 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
               <Input
                 id="people"
                 type="number"
-                min="1"
+                min="0"
                 value={formData.people}
-                onChange={(e) => handleInputChange("people", parseInt(e.target.value) || 1)}
+                onChange={(e) => handleInputChange("people", parseInt(e.target.value) || 0)}
                 placeholder="Ex: 2"
               />
             </div>
@@ -258,6 +259,14 @@ const TaskForm = ({ task, user, onSubmit, onCancel }: TaskFormProps) => {
           <div className="flex gap-2 justify-end pt-4">
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => task && onDelete(task.id)}
+              disabled={!task}
+            >
+               Excluir
             </Button>
             <Button type="submit">
               {task ? "Atualizar" : "Criar"} Tarefa

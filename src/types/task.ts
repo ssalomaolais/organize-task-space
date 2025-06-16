@@ -1,6 +1,3 @@
-
-import { TaskStatus } from '@/lib/utils';
-
 export interface Task {
   id: string;
   title: string;

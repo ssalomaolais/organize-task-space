@@ -45,12 +45,12 @@ export type Database = {
       tasks: {
         Row: {
           created_at: string | null
-          description: string
+          description?: string
           end_date: string
           event_type: string
           hours: number | null
           id: string
-          people: number | null
+          people?: number | 0
           responsible: string
           stack: string
           start_date: string
@@ -61,12 +61,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          description: string
+          description?: string | null
           end_date: string
           event_type: string
           hours?: number | null
           id?: string
-          people?: number | null
+          people?: number | 0
           responsible: string
           stack: string
           start_date: string
@@ -77,12 +77,12 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
-          description?: string
+          description?: string| null
           end_date?: string
           event_type?: string
           hours?: number | null
           id?: string
-          people?: number | null
+          people?: number | 0
           responsible?: string
           stack?: string
           start_date?: string

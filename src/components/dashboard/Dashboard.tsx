@@ -303,6 +303,12 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
           task={editingTask}
           user={user}
           onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
+          onDelete={ (id) =>{
+            handleDeleteTask(id);
+            setShowTaskForm(false);
+            setEditingTask(null);
+            }
+          }
           onCancel={() => {
             setShowTaskForm(false);
             setEditingTask(null);

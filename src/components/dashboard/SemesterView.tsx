@@ -53,7 +53,7 @@ export const SemesterView = ({ role, showCardContent, filteredTasks, selectedYea
                 </div>
               </div>
 
-              <div className="p-2">
+              <div className="p-0">
                 {monthsWithTasks.length > 0 ? (
                   <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex space-x-1 pb-4">

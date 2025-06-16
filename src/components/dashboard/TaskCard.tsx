@@ -6,6 +6,7 @@ import { Task } from "@/types/task";
 import { TaskStatus, TypeOptions, Stacks, getStatusColor } from "@/lib/utils";
 import { UserRole } from "@/types/auth";
 import { Calendar, Clock, User, Edit, User as UserIcon } from "lucide-react";
+import { useState } from 'react';
 
 interface TaskCardProps {
   task: Task;
@@ -18,25 +19,14 @@ interface TaskCardProps {
 }
 
 const TaskCard = ({ task, onEdit, onDelete, onStatusChange, onTypeChange: onStatusType, userRole, showContent = true }: TaskCardProps) => {
+  const [isHovering, setIsHovering] = useState(false);
+
   const getStackColor = (stack: string) => {
     return Stacks.find((s) => s.value === stack)?.color || "bg-gray-100 text-gray-800";
   };
 
   const getEventTypeColor = (eventType: string) => {
-    switch (eventType) {
-      case "FT":
-        return "bg-orange-100 text-orange-500";
-      case "MI":
-        return "bg-purple-100 text-purple-800";
-      case "ME":
-        return "bg-blue-100 text-blue-800";
-      case "TI":
-        return "bg-green-100 text-green-800";
-      case "TE":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+    return TypeOptions.find((s) => s.value === eventType)?.color || "bg-gray-100 text-gray-800";
   };
 
   const formatDate = (date) => {
@@ -66,23 +56,29 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, onTypeChange: onStat
 
   return (
     <Card className="hover:shadow-md transition-shadow cursor-pointer">
-      <CardHeader className="flex flex-col space-y-1.5 p-2 pb-1">
+      <CardHeader className="flex flex-col space-y-1.5 p-2 pb-1 "
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+      >
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex gap-1 flex-wrap">
-              <div id="dvButton">
+              {isHovering && (<div id="dvButton">
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0 m-0" onClick={() => onEdit(task)}>
                   <span className="sr-only">Editar</span>
                   <Edit className="h-4 w-4" />
                 </Button>
-              </div>              
-              <div id="dvTitle" className="flex items-center">
+              </div>
+              )}              
+              <div id="dvTitle" className="flex items-center p-1">
                 <h4 className="font-medium text-sm leading-tight">{task.title}</h4>
               </div>
             </div>
             <div className="flex gap-1 flex-wrap">
               <Badge className={`text-xs ${getStackColor(task.stack)}`} style={{ borderRadius: "3px" }}>{task.stack}</Badge>
-              <Badge className={`text-xs bg-gray-100 text-gray-800`} style={{ borderRadius: "3px" }}>{task.people}</Badge>
+              {task.people > 0 && (
+                <Badge className={`text-xs bg-gray-100 text-gray-800`} style={{ borderRadius: "3px" }}>{task.people}</Badge>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <Badge className={`text-xs ${getEventTypeColor(task.event_type)}`} style={{ borderRadius: "3px" }}>
