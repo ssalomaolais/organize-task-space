@@ -4,9 +4,12 @@ import TaskCard from "./TaskCard";
 import { getMonthName, getMonthFromDate } from "@/lib/utils";
 import { Task } from "@/types/task";
 import { UserRole } from "@/types/auth";
+import { ListValue } from "@/types/task";
 
 interface YearViewProps {
   filteredTasks: Task[];
+  stack: ListValue[] | [];
+  eventType: ListValue[] | [];  
   selectedYear: number;
   role:UserRole;
   showCardContent:boolean;
@@ -16,7 +19,7 @@ interface YearViewProps {
   handleTypeChange: (taskId: string, newType: string)=> void;
 }
 
-export const YearView = ({ role, showCardContent, filteredTasks, selectedYear, setEditingTask, handleDeleteTask, handleStatusChange, handleTypeChange }: YearViewProps) => {
+export const YearView = ({ role, showCardContent, filteredTasks, selectedYear, stack, eventType, setEditingTask, handleDeleteTask, handleStatusChange, handleTypeChange }: YearViewProps) => {
 
   const getTasksByMonth = (year: number, month: number) => {
     return filteredTasks.filter((task) => {
@@ -67,6 +70,8 @@ export const YearView = ({ role, showCardContent, filteredTasks, selectedYear, s
                         <div key={task.id} className="space-y-1">
                           <TaskCard
                             task={task}
+                            stack={stack}
+                            eventType={eventType}                            
                             onEdit={setEditingTask}
                             onDelete={handleDeleteTask}
                             onStatusChange={handleStatusChange}

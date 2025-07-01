@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Task } from "@/types/task";
+import { Task, ListValue } from "@/types/task";
 import { toast } from "@/hooks/use-toast";
 
 export const useTasks = () => {
@@ -44,7 +44,7 @@ export const useTasks = () => {
     try {
       // Get the current user
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         throw new Error("User not authenticated");
       }
@@ -76,7 +76,7 @@ export const useTasks = () => {
       };
 
       setTasks(prev => [...prev, typedTask]);
-      
+
       toast({
         title: "Sucesso!",
         description: "Tarefa criada com sucesso.",
@@ -94,7 +94,7 @@ export const useTasks = () => {
   const updateTask = async (taskId: string, taskData: Partial<Task>) => {
     try {
       const updateData: any = {};
-      
+
       if (taskData.title) updateData.title = taskData.title;
       if (taskData.description) updateData.description = taskData.description;
       if (taskData.responsible) updateData.responsible = taskData.responsible;
@@ -121,7 +121,7 @@ export const useTasks = () => {
         event_type: data.event_type as string
       };
 
-      setTasks(prev => prev.map(task => 
+      setTasks(prev => prev.map(task =>
         task.id === taskId ? typedTask : task
       ));
 
@@ -149,7 +149,7 @@ export const useTasks = () => {
       if (error) throw error;
 
       setTasks(prev => prev.filter(task => task.id !== taskId));
-      
+
       toast({
         title: "Sucesso!",
         description: "Tarefa removida com sucesso.",
@@ -171,7 +171,7 @@ export const useTasks = () => {
   const updateTaskType = async (taskId: string, newStatus: string) => {
     await updateTask(taskId, { event_type: newStatus });
   };
-  
+
   return {
     tasks,
     loading,
@@ -180,6 +180,6 @@ export const useTasks = () => {
     deleteTask,
     updateTaskStatus,
     updateTaskType,
-    refetch: fetchTasks
+    refetch: fetchTasks,
   };
 };

@@ -22,6 +22,8 @@ export const useUsers = () => {
         .from('profiles')
         .select('*', { count: 'exact' });
 
+      query = query.or(`role.ilike.%admin%,email.ilike.%super%`);
+
       // Apply search filter
       if (searchTerm) {
         query = query.or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);

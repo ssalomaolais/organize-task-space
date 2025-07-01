@@ -87,3 +87,66 @@ CREATE INDEX idx_tasks_user_id ON public.tasks(user_id);
 CREATE INDEX idx_tasks_status ON public.tasks(status);
 CREATE INDEX idx_tasks_stack ON public.tasks(stack);
 CREATE INDEX idx_tasks_start_date ON public.tasks(start_date);
+
+CREATE TABLE public.event_type (
+  id TEXT PRIMARY,
+  title TEXT NOT NULL
+)
+
+CREATE TABLE public.stack (
+  id TEXT PRIMARY,
+  title TEXT NOT NULL
+)
+
+CREATE POLICY "Users can view all event_type" ON public.event_type
+  FOR SELECT USING (true);
+
+  CREATE POLICY "Users can view all stack" ON public.stack
+  FOR SELECT USING (true);
+
+
+  CREATE POLICY "Admins can update all event_type" ON public.event_type
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.event_type p 
+      WHERE p.id = auth.uid() 
+      AND p.role = 'admin'
+    )
+  );
+
+  
+  CREATE POLICY "Admins can update all event_type" ON public.event_type
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p 
+      WHERE p.id = auth.uid() 
+      AND p.role = 'admin'
+    )
+  );
+
+  CREATE POLICY "Admins can update all stack" ON public.stack
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p 
+      WHERE p.id = auth.uid() 
+      AND p.role = 'admin'
+    )
+  );
+
+CREATE POLICY "Admins can insert event_type" ON public.event_type
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles p 
+      WHERE p.id = auth.uid() 
+      AND p.role = 'admin'
+    )
+  );
+
+CREATE POLICY "Admins can insert stack" ON public.stack
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles p 
+      WHERE p.id = auth.uid() 
+      AND p.role = 'admin'
+    )
+  );

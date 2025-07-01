@@ -7,19 +7,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Task } from "@/types/task";
-import { TaskStatus, TypeOptions, Stacks } from '@/lib/utils';
+import { TaskStatus } from '@/lib/utils';
 import { User } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
+import { ListValue } from "@/types/task";
 
 interface TaskFormProps {
   task?: Task | null;
+  stack: ListValue[] | [];
+  eventType: ListValue[] | [];
   user: User;
   onSubmit: (taskData: Omit<Task, "id" | "created_at" | "updated_at" | "user_id">) => void;
   onDelete: (taskId: string) => void;
   onCancel: () => void;
 }
 
-const TaskForm = ({ task, user, onSubmit, onCancel, onDelete }: TaskFormProps) => {
+const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }: TaskFormProps) => {
   const [startDateTime, setStartDateTime] = useState(
     new Date().toISOString().slice(0, 16)
   );
@@ -159,7 +162,7 @@ const TaskForm = ({ task, user, onSubmit, onCancel, onDelete }: TaskFormProps) =
                   <SelectValue placeholder="Selecione a stack" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Stacks.filter((t) => t.value !== "all").map((stack) => (
+                  {stack.map((stack) => (
                     <SelectItem key={stack.value} value={stack.value}>
                       {stack.label}
                     </SelectItem>
@@ -246,7 +249,7 @@ const TaskForm = ({ task, user, onSubmit, onCancel, onDelete }: TaskFormProps) =
                   <SelectValue placeholder="Selecione o tipo de evento" />
                 </SelectTrigger>
                 <SelectContent>
-                  {TypeOptions.filter((item) => item.value !== "all").map((item2) => (
+                  {eventType.map((item2) => (
                     <SelectItem key={item2.value} value={item2.value}>
                       {item2.label}
                     </SelectItem>

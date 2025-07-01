@@ -101,6 +101,40 @@ export type Database = {
           },
         ]
       }
+      stack: {
+        Row: {
+          value: string
+          label: string
+          color?: string
+        }
+        Insert: {
+          value: string
+          label: string
+          color?: string
+        }
+        Update: {
+          value: string
+          label: string
+          color?: string
+        }
+      }
+      event_type: {
+        Row: {
+          value: string
+          label: string
+          color?: string
+        }
+        Insert: {
+          value: string
+          label: string
+          color?: string
+        }
+        Update: {
+          value: string
+          label: string
+          color?: string
+        }
+      }      
     }
     Views: {
       [_ in never]: never

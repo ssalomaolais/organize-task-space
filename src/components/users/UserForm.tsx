@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Profile, Stack } from "@/types/auth";
+import { Profile } from "@/types/auth";
 
 interface UserFormProps {
   user?: Profile | null;
@@ -14,7 +14,7 @@ interface UserFormProps {
   onCancel: () => void;
 }
 
-const STACKS: Stack[] = ['Java', 'Python', 'JavaScript', 'React', 'Angular', 'Vue', 'Node.js', 'PHP', 'C#', '.NET'];
+//const STACKS: Stack[] = ['Java', 'Python', 'JavaScript', 'React', 'Angular', 'Vue', 'Node.js', 'PHP', 'C#', '.NET'];
 
 const UserForm = ({ user, onSubmit, onCancel }: UserFormProps) => {
   const [formData, setFormData] = useState({

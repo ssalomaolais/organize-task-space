@@ -17,6 +17,12 @@ export interface Task {
   attachments?: string[];
 }
 
+export interface ListValue {
+  value: string;
+  label: string;
+  color?: string
+}
+
 export interface Comment {
   id: string;
   author: string;

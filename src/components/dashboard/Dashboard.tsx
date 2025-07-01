@@ -6,14 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { User } from "@/types/auth";
 import { Task } from "@/types/task";
-import { TaskStatus, TypeOptions, Stacks} from "@/lib/utils";
 import TaskForm from "./TaskForm";
 import UsersPage from "@/components/users/UsersPage";
 import { Search, Plus, User as UserIcon, Users } from "lucide-react";
 import { useTasks } from "@/hooks/useTasks";
+import { useStack } from "@/hooks/useStack";
+import { useEventType } from "@/hooks/useEventType";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { YearView } from "@/components/dashboard/YearView";
-import { SemesterView} from "@/components/dashboard/SemesterView";
+import { SemesterView } from "@/components/dashboard/SemesterView";
 
 interface DashboardProps {
   user: User;
@@ -24,6 +25,9 @@ type ViewMode = "semester" | "year" | "canlendar" | "list";
 
 const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const { tasks, loading, createTask, updateTask, deleteTask, updateTaskStatus, updateTaskType } = useTasks();
+  const { stack, fetchStack } = useStack();
+  const { eventType, fetchEventType } = useEventType();
+
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [stackFilter, setStackFilter] = useState<string | "all">("all");
@@ -123,6 +127,8 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
       <SemesterView
         filteredTasks={filteredTasks}
         selectedYear={selectedYear}
+        stack={stack}
+        eventType={eventType}
         role={user.role}
         showCardContent={showCardContent}
         setEditingTask={setEditingTask}
@@ -138,6 +144,8 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
       <YearView
         filteredTasks={filteredTasks}
         selectedYear={selectedYear}
+        stack={stack}
+        eventType={eventType}
         role={user.role}
         showCardContent={showCardContent}
         setEditingTask={setEditingTask}
@@ -149,7 +157,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   };
 
   const renderCalendarView = () => {
-    return <CalendarView tasks={tasks} user={user} onUpdateTask={handleUpdateTask}/>;
+    return <CalendarView tasks={tasks} user={user} onUpdateTask={handleUpdateTask} />;
   };
 
   if (loading) {
@@ -209,7 +217,10 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                   <SelectValue placeholder="Stack" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Stacks.map((stack) => (
+                  <SelectItem value="all">
+                    Todas
+                  </SelectItem>
+                  {stack.map((stack) => (
                     <SelectItem key={stack.value} value={stack.value}>
                       {stack.label}
                     </SelectItem>
@@ -233,10 +244,13 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
             <Select onValueChange={(value: string | "all") => setEventTypeFilter(value)} defaultValue="all">
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="Evento" />
+                <SelectValue placeholder="Tipo Evento" />
               </SelectTrigger>
               <SelectContent>
-                {TypeOptions.map((item) => (
+                <SelectItem value="all">
+                  Todos Eventos
+                </SelectItem>
+                {eventType.map((item) => (
                   <SelectItem key={item.value} value={item.value}>
                     {item.label}
                   </SelectItem>
@@ -302,12 +316,14 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
         <TaskForm
           task={editingTask}
           user={user}
+          stack={stack}
+          eventType={eventType}
           onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
-          onDelete={ (id) =>{
+          onDelete={(id) => {
             handleDeleteTask(id);
             setShowTaskForm(false);
             setEditingTask(null);
-            }
+          }
           }
           onCancel={() => {
             setShowTaskForm(false);

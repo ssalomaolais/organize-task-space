@@ -3,13 +3,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Task } from "@/types/task";
-import { TaskStatus, TypeOptions, Stacks, getStatusColor } from "@/lib/utils";
+import { TaskStatus, getStatusColor } from "@/lib/utils";
 import { UserRole } from "@/types/auth";
 import { Calendar, Clock, User, Edit, User as UserIcon } from "lucide-react";
 import { useState } from 'react';
+import { ListValue } from "@/types/task";
 
 interface TaskCardProps {
   task: Task;
+  stack: ListValue[] | [];
+  eventType: ListValue[] | [];
   onEdit: (task: Task) => void;
   onDelete: (taskId: string) => void;
   onStatusChange: (taskId: string, status: string) => void;
@@ -18,15 +21,19 @@ interface TaskCardProps {
   showContent?: boolean;
 }
 
-const TaskCard = ({ task, onEdit, onDelete, onStatusChange, onTypeChange: onStatusType, userRole, showContent = true }: TaskCardProps) => {
+const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, onTypeChange: onStatusType, userRole, showContent = true }: TaskCardProps) => {
   const [isHovering, setIsHovering] = useState(false);
 
-  const getStackColor = (stack: string) => {
-    return Stacks.find((s) => s.value === stack)?.color || "bg-gray-100 text-gray-800";
+  const getStackColor = (item: string) => {
+    return stack.find((s) => s.value === item)?.color || "bg-gray-100 text-gray-800";
+  };
+  
+  const getEventLabel= (item: string) => {
+    return eventType.find((s) => s.value === item)?.label;
   };
 
-  const getEventTypeColor = (eventType: string) => {
-    return TypeOptions.find((s) => s.value === eventType)?.color || "bg-gray-100 text-gray-800";
+  const getEventTypeColor = (item: string) => {
+    return eventType.find((s) => s.value === item)?.color || "bg-gray-100 text-gray-800";
   };
 
   const formatDate = (date) => {
@@ -52,6 +59,14 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, onTypeChange: onStat
     return diffDays;
   };
 
+  const getText = (value:string, size:number) => {
+
+    if (value.length < size)
+      return value;
+
+    return value.slice(0,size) + "...";
+
+  }
   const daysRemaining = getDaysRemaining();
 
   return (
@@ -63,15 +78,8 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, onTypeChange: onStat
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex gap-1 flex-wrap">
-              {isHovering && (<div id="dvButton">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 m-0" onClick={() => onEdit(task)}>
-                  <span className="sr-only">Editar</span>
-                  <Edit className="h-4 w-4" />
-                </Button>
-              </div>
-              )}              
               <div id="dvTitle" className="flex items-center p-1">
-                <h4 className="font-medium text-sm leading-tight">{task.title}</h4>
+                <h4 className="font-medium text-sm leading-tight" onClick={() => onEdit(task)}>{getText(task.title,40)}</h4>
               </div>
             </div>
             <div className="flex gap-1 flex-wrap">
@@ -82,11 +90,11 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, onTypeChange: onStat
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <Badge className={`text-xs ${getEventTypeColor(task.event_type)}`} style={{ borderRadius: "3px" }}>
-                    <span>{task.event_type}</span>
+                    <span>{getEventLabel(task.event_type)}</span>
                   </Badge>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  {TypeOptions.filter((status) => status.value !== task.status && status.value !== "all").map((status) => (
+                  {eventType.filter((status) => status.value !== task.status && status.value !== "all").map((status) => (
                     <DropdownMenuItem key={status.value} onClick={() => onStatusType(task.id, status.value)}>
                       <span className="text-xs h-6 px-2">{status.label}</span>
                     </DropdownMenuItem>
@@ -115,7 +123,7 @@ const TaskCard = ({ task, onEdit, onDelete, onStatusChange, onTypeChange: onStat
 
       {showContent && (
         <CardContent className="flex flex-col space-y-1.5 p-3 pt-0">
-          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{task.description}</p>
+          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{getText(task.description,50)}</p>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs text-gray-500">
