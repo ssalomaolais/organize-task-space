@@ -10,12 +10,14 @@ import { Search, Plus, Edit, ArrowLeft } from "lucide-react";
 import { useUsers } from "@/hooks/useUsers";
 import { Profile } from "@/types/auth";
 import UserForm from "./UserForm";
+import { ListValue } from "@/types/task";
 
 interface UsersPageProps {
+  stack: ListValue[] | [];
   onBack: () => void;
 }
 
-const UsersPage = ({ onBack }: UsersPageProps) => {
+const UsersPage = ({ stack, onBack }: UsersPageProps) => {
   const { users, loading, totalCount, fetchUsers, updateUser, createUser } = useUsers();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -233,6 +235,7 @@ const UsersPage = ({ onBack }: UsersPageProps) => {
       {/* User Form Modal */}
       {(showUserForm || editingUser) && (
         <UserForm
+          stack ={stack}
           user={editingUser}
           onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
           onCancel={() => {

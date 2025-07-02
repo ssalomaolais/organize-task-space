@@ -15,6 +15,7 @@ import { useEventType } from "@/hooks/useEventType";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { YearView } from "@/components/dashboard/YearView";
 import { SemesterView } from "@/components/dashboard/SemesterView";
+import { TaskStatus } from "@/lib/utils"
 
 interface DashboardProps {
   user: User;
@@ -77,7 +78,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
   // Show Users Page if requested - moved after all hooks
   if (showUsersPage) {
-    return <UsersPage onBack={() => setShowUsersPage(false)} />;
+    return <UsersPage stack={stack} onBack={() => setShowUsersPage(false)} />;
   }
 
   const handleCreateTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
@@ -110,15 +111,6 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     });
     return Array.from(years).sort();
   };
-
-
-  const taskStatuses = [
-    { value: "all", label: "Todos Status" },
-    { value: "Pendente", label: "Pendente" },
-    { value: "Em Andamento", label: "Em Andamento" },
-    { value: "Completo", label: "Completo" },
-    { value: "Cancelado", label: "Cancelado" },
-  ];
 
   // renderSemesterView e renderYearView functions
 
@@ -234,7 +226,10 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                {taskStatuses.map((status) => (
+                <SelectItem value="all">
+                  Todos
+                </SelectItem>
+                {TaskStatus.map((status) => (
                   <SelectItem key={status.value} value={status.value}>
                     {status.label}
                   </SelectItem>

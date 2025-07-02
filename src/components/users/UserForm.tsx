@@ -7,16 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Profile } from "@/types/auth";
+import { ListValue } from "@/types/task";
 
 interface UserFormProps {
   user?: Profile | null;
+  stack: ListValue[] | [];
   onSubmit: (userData: Omit<Profile, 'id' | 'created_at' | 'updated_at'>) => void;
   onCancel: () => void;
 }
 
-//const STACKS: Stack[] = ['Java', 'Python', 'JavaScript', 'React', 'Angular', 'Vue', 'Node.js', 'PHP', 'C#', '.NET'];
-
-const UserForm = ({ user, onSubmit, onCancel }: UserFormProps) => {
+const UserForm = ({ user, stack, onSubmit, onCancel }: UserFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -102,9 +102,9 @@ const UserForm = ({ user, onSubmit, onCancel }: UserFormProps) => {
                 <SelectValue placeholder="Selecione a stack" />
               </SelectTrigger>
               <SelectContent>
-                {STACKS.map((stack) => (
-                  <SelectItem key={stack} value={stack}>
-                    {stack}
+                {stack.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
                   </SelectItem>
                 ))}
               </SelectContent>
