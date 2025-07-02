@@ -15,6 +15,7 @@ import { useEventType } from "@/hooks/useEventType";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { YearView } from "@/components/dashboard/YearView";
 import { SemesterView } from "@/components/dashboard/SemesterView";
+import { UpcomingView } from "@/components/dashboard/UpcomingView";
 import { TaskStatus } from "@/lib/utils"
 
 interface DashboardProps {
@@ -22,7 +23,7 @@ interface DashboardProps {
   onLogout: () => void;
 }
 
-type ViewMode = "semester" | "year" | "canlendar" | "list";
+type ViewMode = "semester" | "year" | "canlendar" | "upcoming";
 
 const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const { tasks, loading, createTask, updateTask, deleteTask, updateTaskStatus, updateTaskType } = useTasks();
@@ -134,6 +135,29 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const renderYearView = () => {
     return (
       <YearView
+        filteredTasks={filteredTasks}
+        selectedYear={selectedYear}
+        stack={stack}
+        eventType={eventType}
+        role={user.role}
+        showCardContent={showCardContent}
+        setEditingTask={setEditingTask}
+        handleDeleteTask={handleDeleteTask}
+        handleStatusChange={handleStatusChange}
+        handleTypeChange={handleTypeChange}
+      />
+    );
+  };
+
+  /**
+   * Usar o renderUpcomingView para mostrar as tarefas dos próximos semestres.
+   * Provavelmente criar um novo componente (baseado no YearView)
+   * Adicionar ícone de olho para ocultar cada semestre
+   */
+
+  const renderUpcomingView = () => {
+    return (
+      <UpcomingView
         filteredTasks={filteredTasks}
         selectedYear={selectedYear}
         stack={stack}
@@ -274,7 +298,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                 <SelectItem value="semester">Semestral</SelectItem>
                 <SelectItem value="year">Anual</SelectItem>
                 <SelectItem value="calendar">Calendário</SelectItem>
-                <SelectItem value="list">Lista</SelectItem>
+                <SelectItem value="upcoming">Próximas</SelectItem>
               </SelectContent>
             </Select>
 
@@ -302,7 +326,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
           <TabsContent value="semester">{renderSemesterView()}</TabsContent>
           <TabsContent value="year">{renderYearView()}</TabsContent>
           <TabsContent value="calendar">{renderCalendarView()}</TabsContent>
-          <TabsContent value="list">{renderYearView()}</TabsContent>
+          <TabsContent value="upcoming">{renderUpcomingView()}</TabsContent>
         </Tabs>
       </div>
 
