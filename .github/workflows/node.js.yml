@@ -45,3 +45,6 @@ jobs:
     
     - name: Deploy to S3
       run: aws s3 sync dist/ s3://dnw-taskflow --delete
+      
+    - name: Invalidar o Cache 
+      run: aws cloudfront create-invalidation --distribution-id E37SVYBKKI3F0P --id I156W5BV17Z5W1797JJ9TV5A9G
