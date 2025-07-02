@@ -45,3 +45,9 @@ export const TaskStatus = [
   { value: "Cancelado", label: "Cancelado", color: "bg-red-100 text-red-800" },
 ];
 
+export const NextEvents = [
+  { value: "semester", label: "Semestral" },
+  { value: "year", label: "Anual" },
+  { value: "calendar", label: "Calendário" },
+  { value: "upcoming", label: "Próximos Eventos" },
+];

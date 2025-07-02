@@ -16,7 +16,7 @@ import { CalendarView } from "@/components/dashboard/CalendarView";
 import { YearView } from "@/components/dashboard/YearView";
 import { SemesterView } from "@/components/dashboard/SemesterView";
 import { UpcomingView } from "@/components/dashboard/UpcomingView";
-import { TaskStatus } from "@/lib/utils"
+import { TaskStatus, NextEvents } from "@/lib/utils"
 
 interface DashboardProps {
   user: User;
@@ -295,10 +295,11 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                 <SelectValue placeholder="Visualização" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="semester">Semestral</SelectItem>
-                <SelectItem value="year">Anual</SelectItem>
-                <SelectItem value="calendar">Calendário</SelectItem>
-                <SelectItem value="upcoming">Próximas</SelectItem>
+                {NextEvents.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}                
               </SelectContent>
             </Select>
 
