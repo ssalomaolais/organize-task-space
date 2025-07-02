@@ -1,3 +1,5 @@
+// src/lib/utils.ts
+
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -50,4 +52,5 @@ export const NextEvents = [
   { value: "year", label: "Anual" },
   { value: "calendar", label: "Calendário" },
   { value: "upcoming", label: "Próximos Eventos" },
+  { value: "events-grid", label: "Grade de Eventos" }, 
 ];
