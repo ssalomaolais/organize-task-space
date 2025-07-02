@@ -94,7 +94,7 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
                   </Badge>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  {eventType.filter((status) => status.value !== task.status && status.value !== "all").map((status) => (
+                  {eventType.map((status) => (
                     <DropdownMenuItem key={status.value} onClick={() => onStatusType(task.id, status.value)}>
                       <span className="text-xs h-6 px-2">{status.label}</span>
                     </DropdownMenuItem>
