@@ -61,6 +61,15 @@ CREATE POLICY "Admins can delete tasks" ON public.tasks
     )
   );
 
+  CREATE POLICY "Admins can update tasks" ON public.tasks
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles 
+      WHERE profiles.id = auth.uid() 
+      AND (profiles.role = 'admin' or profiles.role = 'super') 
+    )
+  );
+
 -- Create function to handle new user registration
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
