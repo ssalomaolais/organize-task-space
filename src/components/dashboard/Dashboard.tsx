@@ -1,3 +1,5 @@
+// src/components/dashboard/Dashboard.tsx
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,14 +18,15 @@ import { CalendarView } from "@/components/dashboard/CalendarView";
 import { YearView } from "@/components/dashboard/YearView";
 import { SemesterView } from "@/components/dashboard/SemesterView";
 import { UpcomingView } from "@/components/dashboard/UpcomingView";
-import { TaskStatus, NextEvents } from "@/lib/utils"
+import { EventsGridView } from "@/components/dashboard/EventsGridView"; // <-- ADICIONE ESTA IMPORTAÇÃO
+import { TaskStatus, NextEvents } from "@/lib/utils";
 
 interface DashboardProps {
   user: User;
   onLogout: () => void;
 }
 
-type ViewMode = "semester" | "year" | "canlendar" | "upcoming";
+type ViewMode = "semester" | "year" | "canlendar" | "upcoming" | "events-grid"; // <-- ADICIONE 'events-grid'
 
 const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const { tasks, loading, createTask, updateTask, deleteTask, updateTaskStatus, updateTaskType } = useTasks();
@@ -42,7 +45,6 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showUsersPage, setShowUsersPage] = useState(false);
 
-  // Filtros e funções de utilidade
 
   useEffect(() => {
     let filtered = tasks.sort((a, b) => {
@@ -77,7 +79,8 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     setFilteredTasks(filtered);
   }, [tasks, searchTerm, stackFilter, statusFilter, eventTypeFilter]);
 
-  // Show Users Page if requested - moved after all hooks
+
+  
   if (showUsersPage) {
     return <UsersPage stack={stack} onBack={() => setShowUsersPage(false)} />;
   }
@@ -103,8 +106,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const handleTypeChange = async (taskId: string, newType: string) => {
     await updateTaskType(taskId, newType);
   };
-  // Funções de utilitários e helper functions
-
+  
   const getAvailableYears = () => {
     const years = new Set<number>();
     tasks.forEach((task) => {
@@ -112,8 +114,6 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     });
     return Array.from(years).sort();
   };
-
-  // renderSemesterView e renderYearView functions
 
   const renderSemesterView = () => {
     return (
@@ -149,12 +149,6 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     );
   };
 
-  /**
-   * Usar o renderUpcomingView para mostrar as tarefas dos próximos semestres.
-   * Provavelmente criar um novo componente (baseado no YearView)
-   * Adicionar ícone de olho para ocultar cada semestre
-   */
-
   const renderUpcomingView = () => {
     return (
       <UpcomingView
@@ -176,6 +170,11 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     return <CalendarView tasks={tasks} user={user} onUpdateTask={handleUpdateTask} />;
   };
 
+
+  const renderEventsGridView = () => {
+    return <EventsGridView filteredTasks={filteredTasks} />;
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -186,7 +185,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+    
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -217,8 +216,8 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
           </div>
         </div>
       </header>
-
-      {/* Filters and Actions */}
+      
+      
       <div className="px-6 py-4 bg-white border-b border-gray-200">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="flex flex-col sm:flex-row gap-4 flex-1">
@@ -320,18 +319,19 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
           </Button>
         </div>
       </div>
-
-      {/* View Mode Toggle and Content */}
-      <div className="p-0">
-        <Tabs value={viewMode} onValueChange={(value: string) => setViewMode(value as ViewMode)} className="space-y-2">
+      
+   
+      <div className="p-0"> 
+        <Tabs value={viewMode} onValueChange={(value: string) => setViewMode(value as ViewMode)} className="space-y-4">
           <TabsContent value="semester">{renderSemesterView()}</TabsContent>
           <TabsContent value="year">{renderYearView()}</TabsContent>
           <TabsContent value="calendar">{renderCalendarView()}</TabsContent>
           <TabsContent value="upcoming">{renderUpcomingView()}</TabsContent>
+          <TabsContent value="events-grid" className="mt-0">{renderEventsGridView()}</TabsContent>
         </Tabs>
       </div>
 
-      {/* Task Form Modal */}
+   
       {(showTaskForm || editingTask) && (
         <TaskForm
           task={editingTask}
