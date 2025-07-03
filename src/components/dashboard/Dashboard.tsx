@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { User } from "@/types/auth";
 import { Task } from "@/types/task";
 import TaskForm from "./TaskForm";
 import UsersPage from "@/components/users/UsersPage";
-import { Search, Plus, User as UserIcon, Users } from "lucide-react";
+import { Search, Plus, User as UserIcon, Settings } from "lucide-react";
 import { useTasks } from "@/hooks/useTasks";
 import { useStack } from "@/hooks/useStack";
 import { useEventType } from "@/hooks/useEventType";
@@ -18,15 +19,18 @@ import { CalendarView } from "@/components/dashboard/CalendarView";
 import { YearView } from "@/components/dashboard/YearView";
 import { SemesterView } from "@/components/dashboard/SemesterView";
 import { UpcomingView } from "@/components/dashboard/UpcomingView";
-import { EventsGridView } from "@/components/dashboard/EventsGridView"; // <-- ADICIONE ESTA IMPORTAÇÃO
+import { EventsGridView } from "@/components/dashboard/EventsGridView";
 import { TaskStatus, NextEvents } from "@/lib/utils";
+import EventTypesPage from "@/components/event_types/EventTypesPage";
+import StacksPage from "@/components/stacks/StacksPage";
 
 interface DashboardProps {
   user: User;
   onLogout: () => void;
 }
 
-type ViewMode = "semester" | "year" | "canlendar" | "upcoming" | "events-grid"; // <-- ADICIONE 'events-grid'
+type ViewMode = "semester" | "year" | "calendar" | "upcoming" | "events-grid";
+type ManagementPage = "none" | "users" | "event-types" | "stacks";
 
 const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const { tasks, loading, createTask, updateTask, deleteTask, updateTaskStatus, updateTaskType } = useTasks();
@@ -43,8 +47,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [showCardContent, setShowCardContent] = useState<boolean>(true);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [showUsersPage, setShowUsersPage] = useState(false);
-
+  const [currentManagementPage, setCurrentManagementPage] = useState<ManagementPage>("none");
 
   useEffect(() => {
     let filtered = tasks.sort((a, b) => {
@@ -79,10 +82,16 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     setFilteredTasks(filtered);
   }, [tasks, searchTerm, stackFilter, statusFilter, eventTypeFilter]);
 
+  if (currentManagementPage === "users") {
+    return <UsersPage stack={stack} onBack={() => setCurrentManagementPage("none")} />;
+  }
 
-  
-  if (showUsersPage) {
-    return <UsersPage stack={stack} onBack={() => setShowUsersPage(false)} />;
+  if (currentManagementPage === "event-types") {
+    return <EventTypesPage onBack={() => setCurrentManagementPage("none")} />;
+  }
+
+  if (currentManagementPage === "stacks") {
+    return <StacksPage onBack={() => setCurrentManagementPage("none")} />;
   }
 
   const handleCreateTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
@@ -170,7 +179,6 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     return <CalendarView tasks={tasks} user={user} onUpdateTask={handleUpdateTask} />;
   };
 
-
   const renderEventsGridView = () => {
     return <EventsGridView filteredTasks={filteredTasks} />;
   }
@@ -205,10 +213,26 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
               <Badge variant={user.role === "admin" ? "default" : "secondary"}>{user.role === "admin" ? "Admin" : user.stack}</Badge>
             </div>
             {user.role === "admin" && (
-              <Button variant="outline" onClick={() => setShowUsersPage(true)}>
-                <Users className="w-4 h-4 mr-2" />
-                Usuários
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Gerenciar
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setCurrentManagementPage("users")}>
+                    Usuários
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setCurrentManagementPage("event-types")}>
+                    Tipos de Eventos
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrentManagementPage("stacks")}>
+                    Comunidades
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             <Button variant="outline" onClick={onLogout}>
               Sair
