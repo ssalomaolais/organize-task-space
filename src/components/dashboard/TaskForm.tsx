@@ -109,15 +109,29 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleInputDataStartChange = (field: keyof typeof formData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setStartDateTime(value);    
-  };
+  const handleInputDataChange = (field: 'start_date' | 'end_date', value: string) => {
+    // Replace space with 'T' to ensure correct parsing for datetime-local format
+    const formattedValue = value.replace(' ', 'T');
+    const date = new Date(formattedValue);
 
-  const handleInputDataEndChange = (field: keyof typeof formData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setEndDateTime(value);    
-  };  
+    if (isNaN(date.getTime())) {
+      toast({
+        title: "Erro de Data",
+        description: "Formato de data/hora inválido. Por favor, use o formato AAAA-MM-DDTHH:mm.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Store as ISO string (UTC) for Supabase
+    setFormData(prev => ({ ...prev, [field]: date.toISOString() }));
+    // Keep the formatted value for the input field to ensure it displays correctly
+    if (field === 'start_date') {
+      setStartDateTime(formattedValue);
+    } else {
+      setEndDateTime(formattedValue);
+    }
+  };
 
   const handleNewEventTypeSubmit = async (newEventTypeData: Omit<ListValue, 'id'>) => {
     const result = await createEventType(newEventTypeData);
@@ -213,7 +227,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                 id="startDateTime"
                 name="startDateTime"
                 value={startDateTime}
-                onChange={(e) => handleInputDataStartChange("start_date", e.target.value)}
+                onChange={(e) => handleInputDataChange("start_date", e.target.value)}
                 required
               />              
             </div>
@@ -225,7 +239,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                 className="form-control"
                 id="end_date"
                 value={endDateTime}
-                onChange={(e) => handleInputDataEndChange("end_date", e.target.value)}
+                onChange={(e) => handleInputDataChange("end_date", e.target.value)}
                 required
               />
             </div>
