@@ -43,7 +43,7 @@ export const UpcomingView = ({ role, showCardContent, filteredTasks, selectedYea
   };
   
   const upcomingYearTasks = getUpcomingTasksByYear(selectedYear);
-  const monthsWithTasks = Array.from(new Set(upcomingYearTasks.map((task) => getMonthFromDate(task.start_date)))).sort();
+  const monthsWithTasks = Array.from(new Set(upcomingYearTasks.map((task) => getMonthFromDate(task.start_date).toString().padStart(2, '0')))).sort();
 
   const [hideYear, setHideYear] = React.useState<{ [key: number]: boolean }>({});
   const [hideMonth, setHideMonth] = React.useState<{ [key: string]: boolean }>({});
@@ -69,7 +69,8 @@ export const UpcomingView = ({ role, showCardContent, filteredTasks, selectedYea
             {monthsWithTasks.length > 0 ? (
                 <ScrollArea className="w-full">
                 <div className="flex space-x-1 pb-4">
-                {monthsWithTasks.map((month) => {
+                {monthsWithTasks.map((monthX) => {
+                  const month = parseInt(monthX);
                     const monthTasks = getUpcomingTasksByMonth(selectedYear, month);
                     const key = `${selectedYear}-${month}`;
 
