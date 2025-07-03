@@ -54,3 +54,16 @@ export const NextEvents = [
   { value: "upcoming", label: "Próximos Eventos" },
   { value: "events-grid", label: "Grade de Eventos" }, 
 ];
+
+export const TailwindColors = [
+  { value: "bg-gray-100 text-gray-800", label: "Cinza", preview: "bg-gray-500" },
+  { value: "bg-red-100 text-red-800", label: "Vermelho", preview: "bg-red-500" },
+  { value: "bg-yellow-100 text-yellow-800", label: "Amarelo", preview: "bg-yellow-500" },
+  { value: "bg-green-100 text-green-800", label: "Verde", preview: "bg-green-500" },
+  { value: "bg-blue-100 text-blue-800", label: "Azul", preview: "bg-blue-500" },
+  { value: "bg-indigo-100 text-indigo-800", label: "Índigo", preview: "bg-indigo-500" },
+  { value: "bg-purple-100 text-purple-800", label: "Roxo", preview: "bg-purple-500" },
+  { value: "bg-pink-100 text-pink-800", label: "Rosa", preview: "bg-pink-500" },
+  { value: "bg-orange-100 text-orange-800", label: "Laranja", preview: "bg-orange-500" },
+  { value: "bg-teal-100 text-teal-800", label: "Verde-azulado", preview: "bg-teal-500" },
+];

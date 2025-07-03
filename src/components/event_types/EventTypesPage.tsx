@@ -10,6 +10,7 @@ import { useEventType } from "@/hooks/useEventType";
 import { ListValue } from "@/types/task";
 import EventTypeForm from "./EventTypeForm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { TailwindColors } from "@/lib/utils";
 
 interface EventTypesPageProps {
   onBack: () => void;
@@ -64,6 +65,11 @@ const EventTypesPage = ({ onBack }: EventTypesPageProps) => {
   };
 
   const totalPages = Math.ceil(totalCount / pageSize);
+
+  const getPreviewColorClass = (tailwindClass: string) => {
+    const found = TailwindColors.find(tc => tc.value === tailwindClass);
+    return found ? found.preview : "bg-gray-500"; // Fallback
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -147,8 +153,8 @@ const EventTypesPage = ({ onBack }: EventTypesPageProps) => {
                         <TableCell>{item.value}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded-full" style={{ backgroundColor: item.color }}></div>
-                            <span>{item.color}</span>
+                            <div className={`w-4 h-4 rounded-full ${getPreviewColorClass(item.color)}`}></div>
+                            <span className="text-xs">{item.color}</span> {/* Display the full class name */}
                           </div>
                         </TableCell>
                         <TableCell>

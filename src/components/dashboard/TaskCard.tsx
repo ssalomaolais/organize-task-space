@@ -33,6 +33,7 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
   };
 
   const getEventTypeColor = (item: string) => {
+    // Now directly return the stored Tailwind class string
     return eventType.find((s) => s.value === item)?.color || "bg-gray-100 text-gray-800";
   };
 

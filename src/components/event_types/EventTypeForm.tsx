@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ListValue } from "@/types/task";
+import { TailwindColors } from "@/lib/utils";
 
 interface EventTypeFormProps {
   eventType?: ListValue | null;
@@ -15,7 +17,7 @@ const EventTypeForm = ({ eventType, onSubmit, onCancel }: EventTypeFormProps) =>
   const [formData, setFormData] = useState({
     value: '',
     label: '',
-    color: '#000000'
+    color: TailwindColors[0].value // Default to the first color
   });
 
   useEffect(() => {
@@ -23,7 +25,7 @@ const EventTypeForm = ({ eventType, onSubmit, onCancel }: EventTypeFormProps) =>
       setFormData({
         value: eventType.value,
         label: eventType.label,
-        color: eventType.color || '#000000'
+        color: eventType.color || TailwindColors[0].value // Fallback to default if color is missing
       });
     }
   }, [eventType]);
@@ -68,12 +70,24 @@ const EventTypeForm = ({ eventType, onSubmit, onCancel }: EventTypeFormProps) =>
 
           <div className="space-y-2">
             <Label htmlFor="color">Cor</Label>
-            <Input
-              id="color"
-              type="color"
+            <Select
               value={formData.color}
-              onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
-            />
+              onValueChange={(value) => setFormData(prev => ({ ...prev, color: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma cor" />
+              </SelectTrigger>
+              <SelectContent>
+                {TailwindColors.map((colorOption) => (
+                  <SelectItem key={colorOption.value} value={colorOption.value}>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-4 h-4 rounded-full ${colorOption.preview}`}></div>
+                      <span>{colorOption.label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
