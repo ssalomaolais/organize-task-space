@@ -56,6 +56,7 @@ export type Database = {
           start_date: string
           status: string
           title: string
+          subtitle: string
           updated_at: string | null
           user_id: string
         }
@@ -72,6 +73,7 @@ export type Database = {
           start_date: string
           status: string
           title: string
+          subtitle: string
           updated_at?: string | null
           user_id: string
         }
@@ -88,6 +90,7 @@ export type Database = {
           start_date?: string
           status?: string
           title?: string
+          subtitle: string
           updated_at?: string | null
           user_id?: string
         }

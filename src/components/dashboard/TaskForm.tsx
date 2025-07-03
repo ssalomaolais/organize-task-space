@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +10,12 @@ import { TaskStatus } from '@/lib/utils';
 import { User } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
 import { ListValue } from "@/types/task";
+import { Plus } from "lucide-react";
+
+import EventTypeForm from "@/components/event_types/EventTypeForm";
+import StackForm from "@/components/stacks/StackForm";
+import { useEventType } from "@/hooks/useEventType";
+import { useStack } from "@/hooks/useStack";
 
 interface TaskFormProps {
   task?: Task | null;
@@ -23,6 +28,9 @@ interface TaskFormProps {
 }
 
 const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }: TaskFormProps) => {
+  const { createEventType, fetchEventType } = useEventType();
+  const { createStack, fetchStack } = useStack();
+
   const [startDateTime, setStartDateTime] = useState(
     new Date().toISOString().slice(0, 16)
   );
@@ -32,6 +40,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
 
   const [formData, setFormData] = useState({
     title: "",
+    subtitle: "",
     description: "",
     responsible: "",
     start_date: startDateTime,
@@ -43,19 +52,26 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     event_type: "Outros",
   });
 
+  const [showNewEventTypeModal, setShowNewEventTypeModal] = useState(false);
+  const [showNewStackModal, setShowNewStackModal] = useState(false);
+
   useEffect(() => {
     if (task) {
-      const formattedStartDate = task.start_date ? new Date(task.start_date).toISOString().split('T')[0] : ''
-      const formattedEndDate = task.end_date ? new Date(task.end_date).toISOString().split('T')[0] : ''
-      setStartDateTime(new Date(task.start_date).toISOString().slice(0, 16));
-      setEndDateTime(new Date(task.end_date).toISOString().slice(0, 16));
+      // When loading an existing task, assume the stored ISO string is the exact time
+      // we want to display in the datetime-local input.
+      // Slice it to YYYY-MM-DDTHH:mm format.
+      const formattedStartDate = task.start_date ? task.start_date.slice(0, 16) : ''
+      const formattedEndDate = task.end_date ? task.end_date.slice(0, 16) : ''
+      setStartDateTime(formattedStartDate);
+      setEndDateTime(formattedEndDate);
 
       setFormData({
         title: task.title,
+        subtitle: task.subtitle,
         description: task.description,
         responsible: task.responsible,
-        start_date: formattedStartDate,
-        end_date: formattedEndDate,
+        start_date: task.start_date, // Keep the full ISO string for formData
+        end_date: task.end_date,     // Keep the full ISO string for formData
         hours: task.hours,
         people: task.people,
         status: task.status,
@@ -98,15 +114,71 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleInputDataStartChange = (field: keyof typeof formData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setStartDateTime(value);    
+  const handleInputDataChange = (field: 'start_date' | 'end_date', value: string) => {
+    // The value from datetime-local input is already in YYYY-MM-DDTHH:mm format.
+    // We want to treat this local time as if it were UTC for storage.
+    // Append seconds and milliseconds and the 'Z' (Zulu/UTC) indicator.
+    const isoStringForStorage = `${value}:00.000Z`;
+
+    // Basic validation for the input format
+    const date = new Date(isoStringForStorage); // This will parse it as UTC
+    if (isNaN(date.getTime())) {
+      toast({
+        title: "Erro de Data",
+        description: "Formato de data/hora inválido. Por favor, use o formato AAAA-MM-DDTHH:mm.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Update formData with the ISO string that treats local input as UTC
+    setFormData(prev => {
+      const newDate = date; // This is the UTC date object representing the entered time
+      let updatedPrev = { ...prev, [field]: isoStringForStorage };
+
+      // Auto-adjust logic
+      const currentStartDate = field === 'start_date' ? newDate : new Date(prev.start_date);
+      const currentEndDate = field === 'end_date' ? newDate : new Date(prev.end_date);
+
+      if (currentEndDate < currentStartDate) {
+        if (field === 'start_date') {
+          // If start date is set after end date, update end date to match start date
+          setEndDateTime(value); // Update end date input field
+          updatedPrev.end_date = isoStringForStorage; // Update end date in formData
+        } else { // field === 'end_date'
+          // If end date is set before start date, update start date to match end date
+          setStartDateTime(value); // Update start date input field
+          updatedPrev.start_date = isoStringForStorage; // Update start date in formData
+        }
+      }
+      return updatedPrev;
+    });
+
+    // Update the local state for the input field to reflect the exact value entered
+    if (field === 'start_date') {
+      setStartDateTime(value);
+    } else {
+      setEndDateTime(value);
+    }
   };
 
-  const handleInputDataEndChange = (field: keyof typeof formData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setEndDateTime(value);    
-  };  
+  const handleNewEventTypeSubmit = async (newEventTypeData: Omit<ListValue, 'id'>) => {
+    const result = await createEventType(newEventTypeData);
+    if (result.data) {
+      await fetchEventType(); // Refresh event types in the dropdown
+      setFormData(prev => ({ ...prev, event_type: result.data!.value })); // Select the new type
+      setShowNewEventTypeModal(false);
+    }
+  };
+
+  const handleNewStackSubmit = async (newStackData: Omit<ListValue, 'id'>) => {
+    const result = await createStack(newStackData);
+    if (result.data) {
+      await fetchStack(); // Refresh stacks in the dropdown
+      setFormData(prev => ({ ...prev, stack: result.data!.value })); // Select the new stack
+      setShowNewStackModal(false);
+    }
+  };
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
@@ -119,7 +191,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 flex flex-col justify-end h-full">
               <Label htmlFor="title">Título *</Label>
               <Input
                 id="title"
@@ -129,8 +201,16 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                 required
               />
             </div>
-            
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 flex flex-col justify-end h-full">
+              <Label htmlFor="title">Sub Título</Label>
+              <Input
+                id="subtitle"
+                value={formData.subtitle}
+                onChange={(e) => handleInputChange("subtitle", e.target.value)}
+                placeholder="Digite o sub-título da tarefa"
+              />
+            </div>            
+            <div className="md:col-span-2 flex flex-col justify-end h-full">
               <Label htmlFor="description">Descrição</Label>
               <Textarea
                 id="description"
@@ -141,7 +221,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />
             </div>
             
-            <div>
+            <div className="flex flex-col justify-end h-full">
               <Label htmlFor="responsible">Responsável *</Label>
               <Input
                 id="responsible"
@@ -152,26 +232,31 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />
             </div>
             
-            <div>
-              <Label htmlFor="stack">Comunidade</Label>
-              <Select 
-                onValueChange={(value) => handleInputChange("stack", value)} 
-                value={formData.stack}                
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a stack" />
-                </SelectTrigger>
-                <SelectContent>
-                  {stack.map((stack) => (
-                    <SelectItem key={stack.value} value={stack.value}>
-                      {stack.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex items-end gap-2 h-full">
+              <div className="flex-1 flex flex-col justify-end h-full">
+                <Label htmlFor="stack">Comunidade</Label>
+                <Select 
+                  onValueChange={(value) => handleInputChange("stack", value)} 
+                  value={formData.stack}                
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a stack" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stack.map((stack) => (
+                      <SelectItem key={stack.value} value={stack.value}>
+                        {stack.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewStackModal(true)}>
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
             
-            <div>
+            <div className="flex flex-col justify-end h-full">
               <Label htmlFor="start_date">Data e Hora de Início *</Label>
               <Input
                 type="datetime-local"
@@ -179,24 +264,24 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                 id="startDateTime"
                 name="startDateTime"
                 value={startDateTime}
-                onChange={(e) => handleInputDataStartChange("start_date", e.target.value)}
+                onChange={(e) => handleInputDataChange("start_date", e.target.value)}
                 required
               />              
             </div>
             
-            <div>
+            <div className="flex flex-col justify-end h-full">
               <Label htmlFor="end_date">Data e Hora Fim * </Label>
               <Input
                 type="datetime-local"
                 className="form-control"
                 id="end_date"
                 value={endDateTime}
-                onChange={(e) => handleInputDataEndChange("end_date", e.target.value)}
+                onChange={(e) => handleInputDataChange("end_date", e.target.value)}
                 required
               />
             </div>
             
-            <div>
+            <div className="flex flex-col justify-end h-full">
               <Label htmlFor="hours">Horas Estimadas</Label>
               <Input
                 id="hours"
@@ -208,7 +293,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />
             </div>
             
-            <div>
+            <div className="flex flex-col justify-end h-full">
               <Label htmlFor="people">Número de Pessoas</Label>
               <Input
                 id="people"
@@ -220,7 +305,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />
             </div>
             
-            <div>
+            <div className="flex flex-col justify-end h-full">
               <Label htmlFor="status">Status</Label>
               <Select 
                 onValueChange={(value) => handleInputChange("status", value)} 
@@ -239,23 +324,28 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               </Select>
             </div>
             
-            <div>
-              <Label htmlFor="event_type">Tipo de Evento</Label>
-              <Select 
-                onValueChange={(value) => handleInputChange("event_type", value)} 
-                value={formData.event_type}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo de evento" />
-                </SelectTrigger>
-                <SelectContent>
-                  {eventType.map((item2) => (
-                    <SelectItem key={item2.value} value={item2.value}>
-                      {item2.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex items-end gap-2 h-full">
+              <div className="flex-1 flex flex-col justify-end h-full">
+                <Label htmlFor="event_type">Tipo de Evento</Label>
+                <Select 
+                  onValueChange={(value) => handleInputChange("event_type", value)} 
+                  value={formData.event_type}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo de evento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {eventType.map((item2) => (
+                      <SelectItem key={item2.value} value={item2.value}>
+                        {item2.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewEventTypeModal(true)}>
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
           </div>
           
@@ -277,6 +367,20 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
           </div>
         </form>
       </DialogContent>
+
+      {showNewEventTypeModal && (
+        <EventTypeForm
+          onSubmit={handleNewEventTypeSubmit}
+          onCancel={() => setShowNewEventTypeModal(false)}
+        />
+      )}
+
+      {showNewStackModal && (
+        <StackForm
+          onSubmit={handleNewStackSubmit}
+          onCancel={() => setShowNewStackModal(false)}
+        />
+      )}
     </Dialog>
   );
 };

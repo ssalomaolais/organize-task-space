@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Task } from "@/types/task";
 import { TaskStatus, getStatusColor } from "@/lib/utils";
 import { UserRole } from "@/types/auth";
-import { Calendar, Clock, User, Edit, User as UserIcon } from "lucide-react";
+import { Calendar, Clock,  User as UserIcon, AlertCircle, Play, CheckCircle, XCircle } from "lucide-react";
 import { useState } from 'react';
 import { ListValue } from "@/types/task";
 
@@ -33,6 +33,7 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
   };
 
   const getEventTypeColor = (item: string) => {
+    // Now directly return the stored Tailwind class string
     return eventType.find((s) => s.value === item)?.color || "bg-gray-100 text-gray-800";
   };
 
@@ -67,30 +68,72 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
     return value.slice(0,size) + "...";
 
   }
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "Pendente":
+        return <AlertCircle className="w-3 h-4" />;
+      case "Em Progresso":
+        return <Play className="w-3 h-4" />;
+      case "Completo":
+        return <CheckCircle className="w-3 h-4" />;
+      case "Cancelado":
+        return <XCircle className="w-3 h-4" />;
+      default:
+        return <AlertCircle className="w-3 h-4" />;
+    }
+  };
+
   const daysRemaining = getDaysRemaining();
 
+  // Function to generate hover classes that prevent color change
+  const getNoHoverColorClasses = (baseClasses: string) => {
+    return baseClasses.split(' ').map(cls => `hover:${cls}`).join(' ');
+  };
+
+  const stackColorClass = getStackColor(task.stack);
+  const stackNoHoverClass = getNoHoverColorClasses(stackColorClass);
+
+  const peopleColorClass = "bg-gray-100 text-gray-800";
+  const peopleNoHoverClass = getNoHoverColorClasses(peopleColorClass);
+
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer">
-      <CardHeader className="flex flex-col space-y-1.5 p-2 pb-1 "
+    <Card>
+      <CardHeader className="flex flex-col space-y-1.5 p-1 pb-0 "
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex gap-1 flex-wrap">
-              <div id="dvTitle" className="flex items-center p-1">
-                <h4 className="font-medium text-sm leading-tight" onClick={() => onEdit(task)}>{getText(task.title,40)}</h4>
+              <div id="dvTitle" className="flex items-center p-1 hover:shadow-md transition-shadow cursor-pointer">
+                <h4 className="font-medium text-sm leading-tight" onClick={() => onEdit(task)}>{getText(task.title,38)}</h4> 
               </div>
             </div>
             <div className="flex gap-1 flex-wrap">
-              <Badge className={`text-xs ${getStackColor(task.stack)}`} style={{ borderRadius: "3px" }}>{task.stack}</Badge>
+              <Badge className={`text-xs ${stackColorClass} ${stackNoHoverClass} cursor-auto`} style={{ borderRadius: "3px" }}>{task.stack}</Badge>
               {task.people > 0 && (
-                <Badge className={`text-xs bg-gray-100 text-gray-800`} style={{ borderRadius: "3px" }}>{task.people}</Badge>
+                <Badge className={`text-xs ${peopleColorClass} ${peopleNoHoverClass} cursor-auto`} style={{ borderRadius: "3px" }}>{task.people}</Badge>
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger>
-                  <Badge className={`text-xs ${getEventTypeColor(task.event_type)}`} style={{ borderRadius: "3px" }}>
-                    <span>{getEventLabel(task.event_type)}</span>
+                  <Badge className={`text-xs ${getStatusColor(task.status)}`} style={{ borderRadius: "3px", padding:"5px" }}>
+                    {getStatusIcon(task.status)}
+                  </Badge>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {TaskStatus.filter((status) => status.value !== task.status).map((status) => (
+                    <DropdownMenuItem key={status.value} onClick={() => onStatusChange(task.id, status.value)}>
+                      <span className="text-xs h-6 px-2">{status.label}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Badge className={`text-xs ${getEventTypeColor(task.event_type)}`} style={{ borderRadius: "3px", padding:"5px" }}>
+                    <span className="text-xs  h-4">{getEventLabel(task.event_type)}</span>
                   </Badge>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
@@ -102,20 +145,6 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <Badge className={`text-xs ${getStatusColor(task.status)}`} style={{ borderRadius: "3px" }}>
-                    <span className="text-xs">{task.status}</span>
-                  </Badge>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  {TaskStatus.filter((status) => status.value !== task.status).map((status) => (
-                    <DropdownMenuItem key={status.value} onClick={() => onStatusChange(task.id, status.value)}>
-                      <span className="text-xs h-6 px-2">{status.label}</span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -123,7 +152,7 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
 
       {showContent && (
         <CardContent className="flex flex-col space-y-1.5 p-3 pt-0">
-          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{getText(task.description,50)}</p>
+          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{task.description}</p>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs text-gray-500">

@@ -1,25 +1,26 @@
-// src/components/dashboard/Dashboard.tsx
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { User } from "@/types/auth";
 import { Task } from "@/types/task";
 import TaskForm from "./TaskForm";
 import UsersPage from "@/components/users/UsersPage";
-import { Search, Plus, User as UserIcon, Users } from "lucide-react";
+import { Search, Plus, User as UserIcon, Settings } from "lucide-react";
 import { useTasks } from "@/hooks/useTasks";
 import { useStack } from "@/hooks/useStack";
 import { useEventType } from "@/hooks/useEventType";
 import { CalendarView } from "@/components/dashboard/CalendarView";
-import { YearView } from "@/components/dashboard/YearView";
-import { SemesterView } from "@/components/dashboard/SemesterView";
+import { HorizontalView } from "@/components/dashboard/HorizontalView";
+import { VerticalView } from "@/components/dashboard/VerticalView";
 import { UpcomingView } from "@/components/dashboard/UpcomingView";
 import { EventsGridView } from "@/components/dashboard/EventsGridView";
 import { TaskStatus, NextEvents } from "@/lib/utils";
+import EventTypesPage from "@/components/event_types/EventTypesPage";
+import StacksPage from "@/components/stacks/StacksPage";
 
 interface DashboardProps {
   user: User;
@@ -27,6 +28,7 @@ interface DashboardProps {
 }
 
 type ViewMode = "semester" | "year" | "calendar" | "upcoming" | "events-grid";
+type ManagementPage = "none" | "users" | "event-types" | "stacks";
 type PaletteType = "minsait" | "indra";
 
 const Dashboard = ({ user, onLogout }: DashboardProps) => {
@@ -39,13 +41,13 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [stackFilter, setStackFilter] = useState<string | "all">("all");
   const [statusFilter, setStatusFilter] = useState<string | "all">("all");
   const [eventTypeFilter, setEventTypeFilter] = useState<string | "all">("all");
-  const [viewMode, setViewMode] = useState<ViewMode>("events-grid");
+  const [viewMode, setViewMode] = useState<ViewMode>("semester");
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [showCardContent, setShowCardContent] = useState<boolean>(true);
   const [palette, setPalette] = useState<PaletteType>("minsait");
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [showUsersPage, setShowUsersPage] = useState(false);
+  const [currentManagementPage, setCurrentManagementPage] = useState<ManagementPage>("none");
 
   useEffect(() => {
     let filtered = tasks.sort((a, b) => {
@@ -60,7 +62,8 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
       filtered = filtered.filter(
         (task) =>
           task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (task.subtitle != undefined && task.subtitle.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          task.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
           task.responsible.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -76,10 +79,22 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     setFilteredTasks(filtered);
   }, [tasks, searchTerm, stackFilter, statusFilter, eventTypeFilter]);
 
-  if (showUsersPage) {
-    return <UsersPage stack={stack} onBack={() => setShowUsersPage(false)} />;
+  if (currentManagementPage === "users") {
+    return <UsersPage stack={stack} onBack={() => setCurrentManagementPage("none")} />;
   }
 
+  if (currentManagementPage === "event-types") {
+    return <EventTypesPage onBack={() => setCurrentManagementPage("none")} />;
+  }
+
+  if (currentManagementPage === "stacks") {
+    return <StacksPage onBack={() => setCurrentManagementPage("none")} />;
+  }
+
+  const setViewModeCombo = (value:ViewMode) =>{
+      setViewMode(value);
+      setPalette("minsait");
+  }
   const handleCreateTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
     await createTask(taskData);
     setShowTaskForm(false);
@@ -108,48 +123,67 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     tasks.forEach((task) => {
       years.add(new Date(task.start_date).getFullYear());
     });
-    const currentYear = new Date().getFullYear();
-    if (!years.has(currentYear)) {
-      years.add(currentYear);
-    }
-    return Array.from(years).sort((a, b) => a - b);
+    return Array.from(years).sort();
   };
 
-  const commonViewProps = {
-    filteredTasks,
-    selectedYear,
-    stack,
-    eventType,
-    role: user.role,
-    showCardContent,
-    setEditingTask,
-    handleDeleteTask,
-    handleStatusChange,
-    handleTypeChange,
+  const renderSemesterView = () => {
+    return (
+      <VerticalView
+        filteredTasks={filteredTasks}
+        selectedYear={selectedYear}
+        stack={stack}
+        eventType={eventType}
+        role={user.role}
+        showCardContent={showCardContent}
+        setEditingTask={setEditingTask}
+        handleDeleteTask={handleDeleteTask}
+        handleStatusChange={handleStatusChange}
+        handleTypeChange={handleTypeChange}
+      />
+    );
   };
 
-  const renderSemesterView = () => <SemesterView {...commonViewProps} />;
-  const renderYearView = () => <YearView {...commonViewProps} />;
-  const renderUpcomingView = () => <UpcomingView {...commonViewProps} />;
-  
-  const renderCalendarView = () => (
-    <CalendarView
-      tasks={filteredTasks}
-      user={user}
-      stack={stack}
-      eventType={eventType}
-      onUpdateTask={handleUpdateTask}
-      onDeleteTask={handleDeleteTask}
-    />
-  );
-  
-  const renderEventsGridView = () => (
-    <EventsGridView
-      filteredTasks={filteredTasks}
-      palette={palette}
-      setEditingTask={setEditingTask}
-    />
-  );
+  const renderYearView = () => {
+    return (
+      <HorizontalView
+        filteredTasks={filteredTasks}
+        selectedYear={selectedYear}
+        stack={stack}
+        eventType={eventType}
+        role={user.role}
+        showCardContent={showCardContent}
+        setEditingTask={setEditingTask}
+        handleDeleteTask={handleDeleteTask}
+        handleStatusChange={handleStatusChange}
+        handleTypeChange={handleTypeChange}
+      />
+    );
+  };
+
+  const renderUpcomingView = () => {
+    return (
+      <UpcomingView
+        filteredTasks={filteredTasks}
+        selectedYear={selectedYear}
+        stack={stack}
+        eventType={eventType}
+        role={user.role}
+        showCardContent={showCardContent}
+        setEditingTask={setEditingTask}
+        handleDeleteTask={handleDeleteTask}
+        handleStatusChange={handleStatusChange}
+        handleTypeChange={handleTypeChange}
+      />
+    );
+  };
+
+  const renderCalendarView = () => {
+    return <CalendarView tasks={tasks} user={user} stack={stack} eventType={eventType} onUpdateTask={handleUpdateTask}  onDeleteTask={handleDeleteTask} />;
+  };
+
+  const renderEventsGridView = () => {
+    return <EventsGridView filteredTasks={filteredTasks} palette={palette} setEditingTask={setEditingTask}/>;
+  }
 
   if (loading) {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><p className="text-gray-600">Carregando tarefas...</p></div>;
@@ -175,10 +209,26 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
               <Badge variant={user.role === "admin" ? "default" : "secondary"}>{user.role === "admin" ? "Admin" : user.stack}</Badge>
             </div>
             {user.role === "admin" && (
-              <Button variant="outline" onClick={() => setShowUsersPage(true)}>
-                <Users className="w-4 h-4 mr-2" />
-                Usuários
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Gerenciar
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setCurrentManagementPage("users")}>
+                    Usuários
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setCurrentManagementPage("event-types")}>
+                    Tipos de Eventos
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrentManagementPage("stacks")}>
+                    Comunidades
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             <Button variant="outline" onClick={onLogout}>
               Sair
@@ -231,7 +281,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                 {getAvailableYears().map((year) => (<SelectItem key={year} value={year.toString()}>{year}</SelectItem>))}
               </SelectContent>
             </Select>
-            <Select onValueChange={(value) => setViewMode(value as ViewMode)} defaultValue="events-grid">
+            <Select onValueChange={(value) => setViewModeCombo(value as ViewMode)} defaultValue="semester">
               <SelectTrigger className="w-full sm:w-40">
                 <SelectValue placeholder="Visualização" />
               </SelectTrigger>
@@ -239,13 +289,14 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                 {NextEvents.map((item) => (<SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>))}
               </SelectContent>
             </Select>
+            {(viewMode==="events-grid") &&(
             <Select onValueChange={(value) => setPalette(value as PaletteType)} defaultValue="minsait">
               <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Paleta" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="minsait">Minsait</SelectItem>
                 <SelectItem value="indra">Indra</SelectItem>
               </SelectContent>
-            </Select>
+            </Select>)}
           </div>
           <Button onClick={() => setShowTaskForm(true)} className="flex items-center gap-2"><Plus className="w-4 h-4" />Nova Tarefa</Button>
         </div>
@@ -276,4 +327,4 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   );
 };
 
-export default Dashboard;// src/components/dashboard/Dashboard.tsx
+export default Dashboard;
