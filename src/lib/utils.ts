@@ -48,8 +48,8 @@ export const TaskStatus = [
 ];
 
 export const NextEvents = [
-  { value: "semester", label: "Semestral" },
-  { value: "year", label: "Anual" },
+  { value: "semester", label: "Vertical" },
+  { value: "year", label: "Horizontal" },
   { value: "calendar", label: "Calendário" },
   { value: "upcoming", label: "Próximos Eventos" },
   { value: "events-grid", label: "Grade de Eventos" }, 
