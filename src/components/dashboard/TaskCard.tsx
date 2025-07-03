@@ -87,7 +87,10 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
   const daysRemaining = getDaysRemaining();
 
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+    <Card 
+      className="hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => onEdit(task)} // Move onClick here to make the whole card clickable
+    >
       <CardHeader className="flex flex-col space-y-1.5 p-2 pb-1 "
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
@@ -96,7 +99,7 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
           <div className="flex-1">
             <div className="flex gap-1 flex-wrap">
               <div id="dvTitle" className="flex items-center p-1">
-                <h4 className="font-medium text-sm leading-tight" onClick={() => onEdit(task)}>{getText(task.title,40)}</h4>
+                <h4 className="font-medium text-sm leading-tight">{getText(task.title,40)}</h4> {/* Remove onClick from h4 */}
               </div>
             </div>
             <div className="flex gap-1 flex-wrap">
