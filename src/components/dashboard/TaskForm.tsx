@@ -40,6 +40,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
 
   const [formData, setFormData] = useState({
     title: "",
+    subtitle: "",
     description: "",
     responsible: "",
     start_date: startDateTime,
@@ -66,6 +67,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
 
       setFormData({
         title: task.title,
+        subtitle: task.subtitle,
         description: task.description,
         responsible: task.responsible,
         start_date: task.start_date, // Keep the full ISO string for formData
@@ -199,7 +201,16 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                 required
               />
             </div>
-            
+            <div className="md:col-span-2 flex flex-col justify-end h-full">
+              <Label htmlFor="title">Sub Título</Label>
+              <Input
+                id="subtitle"
+                value={formData.subtitle}
+                onChange={(e) => handleInputChange("subtitle", e.target.value)}
+                placeholder="Digite o sub-título da tarefa"
+                required
+              />
+            </div>            
             <div className="md:col-span-2 flex flex-col justify-end h-full">
               <Label htmlFor="description">Descrição</Label>
               <Textarea

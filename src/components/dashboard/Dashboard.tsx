@@ -62,6 +62,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
       filtered = filtered.filter(
         (task) =>
           task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (task.subtitle != undefined && task.subtitle.toLowerCase().includes(searchTerm.toLowerCase())) ||
           task.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
           task.responsible.toLowerCase().includes(searchTerm.toLowerCase())
       );

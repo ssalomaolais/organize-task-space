@@ -96,6 +96,7 @@ export const useTasks = () => {
       const updateData: any = {};
 
       if (taskData.title) updateData.title = taskData.title;
+      if (taskData.subtitle) updateData.subtitle = taskData.subtitle;      
       if (taskData.description) updateData.description = taskData.description;
       if (taskData.responsible) updateData.responsible = taskData.responsible;
       if (taskData.start_date) updateData.start_date = taskData.start_date;

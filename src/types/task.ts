@@ -1,7 +1,8 @@
 export interface Task {
   id: string;
   title: string;
-  description: string;
+  subtitle?: string;
+  description?: string;
   responsible: string;
   start_date: string;
   end_date: string;
