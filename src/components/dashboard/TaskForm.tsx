@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +10,13 @@ import { TaskStatus } from '@/lib/utils';
 import { User } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
 import { ListValue } from "@/types/task";
+import { Plus } from "lucide-react"; // Import Plus icon
+
+// Import the forms for managing event types and stacks
+import EventTypeForm from "@/components/event_types/EventTypeForm";
+import StackForm from "@/components/stacks/StackForm";
+import { useEventType } from "@/hooks/useEventType"; // Need to import hooks to call fetch
+import { useStack } from "@/hooks/useStack"; // Need to import hooks to call fetch
 
 interface TaskFormProps {
   task?: Task | null;
@@ -23,6 +29,9 @@ interface TaskFormProps {
 }
 
 const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }: TaskFormProps) => {
+  const { createEventType, fetchEventType } = useEventType(); // Get create and fetch functions
+  const { createStack, fetchStack } = useStack(); // Get create and fetch functions
+
   const [startDateTime, setStartDateTime] = useState(
     new Date().toISOString().slice(0, 16)
   );
@@ -42,6 +51,9 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     stack: (user.role === "user" ? user.stack : "Java"),
     event_type: "Outros",
   });
+
+  const [showNewEventTypeModal, setShowNewEventTypeModal] = useState(false);
+  const [showNewStackModal, setShowNewStackModal] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -108,6 +120,24 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     setEndDateTime(value);    
   };  
 
+  const handleNewEventTypeSubmit = async (newEventTypeData: Omit<ListValue, 'id'>) => {
+    const result = await createEventType(newEventTypeData);
+    if (result.data) {
+      await fetchEventType(); // Refresh event types in the dropdown
+      setFormData(prev => ({ ...prev, event_type: result.data!.value })); // Select the new type
+      setShowNewEventTypeModal(false);
+    }
+  };
+
+  const handleNewStackSubmit = async (newStackData: Omit<ListValue, 'id'>) => {
+    const result = await createStack(newStackData);
+    if (result.data) {
+      await fetchStack(); // Refresh stacks in the dropdown
+      setFormData(prev => ({ ...prev, stack: result.data!.value })); // Select the new stack
+      setShowNewStackModal(false);
+    }
+  };
+
   return (
     <Dialog open={true} onOpenChange={onCancel}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -152,23 +182,28 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />
             </div>
             
-            <div>
-              <Label htmlFor="stack">Comunidade</Label>
-              <Select 
-                onValueChange={(value) => handleInputChange("stack", value)} 
-                value={formData.stack}                
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a stack" />
-                </SelectTrigger>
-                <SelectContent>
-                  {stack.map((stack) => (
-                    <SelectItem key={stack.value} value={stack.value}>
-                      {stack.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex items-end gap-2"> {/* Flex container for Label, Select and Button */}
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="stack">Comunidade</Label>
+                <Select 
+                  onValueChange={(value) => handleInputChange("stack", value)} 
+                  value={formData.stack}                
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a stack" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stack.map((stack) => (
+                      <SelectItem key={stack.value} value={stack.value}>
+                        {stack.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewStackModal(true)} className="mb-1">
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
             
             <div>
@@ -239,23 +274,28 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               </Select>
             </div>
             
-            <div>
-              <Label htmlFor="event_type">Tipo de Evento</Label>
-              <Select 
-                onValueChange={(value) => handleInputChange("event_type", value)} 
-                value={formData.event_type}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo de evento" />
-                </SelectTrigger>
-                <SelectContent>
-                  {eventType.map((item2) => (
-                    <SelectItem key={item2.value} value={item2.value}>
-                      {item2.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex items-end gap-2"> {/* Flex container for Label, Select and Button */}
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="event_type">Tipo de Evento</Label>
+                <Select 
+                  onValueChange={(value) => handleInputChange("event_type", value)} 
+                  value={formData.event_type}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo de evento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {eventType.map((item2) => (
+                      <SelectItem key={item2.value} value={item2.value}>
+                        {item2.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewEventTypeModal(true)} className="mb-1">
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
           </div>
           
@@ -277,6 +317,20 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
           </div>
         </form>
       </DialogContent>
+
+      {showNewEventTypeModal && (
+        <EventTypeForm
+          onSubmit={handleNewEventTypeSubmit}
+          onCancel={() => setShowNewEventTypeModal(false)}
+        />
+      )}
+
+      {showNewStackModal && (
+        <StackForm
+          onSubmit={handleNewStackSubmit}
+          onCancel={() => setShowNewStackModal(false)}
+        />
+      )}
     </Dialog>
   );
 };
