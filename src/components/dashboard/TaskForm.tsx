@@ -10,13 +10,12 @@ import { TaskStatus } from '@/lib/utils';
 import { User } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
 import { ListValue } from "@/types/task";
-import { Plus } from "lucide-react"; // Import Plus icon
+import { Plus } from "lucide-react";
 
-// Import the forms for managing event types and stacks
 import EventTypeForm from "@/components/event_types/EventTypeForm";
 import StackForm from "@/components/stacks/StackForm";
-import { useEventType } from "@/hooks/useEventType"; // Need to import hooks to call fetch
-import { useStack } from "@/hooks/useStack"; // Need to import hooks to call fetch
+import { useEventType } from "@/hooks/useEventType";
+import { useStack } from "@/hooks/useStack";
 
 interface TaskFormProps {
   task?: Task | null;
@@ -29,8 +28,8 @@ interface TaskFormProps {
 }
 
 const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }: TaskFormProps) => {
-  const { createEventType, fetchEventType } = useEventType(); // Get create and fetch functions
-  const { createStack, fetchStack } = useStack(); // Get create and fetch functions
+  const { createEventType, fetchEventType } = useEventType();
+  const { createStack, fetchStack } = useStack();
 
   const [startDateTime, setStartDateTime] = useState(
     new Date().toISOString().slice(0, 16)
@@ -57,10 +56,10 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
 
   useEffect(() => {
     if (task) {
-      const formattedStartDate = task.start_date ? new Date(task.start_date).toISOString().split('T')[0] : ''
-      const formattedEndDate = task.end_date ? new Date(task.end_date).toISOString().split('T')[0] : ''
-      setStartDateTime(new Date(task.start_date).toISOString().slice(0, 16));
-      setEndDateTime(new Date(task.end_date).toISOString().slice(0, 16));
+      const formattedStartDate = task.start_date ? new Date(task.start_date).toISOString().slice(0, 16) : ''
+      const formattedEndDate = task.end_date ? new Date(task.end_date).toISOString().slice(0, 16) : ''
+      setStartDateTime(formattedStartDate);
+      setEndDateTime(formattedEndDate);
 
       setFormData({
         title: task.title,
@@ -149,7 +148,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 flex flex-col justify-end h-full">
               <Label htmlFor="title">Título *</Label>
               <Input
                 id="title"
@@ -160,7 +159,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />
             </div>
             
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 flex flex-col justify-end h-full">
               <Label htmlFor="description">Descrição</Label>
               <Textarea
                 id="description"
@@ -171,7 +170,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />
             </div>
             
-            <div>
+            <div className="flex flex-col justify-end h-full">
               <Label htmlFor="responsible">Responsável *</Label>
               <Input
                 id="responsible"
@@ -182,8 +181,8 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />
             </div>
             
-            <div className="flex items-end gap-2"> {/* Flex container for Label, Select and Button */}
-              <div className="flex-1 space-y-2">
+            <div className="flex items-end gap-2 h-full">
+              <div className="flex-1 flex flex-col justify-end h-full">
                 <Label htmlFor="stack">Comunidade</Label>
                 <Select 
                   onValueChange={(value) => handleInputChange("stack", value)} 
@@ -206,7 +205,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               </Button>
             </div>
             
-            <div>
+            <div className="flex flex-col justify-end h-full">
               <Label htmlFor="start_date">Data e Hora de Início *</Label>
               <Input
                 type="datetime-local"
@@ -219,7 +218,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />              
             </div>
             
-            <div>
+            <div className="flex flex-col justify-end h-full">
               <Label htmlFor="end_date">Data e Hora Fim * </Label>
               <Input
                 type="datetime-local"
@@ -231,7 +230,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />
             </div>
             
-            <div>
+            <div className="flex flex-col justify-end h-full">
               <Label htmlFor="hours">Horas Estimadas</Label>
               <Input
                 id="hours"
@@ -243,7 +242,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />
             </div>
             
-            <div>
+            <div className="flex flex-col justify-end h-full">
               <Label htmlFor="people">Número de Pessoas</Label>
               <Input
                 id="people"
@@ -255,7 +254,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />
             </div>
             
-            <div>
+            <div className="flex flex-col justify-end h-full">
               <Label htmlFor="status">Status</Label>
               <Select 
                 onValueChange={(value) => handleInputChange("status", value)} 
@@ -274,8 +273,8 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               </Select>
             </div>
             
-            <div className="flex items-end gap-2"> {/* Flex container for Label, Select and Button */}
-              <div className="flex-1 space-y-2">
+            <div className="flex items-end gap-2 h-full">
+              <div className="flex-1 flex flex-col justify-end h-full">
                 <Label htmlFor="event_type">Tipo de Evento</Label>
                 <Select 
                   onValueChange={(value) => handleInputChange("event_type", value)} 
