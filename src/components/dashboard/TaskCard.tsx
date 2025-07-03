@@ -89,7 +89,7 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
   return (
     <Card 
       className="hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => onEdit(task)} // Move onClick here to make the whole card clickable
+      onClick={() => onEdit(task)} 
     >
       <CardHeader className="flex flex-col space-y-1.5 p-2 pb-1 "
         onMouseEnter={() => setIsHovering(true)}
@@ -99,13 +99,13 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
           <div className="flex-1">
             <div className="flex gap-1 flex-wrap">
               <div id="dvTitle" className="flex items-center p-1">
-                <h4 className="font-medium text-sm leading-tight">{getText(task.title,40)}</h4> {/* Remove onClick from h4 */}
+                <h4 className="font-medium text-sm leading-tight">{getText(task.title,40)}</h4> 
               </div>
             </div>
             <div className="flex gap-1 flex-wrap">
-              <Badge className={`text-xs ${getStackColor(task.stack)}`} style={{ borderRadius: "3px" }}>{task.stack}</Badge>
+              <Badge className={`text-xs ${getStackColor(task.stack)} cursor-auto`} style={{ borderRadius: "3px" }}>{task.stack}</Badge>
               {task.people > 0 && (
-                <Badge className={`text-xs bg-gray-100 text-gray-800`} style={{ borderRadius: "3px" }}>{task.people}</Badge>
+                <Badge className={`text-xs bg-gray-100 text-gray-800 cursor-auto`} style={{ borderRadius: "3px" }}>{task.people}</Badge>
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger>
