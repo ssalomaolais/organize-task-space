@@ -56,8 +56,6 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
 
   useEffect(() => {
     if (task) {
-      // When loading an existing task, ensure the datetime-local inputs display the exact time
-      // by slicing the ISO string to the format YYYY-MM-DDTHH:mm
       const formattedStartDate = task.start_date ? new Date(task.start_date).toISOString().slice(0, 16) : ''
       const formattedEndDate = task.end_date ? new Date(task.end_date).toISOString().slice(0, 16) : ''
       setStartDateTime(formattedStartDate);
@@ -67,8 +65,8 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
         title: task.title,
         description: task.description,
         responsible: task.responsible,
-        start_date: formattedStartDate, // Store the display format for initial state
-        end_date: formattedEndDate,     // Store the display format for initial state
+        start_date: formattedStartDate,
+        end_date: formattedEndDate,
         hours: task.hours,
         people: task.people,
         status: task.status,
@@ -112,17 +110,10 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
   };
 
   const handleInputDataChange = (field: 'start_date' | 'end_date', value: string) => {
-    // The value from datetime-local input is already in YYYY-MM-DDTHH:mm format
-    // Parse the components from the YYYY-MM-DDTHH:mm string
-    const [datePart, timePart] = value.split('T');
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hour, minute] = timePart.split(':').map(Number);
+    const formattedValue = value.replace(' ', 'T');
+    const date = new Date(formattedValue);
 
-    // Create a UTC date object from these components
-    // Month is 0-indexed in Date constructor
-    const utcDate = new Date(Date.UTC(year, month - 1, day, hour, minute));
-
-    if (isNaN(utcDate.getTime())) {
+    if (isNaN(date.getTime())) {
       toast({
         title: "Erro de Data",
         description: "Formato de data/hora inválido. Por favor, use o formato AAAA-MM-DDTHH:mm.",
@@ -131,13 +122,31 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
       return;
     }
     
-    // Store as ISO string (which will now be the "local" time treated as UTC)
-    setFormData(prev => ({ ...prev, [field]: utcDate.toISOString() }));
-    // Keep the original value for the input field to ensure it displays correctly
+    // Update the specific date state (startDateTime or endDateTime)
     if (field === 'start_date') {
-      setStartDateTime(value);
-    } else {
-      setEndDateTime(value);
+      setStartDateTime(formattedValue);
+      setFormData(prev => {
+        const newStartDate = date.toISOString();
+        const currentEndDate = new Date(prev.end_date);
+        // If new start date is after current end date, set end date to new start date
+        if (date > currentEndDate) {
+          setEndDateTime(formattedValue); // Update input field
+          return { ...prev, start_date: newStartDate, end_date: newStartDate };
+        }
+        return { ...prev, start_date: newStartDate };
+      });
+    } else { // field === 'end_date'
+      setEndDateTime(formattedValue);
+      setFormData(prev => {
+        const newEndDate = date.toISOString();
+        const currentStartDate = new Date(prev.start_date);
+        // If new end date is before current start date, set start date to new end date
+        if (date < currentStartDate) {
+          setStartDateTime(formattedValue); // Update input field
+          return { ...prev, start_date: newEndDate, end_date: newEndDate };
+        }
+        return { ...prev, end_date: newEndDate };
+      });
     }
   };
 
