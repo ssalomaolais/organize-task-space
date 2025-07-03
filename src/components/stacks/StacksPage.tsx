@@ -10,6 +10,7 @@ import { useStack } from "@/hooks/useStack";
 import { ListValue } from "@/types/task";
 import StackForm from "./StackForm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { getPreviewColorClass } from "@/lib/utils"; // Import getPreviewColorClass
 
 interface StacksPageProps {
   onBack: () => void;
@@ -147,7 +148,7 @@ const StacksPage = ({ onBack }: StacksPageProps) => {
                         <TableCell>{item.value}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded-full" style={{ backgroundColor: item.color }}></div>
+                            <div className={`w-4 h-4 rounded-full ${getPreviewColorClass(item.color)}`}></div>
                             <span>{item.color}</span>
                           </div>
                         </TableCell>

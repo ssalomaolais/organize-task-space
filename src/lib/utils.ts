@@ -67,3 +67,8 @@ export const TailwindColors = [
   { value: "bg-orange-100 text-orange-800", label: "Laranja", preview: "bg-orange-500" },
   { value: "bg-teal-100 text-teal-800", label: "Verde-azulado", preview: "bg-teal-500" },
 ];
+
+export const getPreviewColorClass = (tailwindClass: string) => {
+  const found = TailwindColors.find(tc => tc.value === tailwindClass);
+  return found ? found.preview : "bg-gray-500"; // Fallback
+};
