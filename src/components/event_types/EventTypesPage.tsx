@@ -52,6 +52,7 @@ const EventTypesPage = ({ onBack }: EventTypesPageProps) => {
     const result = await updateEventType(editingItem.value, itemData);
     if (result.data) {
       setEditingItem(null);
+      setShowForm(false); // Add this line to close the form
       fetchEventType(currentPage, pageSize, searchTerm);
     }
   };

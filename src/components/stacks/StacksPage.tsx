@@ -52,6 +52,7 @@ const StacksPage = ({ onBack }: StacksPageProps) => {
     const result = await updateStack(editingItem.value, itemData);
     if (result.data) {
       setEditingItem(null);
+      setShowForm(false); // Add this line to close the form
       fetchStack(currentPage, pageSize, searchTerm);
     }
   };
