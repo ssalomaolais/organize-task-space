@@ -102,7 +102,7 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
       className="hover:shadow-md transition-shadow cursor-pointer"
       onClick={() => onEdit(task)} 
     >
-      <CardHeader className="flex flex-col space-y-1.5 p-2 pb-1 "
+      <CardHeader className="flex flex-col space-y-1.5 p-1 pb-0 "
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
