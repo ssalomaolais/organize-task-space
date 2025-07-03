@@ -86,6 +86,17 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
 
   const daysRemaining = getDaysRemaining();
 
+  // Function to generate hover classes that prevent color change
+  const getNoHoverColorClasses = (baseClasses: string) => {
+    return baseClasses.split(' ').map(cls => `hover:${cls}`).join(' ');
+  };
+
+  const stackColorClass = getStackColor(task.stack);
+  const stackNoHoverClass = getNoHoverColorClasses(stackColorClass);
+
+  const peopleColorClass = "bg-gray-100 text-gray-800";
+  const peopleNoHoverClass = getNoHoverColorClasses(peopleColorClass);
+
   return (
     <Card 
       className="hover:shadow-md transition-shadow cursor-pointer"
@@ -103,9 +114,9 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
               </div>
             </div>
             <div className="flex gap-1 flex-wrap">
-              <Badge className={`text-xs ${getStackColor(task.stack)} cursor-auto`} style={{ borderRadius: "3px" }}>{task.stack}</Badge>
+              <Badge className={`text-xs ${stackColorClass} ${stackNoHoverClass} cursor-auto`} style={{ borderRadius: "3px" }}>{task.stack}</Badge>
               {task.people > 0 && (
-                <Badge className={`text-xs bg-gray-100 text-gray-800 cursor-auto`} style={{ borderRadius: "3px" }}>{task.people}</Badge>
+                <Badge className={`text-xs ${peopleColorClass} ${peopleNoHoverClass} cursor-auto`} style={{ borderRadius: "3px" }}>{task.people}</Badge>
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger>
