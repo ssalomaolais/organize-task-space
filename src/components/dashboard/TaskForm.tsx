@@ -201,7 +201,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                   </SelectContent>
                 </Select>
               </div>
-              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewStackModal(true)} className="mb-1">
+              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewStackModal(true)}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -293,7 +293,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                   </SelectContent>
                 </Select>
               </div>
-              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewEventTypeModal(true)} className="mb-1">
+              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewEventTypeModal(true)}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
