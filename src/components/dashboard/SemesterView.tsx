@@ -70,13 +70,13 @@ export const SemesterView = ({ role, showCardContent, filteredTasks, selectedYea
             {!hideSemester[semester] && (
               <div className="p-0">
                 {monthsWithTasks.length > 0 ? (
-                  <ScrollArea className="w-full whitespace-nowrap">
-                    <div className="flex space-x-1 pb-4">
+                  <ScrollArea className="w-full">
+                    <div className="flex space-x-4 pb-4">
                       {monthsWithTasks.map((month) => {
                         const monthTasks = getTasksByMonth(selectedYear, month);
                         const key = `${semester}-${month}`;
                         return (
-                          <div key={month} className="flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 p-1">
+                          <div key={month} className="flex-shrink-0 min-w-[200px] bg-white rounded-lg border border-gray-200 p-1">
                             <div className="flex items-center justify-between mb-4">
                               <h4 className="font-medium text-sm text-gray-700">{getMonthName(month)}</h4>
                               <div className="flex items-center space-x-2">

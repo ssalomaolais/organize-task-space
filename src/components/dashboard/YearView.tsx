@@ -64,13 +64,13 @@ export const YearView = ({ role, showCardContent, filteredTasks, selectedYear, s
       {!hideYear[selectedYear] && (
         <div className="p-2">
           {monthsWithTasks.length > 0 ? (
-            <ScrollArea className="w-full whitespace-nowrap">
-              <div className="flex space-x-1 pb-4">
+            <ScrollArea className="w-full">
+              <div className="flex flex-wrap gap-4 pb-4"> {/* Reverted to flex-wrap gap-4 */}
                 {monthsWithTasks.map((month) => {
                   const monthTasks = getTasksByMonth(selectedYear, month);
                   const key = `${selectedYear}-${month}`;
                   return (
-                    <div key={month} className="flex-shrink-0 w-80 bg-white rounded-lg border border-gray-200 p-1">
+                    <div key={month} className="flex-auto min-w-[280px] max-w-full bg-white rounded-lg border border-gray-200 p-1"> {/* Reverted to flex-auto min-w-[280px] max-w-full */}
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="font-medium text-sm text-gray-700">{getMonthName(month)}</h4>
                           <div className="flex items-center space-x-2">
