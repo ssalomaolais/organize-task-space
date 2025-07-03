@@ -98,10 +98,7 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
   const peopleNoHoverClass = getNoHoverColorClasses(peopleColorClass);
 
   return (
-    <Card 
-      className="hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => onEdit(task)} 
-    >
+    <Card>
       <CardHeader className="flex flex-col space-y-1.5 p-1 pb-0 "
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
@@ -109,8 +106,8 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex gap-1 flex-wrap">
-              <div id="dvTitle" className="flex items-center p-1">
-                <h4 className="font-medium text-sm leading-tight">{getText(task.title,40)}</h4> 
+              <div id="dvTitle" className="flex items-center p-1 hover:shadow-md transition-shadow cursor-pointer">
+                <h4 className="font-medium text-sm leading-tight" onClick={() => onEdit(task)}>{getText(task.title,38)}</h4> 
               </div>
             </div>
             <div className="flex gap-1 flex-wrap">
@@ -155,7 +152,7 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
 
       {showContent && (
         <CardContent className="flex flex-col space-y-1.5 p-3 pt-0">
-          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{getText(task.description,50)}</p>
+          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{task.description}</p>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs text-gray-500">

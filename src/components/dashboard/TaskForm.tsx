@@ -208,7 +208,6 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                 value={formData.subtitle}
                 onChange={(e) => handleInputChange("subtitle", e.target.value)}
                 placeholder="Digite o sub-título da tarefa"
-                required
               />
             </div>            
             <div className="md:col-span-2 flex flex-col justify-end h-full">

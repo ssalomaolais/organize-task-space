@@ -65,16 +65,16 @@ export const UpcomingView = ({ role, showCardContent, filteredTasks, selectedYea
         </div>
       </div>
       {!hideYear[selectedYear] && (
-        <div className="p-2">
+        <div className="p-0">
             {monthsWithTasks.length > 0 ? (
                 <ScrollArea className="w-full">
-                <div className="flex space-x-4 pb-4">
+                <div className="flex space-x-1 pb-4">
                 {monthsWithTasks.map((month) => {
                     const monthTasks = getUpcomingTasksByMonth(selectedYear, month);
                     const key = `${selectedYear}-${month}`;
 
                     return (
-                    <div key={month} className="flex-shrink-0 min-w-[200px] bg-white rounded-lg border border-gray-200 p-1">
+                    <div key={month} className="flex-shrink-0 w-[312px] bg-white rounded-lg border border-gray-200 p-1">
                         <div className="flex items-center justify-between mb-4">
                         <h4 className="font-medium text-sm text-gray-700">{getMonthName(month)}</h4>
                         <div className="flex items-center space-x-2">

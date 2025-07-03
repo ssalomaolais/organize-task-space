@@ -25,7 +25,7 @@ export const getMonthName = (month: number) => {
 
 export const getMonthFromDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.getMonth() + 1;
+  return (date.getMonth() + 1);
 }
 
 export const getSemesterFromDate = (dateString: string) => {
