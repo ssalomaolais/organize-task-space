@@ -182,7 +182,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />
             </div>
             
-            <div className="flex items-start gap-2"> {/* Changed items-end to items-start */}
+            <div className="flex items-end gap-2"> {/* Flex container for Label, Select and Button */}
               <div className="flex-1 space-y-2">
                 <Label htmlFor="stack">Comunidade</Label>
                 <Select 
@@ -201,7 +201,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                   </SelectContent>
                 </Select>
               </div>
-              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewStackModal(true)} className=""> {/* Removed mb-1 */}
+              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewStackModal(true)} className="mb-1">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -274,7 +274,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               </Select>
             </div>
             
-            <div className="flex items-start gap-2"> {/* Changed items-end to items-start */}
+            <div className="flex items-end gap-2"> {/* Flex container for Label, Select and Button */}
               <div className="flex-1 space-y-2">
                 <Label htmlFor="event_type">Tipo de Evento</Label>
                 <Select 
@@ -293,7 +293,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                   </SelectContent>
                 </Select>
               </div>
-              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewEventTypeModal(true)} className=""> {/* Removed mb-1 */}
+              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewEventTypeModal(true)} className="mb-1">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
