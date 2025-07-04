@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS SAM template for TaskFlow API Gateway and Lambda functions.
+
+Resources:
+  # IAM Role for Lambda functions to access DynamoDB
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole # For CloudWatch Logs
+      Policies:
+        - PolicyName: DynamoDBAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt ProfilesTable.Arn
+                  - !GetAtt TasksTable.Arn
+                  - !GetAtt StackTable.Arn
+                  - !GetAtt EventTypeTable.Arn
+                  - !Join ['', [!GetAtt ProfilesTable.Arn, '/index/*']] # For GSIs
+                  - !Join ['', [!GetAtt TasksTable.Arn, '/index/*']] # For GSIs
+      Path: /
+
+Outputs:
+  ApiGatewayInvokeURL:
+    Description: "Invoke URL for the TaskFlow API"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
