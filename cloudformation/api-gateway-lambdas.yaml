@@ -7,6 +7,9 @@ x-LambdaDefaults: &LambdaDefaults
   Timeout: 30
   MemorySize: 128
   Role: !GetAtt LambdaExecutionRole.Arn
+  Code:
+    S3Bucket: YOUR_S3_BUCKET_NAME # REPLACE THIS WITH YOUR S3 BUCKET NAME
+    S3Key: YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS WITH YOUR S3 KEY PREFIX (e.g., 'lambdas')
 
 x-CommonCORSHeaders: &CommonCORSHeaders
   "Access-Control-Allow-Origin": "*"
@@ -77,515 +80,96 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: TaskFlowGetTasks
-      <<: *LambdaDefaults # Apply common Lambda properties
-      Code:
-        ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-          exports.handler = async (event) => {
-              console.log('Received event (GET /tasks):', JSON.stringify(event, null, 2));
-              const params = {
-                  TableName: 'tasks'
-              };
-
-              try {
-                  const data = await dynamodb.scan(params).promise();
-                  return {
-                      statusCode: 200,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify(data.Items)
-                  };
-              } catch (error) {
-                  console.error('Error fetching tasks:', error);
-                  return {
-                      statusCode: 500,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify({ message: 'Failed to fetch tasks', error: error.message })
-                  };
-              }
-          };
+      Handler: getTasks.handler # Points to getTasks.js
+      <<: *LambdaDefaults
 
   # Lambda Function to create a task
   CreateTaskLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: TaskFlowCreateTask
+      Handler: createTask.handler # Points to createTask.js
       <<: *LambdaDefaults
-      Code:
-        ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
-          const { v4: uuidv4 } = require('uuid'); // You'd need to include uuid in your Lambda layer or zip
-
-          exports.handler = async (event) => {
-              console.log('Received event (POST /tasks):', JSON.stringify(event, null, 2));
-              try {
-                  const taskData = JSON.parse(event.body);
-                  const now = new Date().toISOString();
-                  const newTask = {
-                      id: uuidv4(), // Generate a unique ID
-                      ...taskData,
-                      created_at: now,
-                      updated_at: now
-                  };
-
-                  const params = {
-                      TableName: 'tasks',
-                      Item: newTask
-                  };
-
-                  await dynamodb.put(params).promise();
-
-                  return {
-                      statusCode: 201,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify(newTask)
-                  };
-              } catch (error) {
-                  console.error('Error creating task:', error);
-                  return {
-                      statusCode: 500,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify({ message: 'Failed to create task', error: error.message })
-                  };
-              }
-          };
 
   # Lambda Function to update a task
   UpdateTaskLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: TaskFlowUpdateTask
+      Handler: updateTask.handler # Points to updateTask.js
       <<: *LambdaDefaults
-      Code:
-        ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-          exports.handler = async (event) => {
-              console.log('Received event (PUT /tasks/{id}):', JSON.stringify(event, null, 2));
-              const taskId = event.pathParameters.id;
-              try {
-                  const updateData = JSON.parse(event.body);
-                  const now = new Date().toISOString();
-
-                  let UpdateExpression = 'set updated_at = :updatedAt';
-                  let ExpressionAttributeValues = { ':updatedAt': now };
-                  let ExpressionAttributeNames = {};
-
-                  for (const key in updateData) {
-                      if (updateData.hasOwnProperty(key) && key !== 'id' && key !== 'created_at') {
-                          UpdateExpression += `, #${key} = :${key}`;
-                          ExpressionAttributeValues[`:${key}`] = updateData[key];
-                          ExpressionAttributeNames[`#${key}`] = key;
-                      }
-                  }
-
-                  const params = {
-                      TableName: 'tasks',
-                      Key: { id: taskId },
-                      UpdateExpression: UpdateExpression,
-                      ExpressionAttributeValues: ExpressionAttributeValues,
-                      ExpressionAttributeNames: Object.keys(ExpressionAttributeNames).length > 0 ? ExpressionAttributeNames : undefined,
-                      ReturnValues: 'ALL_NEW'
-                  };
-
-                  const result = await dynamodb.update(params).promise();
-
-                  return {
-                      statusCode: 200,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify(result.Attributes)
-                  };
-              } catch (error) {
-                  console.error('Error updating task:', error);
-                  return {
-                      statusCode: 500,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify({ message: 'Failed to update task', error: error.message })
-                  };
-              }
-          };
 
   # Lambda Function to delete a task
   DeleteTaskLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: TaskFlowDeleteTask
+      Handler: deleteTask.handler # Points to deleteTask.js
       <<: *LambdaDefaults
-      Code:
-        ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-          exports.handler = async (event) => {
-              console.log('Received event (DELETE /tasks/{id}):', JSON.stringify(event, null, 2));
-              const taskId = event.pathParameters.id;
-
-              const params = {
-                  TableName: 'tasks',
-                  Key: { id: taskId }
-              };
-
-              try {
-                  await dynamodb.delete(params).promise();
-                  return {
-                      statusCode: 204, # No Content
-                      headers: { <<: *CommonCORSHeaders },
-                      body: ''
-                  };
-              } catch (error) {
-                  console.error('Error deleting task:', error);
-                  return {
-                      statusCode: 500,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify({ message: 'Failed to delete task', error: error.message })
-                  };
-              }
-          };
 
   # Lambda Function to get all stacks
   GetStacksLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: TaskFlowGetStacks
+      Handler: getStacks.handler # Points to getStacks.js
       <<: *LambdaDefaults
-      Code:
-        ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-          exports.handler = async (event) => {
-              console.log('Received event (GET /stacks):', JSON.stringify(event, null, 2));
-              const params = {
-                  TableName: 'stack'
-              };
-
-              try {
-                  const data = await dynamodb.scan(params).promise();
-                  return {
-                      statusCode: 200,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify(data.Items)
-                  };
-              } catch (error) {
-                  console.error('Error fetching stacks:', error);
-                  return {
-                      statusCode: 500,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify({ message: 'Failed to fetch stacks', error: error.message })
-                  };
-              }
-          };
 
   # Lambda Function to create a stack
   CreateStackLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: TaskFlowCreateStack
+      Handler: createStack.handler # Points to createStack.js
       <<: *LambdaDefaults
-      Code:
-        ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-          exports.handler = async (event) => {
-              console.log('Received event (POST /stacks):', JSON.stringify(event, null, 2));
-              try {
-                  const stackData = JSON.parse(event.body);
-                  const now = new Date().toISOString();
-                  const newStack = {
-                      ...stackData,
-                      created_at: now,
-                      updated_at: now
-                  };
-
-                  const params = {
-                      TableName: 'stack',
-                      Item: newStack
-                  };
-
-                  await dynamodb.put(params).promise();
-
-                  return {
-                      statusCode: 201,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify(newStack)
-                  };
-              } catch (error) {
-                  console.error('Error creating stack:', error);
-                  return {
-                      statusCode: 500,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify({ message: 'Failed to create stack', error: error.message })
-                  };
-              }
-          };
 
   # Lambda Function to update a stack
   UpdateStackLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: TaskFlowUpdateStack
+      Handler: updateStack.handler # Points to updateStack.js
       <<: *LambdaDefaults
-      Code:
-        ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-          exports.handler = async (event) => {
-              console.log('Received event (PUT /stacks/{value}):', JSON.stringify(event, null, 2));
-              const stackValue = event.pathParameters.value;
-              try {
-                  const updateData = JSON.parse(event.body);
-                  const now = new Date().toISOString();
-
-                  let UpdateExpression = 'set updated_at = :updatedAt';
-                  let ExpressionAttributeValues = { ':updatedAt': now };
-                  let ExpressionAttributeNames = {};
-
-                  for (const key in updateData) {
-                      if (updateData.hasOwnProperty(key) && key !== 'value' && key !== 'created_at') {
-                          UpdateExpression += `, #${key} = :${key}`;
-                          ExpressionAttributeValues[`:${key}`] = updateData[key];
-                          ExpressionAttributeNames[`#${key}`] = key;
-                      }
-                  }
-
-                  const params = {
-                      TableName: 'stack',
-                      Key: { value: stackValue },
-                      UpdateExpression: UpdateExpression,
-                      ExpressionAttributeValues: ExpressionAttributeValues,
-                      ExpressionAttributeNames: Object.keys(ExpressionAttributeNames).length > 0 ? ExpressionAttributeNames : undefined,
-                      ReturnValues: 'ALL_NEW'
-                  };
-
-                  const result = await dynamodb.update(params).promise();
-
-                  return {
-                      statusCode: 200,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify(result.Attributes)
-                  };
-              } catch (error) {
-                  console.error('Error updating stack:', error);
-                  return {
-                      statusCode: 500,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify({ message: 'Failed to update stack', error: error.message })
-                  };
-              }
-          };
 
   # Lambda Function to delete a stack
   DeleteStackLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: TaskFlowDeleteStack
+      Handler: deleteStack.handler # Points to deleteStack.js
       <<: *LambdaDefaults
-      Code:
-        ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-          exports.handler = async (event) => {
-              console.log('Received event (DELETE /stacks/{value}):', JSON.stringify(event, null, 2));
-              const stackValue = event.pathParameters.value;
-
-              const params = {
-                  TableName: 'stack',
-                  Key: { value: stackValue }
-              };
-
-              try {
-                  await dynamodb.delete(params).promise();
-                  return {
-                      statusCode: 204, # No Content
-                      headers: { <<: *CommonCORSHeaders },
-                      body: ''
-                  };
-              } catch (error) {
-                  console.error('Error deleting stack:', error);
-                  return {
-                      statusCode: 500,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify({ message: 'Failed to delete stack', error: error.message })
-                  };
-              }
-          };
 
   # Lambda Function to get all event types
   GetEventTypesLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: TaskFlowGetEventTypes
+      Handler: getEventTypes.handler # Points to getEventTypes.js
       <<: *LambdaDefaults
-      Code:
-        ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-          exports.handler = async (event) => {
-              console.log('Received event (GET /event-types):', JSON.stringify(event, null, 2));
-              const params = {
-                  TableName: 'event_type'
-              };
-
-              try {
-                  const data = await dynamodb.scan(params).promise();
-                  return {
-                      statusCode: 200,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify(data.Items)
-                  };
-              } catch (error) {
-                  console.error('Error fetching event types:', error);
-                  return {
-                      statusCode: 500,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify({ message: 'Failed to fetch event types', error: error.message })
-                  };
-              }
-          };
 
   # Lambda Function to create an event type
   CreateEventTypeLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: TaskFlowCreateEventType
+      Handler: createEventType.handler # Points to createEventType.js
       <<: *LambdaDefaults
-      Code:
-        ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-          exports.handler = async (event) => {
-              console.log('Received event (POST /event-types):', JSON.stringify(event, null, 2));
-              try {
-                  const eventTypeData = JSON.parse(event.body);
-                  const now = new Date().toISOString();
-                  const newEventType = {
-                      ...eventTypeData,
-                      created_at: now,
-                      updated_at: now
-                  };
-
-                  const params = {
-                      TableName: 'event_type',
-                      Item: newEventType
-                  };
-
-                  await dynamodb.put(params).promise();
-
-                  return {
-                      statusCode: 201,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify(newEventType)
-                  };
-              } catch (error) {
-                  console.error('Error creating event type:', error);
-                  return {
-                      statusCode: 500,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify({ message: 'Failed to create event type', error: error.message })
-                  };
-              }
-          };
 
   # Lambda Function to update an event type
   UpdateEventTypeLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: TaskFlowUpdateEventType
+      Handler: updateEventType.handler # Points to updateEventType.js
       <<: *LambdaDefaults
-      Code:
-        ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-          exports.handler = async (event) => {
-              console.log('Received event (PUT /event-types/{value}):', JSON.stringify(event, null, 2));
-              const eventTypeValue = event.pathParameters.value;
-              try {
-                  const updateData = JSON.parse(event.body);
-                  const now = new Date().toISOString();
-
-                  let UpdateExpression = 'set updated_at = :updatedAt';
-                  let ExpressionAttributeValues = { ':updatedAt': now };
-                  let ExpressionAttributeNames = {};
-
-                  for (const key in updateData) {
-                      if (updateData.hasOwnProperty(key) && key !== 'value' && key !== 'created_at') {
-                          UpdateExpression += `, #${key} = :${key}`;
-                          ExpressionAttributeValues[`:${key}`] = updateData[key];
-                          ExpressionAttributeNames[`#${key}`] = key;
-                      }
-                  }
-
-                  const params = {
-                      TableName: 'event_type',
-                      Key: { value: eventTypeValue },
-                      UpdateExpression: UpdateExpression,
-                      ExpressionAttributeValues: ExpressionAttributeValues,
-                      ExpressionAttributeNames: Object.keys(ExpressionAttributeNames).length > 0 ? ExpressionAttributeNames : undefined,
-                      ReturnValues: 'ALL_NEW'
-                  };
-
-                  const result = await dynamodb.update(params).promise();
-
-                  return {
-                      statusCode: 200,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify(result.Attributes)
-                  };
-              } catch (error) {
-                  console.error('Error updating event type:', error);
-                  return {
-                      statusCode: 500,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify({ message: 'Failed to update event type', error: error.message })
-                  };
-              }
-          };
 
   # Lambda Function to delete an event type
   DeleteEventTypeLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: TaskFlowDeleteEventType
+      Handler: deleteEventType.handler # Points to deleteEventType.js
       <<: *LambdaDefaults
-      Code:
-        ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-          exports.handler = async (event) => {
-              console.log('Received event (DELETE /event-types/{value}):', JSON.stringify(event, null, 2));
-              const eventTypeValue = event.pathParameters.value;
-
-              const params = {
-                  TableName: 'event_type',
-                  Key: { value: eventTypeValue }
-              };
-
-              try {
-                  await dynamodb.delete(params).promise();
-                  return {
-                      statusCode: 204, # No Content
-                      headers: { <<: *CommonCORSHeaders },
-                      body: ''
-                  };
-              } catch (error) {
-                  console.error('Error deleting event type:', error);
-                  return {
-                      statusCode: 500,
-                      headers: { <<: *CommonCORSHeaders },
-                      body: JSON.stringify({ message: 'Failed to delete event type', error: error.message })
-                  };
-              }
-          };
 
   # API Gateway REST API
   TaskFlowApi:
