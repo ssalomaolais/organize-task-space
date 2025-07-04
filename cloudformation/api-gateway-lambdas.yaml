@@ -1,0 +1,196 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template for TaskFlow API Gateway and Lambda functions.
+
+Resources:
+  # IAM Role for Lambda functions to access DynamoDB
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole # For CloudWatch Logs
+      Policies:
+        - PolicyName: DynamoDBAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt ProfilesTable.Arn
+                  - !GetAtt TasksTable.Arn
+                  - !GetAtt StackTable.Arn
+                  - !GetAtt EventTypeTable.Arn
+                  - !Join ['', [!GetAtt ProfilesTable.Arn, '/index/*']] # For GSIs
+                  - !Join ['', [!GetAtt TasksTable.Arn, '/index/*']] # For GSIs
+      Path: /
+
+  # Lambda Function to get all tasks
+  GetTasksLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: TaskFlowGetTasks
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+          exports.handler = async (event) => {
+              console.log('Received event:', JSON.stringify(event, null, 2));
+              const params = {
+                  TableName: 'tasks'
+              };
+
+              try {
+                  const data = await dynamodb.scan(params).promise();
+                  return {
+                      statusCode: 200,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET"
+                      },
+                      body: JSON.stringify(data.Items)
+                  };
+              } catch (error) {
+                  console.error('Error fetching tasks:', error);
+                  return {
+                      statusCode: 500,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET"
+                      },
+                      body: JSON.stringify({ message: 'Failed to fetch tasks', error: error.message })
+                  };
+              }
+          };
+
+  # API Gateway REST API
+  TaskFlowApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: TaskFlowAPI
+      Description: API for TaskFlow application
+      CorsConfiguration:
+        AllowOrigins:
+          - '*' # Adjust this to your frontend URL in production
+        AllowHeaders:
+          - 'Content-Type'
+          - 'X-Amz-Date'
+          - 'Authorization'
+          - 'X-Api-Key'
+          - 'X-Amz-Security-Token'
+        AllowMethods:
+          - 'GET'
+          - 'POST'
+          - 'PUT'
+          - 'DELETE'
+          - 'OPTIONS'
+
+  # API Gateway Resource for /tasks
+  TasksResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt TaskFlowApi.RootResourceId
+      PathPart: tasks
+      RestApiId: !Ref TaskFlowApi
+
+  # API Gateway GET method for /tasks
+  GetTasksMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref TasksResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE # For now, no authorization. Will need to be updated for Cognito.
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST # Lambda proxy integration always uses POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetTasksLambda.Arn}/invocations"
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty" # Define a model if you have a schema
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # API Gateway OPTIONS method for CORS preflight
+  OptionsTasksMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: OPTIONS
+      ResourceId: !Ref TasksResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,POST,PUT,DELETE'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: "{}"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # API Gateway Deployment
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - GetTasksMethod # Ensure methods are created before deployment
+      - OptionsTasksMethod
+    Properties:
+      RestApiId: !Ref TaskFlowApi
+      Description: Initial deployment of TaskFlow API
+
+  # API Gateway Stage
+  ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: prod
+      Description: Production Stage
+      RestApiId: !Ref TaskFlowApi
+      DeploymentId: !Ref ApiDeployment
+
+  # Permissions for API Gateway to invoke Lambda
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt GetTasksLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
+
+Outputs:
+  ApiGatewayInvokeURL:
+    Description: "Invoke URL for the TaskFlow API"
+    Value: !Sub "https://${TaskFlowApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
