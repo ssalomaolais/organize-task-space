@@ -1,4 +1,4 @@
-import { ObjectDynamoDB } from "../database/ObjectDynamoDB";
+import { ObjectDynamoDB } from "../database/ObjectDynamoDB.js";
 import { v4 as uuidv4 } from 'uuid';
 
 export class Task {

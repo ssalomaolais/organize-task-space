@@ -1,6 +1,6 @@
-import { ResponseUtil } from "../utils/responseUtil";
-import { EventType } from "../services/eventType";
-import { parse } from "../utils/parseUtil";
+import { ResponseUtil } from "../utils/responseUtil.js";
+import { EventType } from "../services/eventType.js";
+import { parse } from "../utils/parseUtil.js";
 
 const eventTypeService = new EventType();
 
