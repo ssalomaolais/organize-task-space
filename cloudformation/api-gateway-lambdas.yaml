@@ -1,43 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: CloudFormation template for TaskFlow API Gateway and Lambda functions.
-
-# Define reusable YAML anchors
-x-LambdaDefaults: &LambdaDefaults
-  Runtime: nodejs20.x
-  Timeout: 30
-  MemorySize: 128
-  Role: !GetAtt LambdaExecutionRole.Arn
-  Code:
-    S3Bucket: YOUR_S3_BUCKET_NAME # REPLACE THIS WITH YOUR S3 BUCKET NAME
-    S3Key: YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS WITH YOUR S3 KEY PREFIX (e.g., 'lambdas')
-
-x-CommonCORSHeaders: &CommonCORSHeaders
-  "Access-Control-Allow-Origin": "*"
-  "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
-  "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
-
-x-LambdaProxyIntegration: &LambdaProxyIntegration
-  Type: AWS_PROXY
-  IntegrationHttpMethod: POST
-  PassthroughBehavior: WHEN_NO_MATCH
-
-x-ApiGatewayMethodResponses: &ApiGatewayMethodResponses
-  - StatusCode: 200
-    ResponseModels:
-      application/json: "Empty"
-    ResponseParameters:
-      method.response.header.Access-Control-Allow-Origin: true
-      method.response.header.Access-Control-Allow-Headers: true
-      method.response.header.Access-Control-Allow-Methods: true
-
-x-ApiGatewayOptionsIntegrationResponse: &ApiGatewayOptionsIntegrationResponse
-  - StatusCode: 200
-    ResponseParameters:
-      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,POST,PUT,DELETE'"
-      method.response.header.Access-Control-Allow-Origin: "'*'"
-    ResponseTemplates:
-      application/json: "{}"
+Transform: AWS::Serverless-2016-10-31
+Description: AWS SAM template for TaskFlow API Gateway and Lambda functions.
 
 Resources:
   # IAM Role for Lambda functions to access DynamoDB
@@ -76,601 +39,234 @@ Resources:
       Path: /
 
   # Lambda Function to get all tasks
-  GetTasksLambda:
-    Type: AWS::Lambda::Function
+  GetTasksFunction:
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowGetTasks
-      Handler: getTasks.handler # Points to getTasks.js
-      <<: *LambdaDefaults
+      Handler: getTasks.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /tasks
+            Method: get
+            Cors: "'*'"
 
   # Lambda Function to create a task
-  CreateTaskLambda:
-    Type: AWS::Lambda::Function
+  CreateTaskFunction:
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowCreateTask
-      Handler: createTask.handler # Points to createTask.js
-      <<: *LambdaDefaults
+      Handler: createTask.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /tasks
+            Method: post
+            Cors: "'*'"
 
   # Lambda Function to update a task
-  UpdateTaskLambda:
-    Type: AWS::Lambda::Function
+  UpdateTaskFunction:
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowUpdateTask
-      Handler: updateTask.handler # Points to updateTask.js
-      <<: *LambdaDefaults
+      Handler: updateTask.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /tasks/{id}
+            Method: put
+            Cors: "'*'"
 
   # Lambda Function to delete a task
-  DeleteTaskLambda:
-    Type: AWS::Lambda::Function
+  DeleteTaskFunction:
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowDeleteTask
-      Handler: deleteTask.handler # Points to deleteTask.js
-      <<: *LambdaDefaults
+      Handler: deleteTask.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /tasks/{id}
+            Method: delete
+            Cors: "'*'"
 
   # Lambda Function to get all stacks
-  GetStacksLambda:
-    Type: AWS::Lambda::Function
+  GetStacksFunction:
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowGetStacks
-      Handler: getStacks.handler # Points to getStacks.js
-      <<: *LambdaDefaults
+      Handler: getStacks.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /stacks
+            Method: get
+            Cors: "'*'"
 
   # Lambda Function to create a stack
-  CreateStackLambda:
-    Type: AWS::Lambda::Function
+  CreateStackFunction:
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowCreateStack
-      Handler: createStack.handler # Points to createStack.js
-      <<: *LambdaDefaults
+      Handler: createStack.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /stacks
+            Method: post
+            Cors: "'*'"
 
   # Lambda Function to update a stack
-  UpdateStackLambda:
-    Type: AWS::Lambda::Function
+  UpdateStackFunction:
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowUpdateStack
-      Handler: updateStack.handler # Points to updateStack.js
-      <<: *LambdaDefaults
+      Handler: updateStack.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /stacks/{value}
+            Method: put
+            Cors: "'*'"
 
   # Lambda Function to delete a stack
-  DeleteStackLambda:
-    Type: AWS::Lambda::Function
+  DeleteStackFunction:
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowDeleteStack
-      Handler: deleteStack.handler # Points to deleteStack.js
-      <<: *LambdaDefaults
+      Handler: deleteStack.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /stacks/{value}
+            Method: delete
+            Cors: "'*'"
 
   # Lambda Function to get all event types
-  GetEventTypesLambda:
-    Type: AWS::Lambda::Function
+  GetEventTypesFunction:
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowGetEventTypes
-      Handler: getEventTypes.handler # Points to getEventTypes.js
-      <<: *LambdaDefaults
+      Handler: getEventTypes.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /event-types
+            Method: get
+            Cors: "'*'"
 
   # Lambda Function to create an event type
-  CreateEventTypeLambda:
-    Type: AWS::Lambda::Function
+  CreateEventTypeFunction:
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowCreateEventType
-      Handler: createEventType.handler # Points to createEventType.js
-      <<: *LambdaDefaults
+      Handler: createEventType.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /event-types
+            Method: post
+            Cors: "'*'"
 
   # Lambda Function to update an event type
-  UpdateEventTypeLambda:
-    Type: AWS::Lambda::Function
+  UpdateEventTypeFunction:
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowUpdateEventType
-      Handler: updateEventType.handler # Points to updateEventType.js
-      <<: *LambdaDefaults
+      Handler: updateEventType.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /event-types/{value}
+            Method: put
+            Cors: "'*'"
 
   # Lambda Function to delete an event type
-  DeleteEventTypeLambda:
-    Type: AWS::Lambda::Function
+  DeleteEventTypeFunction:
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowDeleteEventType
-      Handler: deleteEventType.handler # Points to deleteEventType.js
-      <<: *LambdaDefaults
-
-  # API Gateway REST API
-  TaskFlowApi:
-    Type: AWS::ApiGateway::RestApi
-    Properties:
-      Name: TaskFlowAPI
-      Description: API for TaskFlow application
-      CorsConfiguration:
-        AllowOrigins:
-          - '*' # Adjust this to your frontend URL in production
-        AllowHeaders:
-          - 'Content-Type'
-          - 'X-Amz-Date'
-          - 'Authorization'
-          - 'X-Api-Key'
-          - 'X-Amz-Security-Token'
-        AllowMethods:
-          - 'GET'
-          - 'POST'
-          - 'PUT'
-          - 'DELETE'
-          - 'OPTIONS'
-
-  # API Gateway Resource for /tasks
-  TasksResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt TaskFlowApi.RootResourceId
-      PathPart: tasks
-      RestApiId: !Ref TaskFlowApi
-
-  # API Gateway Resource for /tasks/{id}
-  TaskByIdResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !Ref TasksResource
-      PathPart: '{id}'
-      RestApiId: !Ref TaskFlowApi
-
-  # API Gateway Resource for /stacks
-  StacksResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt TaskFlowApi.RootResourceId
-      PathPart: stacks
-      RestApiId: !Ref TaskFlowApi
-
-  # API Gateway Resource for /stacks/{value}
-  StackByValueResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !Ref StacksResource
-      PathPart: '{value}'
-      RestApiId: !Ref TaskFlowApi
-
-  # API Gateway Resource for /event-types
-  EventTypesResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt TaskFlowApi.RootResourceId
-      PathPart: event-types
-      RestApiId: !Ref TaskFlowApi
-
-  # API Gateway Resource for /event-types/{value}
-  EventTypeByValueResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !Ref EventTypesResource
-      PathPart: '{value}'
-      RestApiId: !Ref TaskFlowApi
-
-  # API Gateway GET method for /tasks
-  GetTasksMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: GET
-      ResourceId: !Ref TasksResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetTasksLambda.Arn}/invocations"
-        <<: *LambdaProxyIntegration
-      MethodResponses: *ApiGatewayMethodResponses
-
-  # API Gateway POST method for /tasks
-  CreateTaskMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: POST
-      ResourceId: !Ref TasksResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateTaskLambda.Arn}/invocations"
-        <<: *LambdaProxyIntegration
-      MethodResponses: *ApiGatewayMethodResponses
-
-  # API Gateway PUT method for /tasks/{id}
-  UpdateTaskMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: PUT
-      ResourceId: !Ref TaskByIdResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateTaskLambda.Arn}/invocations"
-        <<: *LambdaProxyIntegration
-      MethodResponses: *ApiGatewayMethodResponses
-
-  # API Gateway DELETE method for /tasks/{id}
-  DeleteTaskMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: DELETE
-      ResourceId: !Ref TaskByIdResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteTaskLambda.Arn}/invocations"
-        <<: *LambdaProxyIntegration
-      MethodResponses:
-        - StatusCode: 204 # No Content for DELETE
-          ResponseModels:
-            application/json: "Empty"
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Origin: true
-            method.response.header.Access-Control-Allow-Headers: true
-            method.response.header.Access-Control-Allow-Methods: true
-
-  # API Gateway GET method for /stacks
-  GetStacksMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: GET
-      ResourceId: !Ref StacksResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetStacksLambda.Arn}/invocations"
-        <<: *LambdaProxyIntegration
-      MethodResponses: *ApiGatewayMethodResponses
-
-  # API Gateway POST method for /stacks
-  CreateStackMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: POST
-      ResourceId: !Ref StacksResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateStackLambda.Arn}/invocations"
-        <<: *LambdaProxyIntegration
-      MethodResponses: *ApiGatewayMethodResponses
-
-  # API Gateway PUT method for /stacks/{value}
-  UpdateStackMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: PUT
-      ResourceId: !Ref StackByValueResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateStackLambda.Arn}/invocations"
-        <<: *LambdaProxyIntegration
-      MethodResponses: *ApiGatewayMethodResponses
-
-  # API Gateway DELETE method for /stacks/{value}
-  DeleteStackMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: DELETE
-      ResourceId: !Ref StackByValueResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteStackLambda.Arn}/invocations"
-        <<: *LambdaProxyIntegration
-      MethodResponses:
-        - StatusCode: 204
-          ResponseModels:
-            application/json: "Empty"
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Origin: true
-            method.response.header.Access-Control-Allow-Headers: true
-            method.response.header.Access-Control-Allow-Methods: true
-
-  # API Gateway GET method for /event-types
-  GetEventTypesMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: GET
-      ResourceId: !Ref EventTypesResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetEventTypesLambda.Arn}/invocations"
-        <<: *LambdaProxyIntegration
-      MethodResponses: *ApiGatewayMethodResponses
-
-  # API Gateway POST method for /event-types
-  CreateEventTypeMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: POST
-      ResourceId: !Ref EventTypesResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateEventTypeLambda.Arn}/invocations"
-        <<: *LambdaProxyIntegration
-      MethodResponses: *ApiGatewayMethodResponses
-
-  # API Gateway PUT method for /event-types/{value}
-  UpdateEventTypeMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: PUT
-      ResourceId: !Ref EventTypeByValueResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateEventTypeLambda.Arn}/invocations"
-        <<: *LambdaProxyIntegration
-      MethodResponses: *ApiGatewayMethodResponses
-
-  # API Gateway DELETE method for /event-types/{value}
-  DeleteEventTypeMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: DELETE
-      ResourceId: !Ref EventTypeByValueResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteEventTypeLambda.Arn}/invocations"
-        <<: *LambdaProxyIntegration
-      MethodResponses:
-        - StatusCode: 204
-          ResponseModels:
-            application/json: "Empty"
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Origin: true
-            method.response.header.Access-Control-Allow-Headers: true
-            method.response.header.Access-Control-Allow-Methods: true
-
-  # API Gateway OPTIONS method for CORS preflight on /tasks
-  OptionsTasksMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: OPTIONS
-      ResourceId: !Ref TasksResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Type: MOCK
-        RequestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        IntegrationResponses: *ApiGatewayOptionsIntegrationResponse
-      MethodResponses:
-        - StatusCode: 200
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Headers: true
-            method.response.header.Access-Control-Allow-Methods: true
-            method.response.header.Access-Control-Allow-Origin: true
-
-  # API Gateway OPTIONS method for CORS preflight on /tasks/{id}
-  OptionsTaskByIdMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: OPTIONS
-      ResourceId: !Ref TaskByIdResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Type: MOCK
-        RequestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        IntegrationResponses: *ApiGatewayOptionsIntegrationResponse
-      MethodResponses:
-        - StatusCode: 200
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Headers: true
-            method.response.header.Access-Control-Allow-Methods: true
-            method.response.header.Access-Control-Allow-Origin: true
-
-  # API Gateway OPTIONS method for CORS preflight on /stacks
-  OptionsStacksMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: OPTIONS
-      ResourceId: !Ref StacksResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Type: MOCK
-        RequestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        IntegrationResponses: *ApiGatewayOptionsIntegrationResponse
-      MethodResponses:
-        - StatusCode: 200
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Headers: true
-            method.response.header.Access-Control-Allow-Methods: true
-            method.response.header.Access-Control-Allow-Origin: true
-
-  # API Gateway OPTIONS method for CORS preflight on /stacks/{value}
-  OptionsStackByValueMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: OPTIONS
-      ResourceId: !Ref StackByValueResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Type: MOCK
-        RequestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        IntegrationResponses: *ApiGatewayOptionsIntegrationResponse
-      MethodResponses:
-        - StatusCode: 200
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Headers: true
-            method.response.header.Access-Control-Allow-Methods: true
-            method.response.header.Access-Control-Allow-Origin: true
-
-  # API Gateway OPTIONS method for CORS preflight on /event-types
-  OptionsEventTypesMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: OPTIONS
-      ResourceId: !Ref EventTypesResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Type: MOCK
-        RequestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        IntegrationResponses: *ApiGatewayOptionsIntegrationResponse
-      MethodResponses:
-        - StatusCode: 200
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Headers: true
-            method.response.header.Access-Control-Allow-Methods: true
-            method.response.header.Access-Control-Allow-Origin: true
-
-  # API Gateway OPTIONS method for CORS preflight on /event-types/{value}
-  OptionsEventTypeByValueMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      HttpMethod: OPTIONS
-      ResourceId: !Ref EventTypeByValueResource
-      RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE
-      Integration:
-        Type: MOCK
-        RequestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        IntegrationResponses: *ApiGatewayOptionsIntegrationResponse
-      MethodResponses:
-        - StatusCode: 200
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Headers: true
-            method.response.header.Access-Control-Allow-Methods: true
-            method.response.header.Access-Control-Allow-Origin: true
-
-  # API Gateway Deployment
-  ApiDeployment:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn:
-      - GetTasksMethod
-      - CreateTaskMethod
-      - UpdateTaskMethod
-      - DeleteTaskMethod
-      - OptionsTasksMethod
-      - OptionsTaskByIdMethod
-      - GetStacksMethod
-      - CreateStackMethod
-      - UpdateStackMethod
-      - DeleteStackMethod
-      - OptionsStacksMethod
-      - OptionsStackByValueMethod
-      - GetEventTypesMethod
-      - CreateEventTypeMethod
-      - UpdateEventTypeMethod
-      - DeleteEventTypeMethod
-      - OptionsEventTypesMethod
-      - OptionsEventTypeByValueMethod
-    Properties:
-      RestApiId: !Ref TaskFlowApi
-      Description: Deployment with full Task, Stack, and EventType CRUD operations
-
-  # API Gateway Stage
-  ApiStage:
-    Type: AWS::ApiGateway::Stage
-    Properties:
-      StageName: prod
-      Description: Production Stage
-      RestApiId: !Ref TaskFlowApi
-      DeploymentId: !Ref ApiDeployment
-
-  # Permissions for API Gateway to invoke Lambdas
-  LambdaPermissionGetTasks:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt GetTasksLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
-
-  LambdaPermissionCreateTask:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt CreateTaskLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
-
-  LambdaPermissionUpdateTask:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt UpdateTaskLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
-
-  LambdaPermissionDeleteTask:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt DeleteTaskLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
-
-  LambdaPermissionGetStacks:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt GetStacksLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
-
-  LambdaPermissionCreateStack:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt CreateStackLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
-
-  LambdaPermissionUpdateStack:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt UpdateStackLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
-
-  LambdaPermissionDeleteStack:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt DeleteStackLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
-
-  LambdaPermissionGetEventTypes:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt GetEventTypesLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
-
-  LambdaPermissionCreateEventType:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt CreateEventTypeLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
-
-  LambdaPermissionUpdateEventType:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt UpdateEventTypeLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
-
-  LambdaPermissionDeleteEventType:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt DeleteEventTypeLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
+      Handler: deleteEventType.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /event-types/{value}
+            Method: delete
+            Cors: "'*'"
 
 Outputs:
   ApiGatewayInvokeURL:
     Description: "Invoke URL for the TaskFlow API"
-    Value: !Sub "https://${TaskFlowApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
