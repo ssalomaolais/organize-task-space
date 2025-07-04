@@ -1,5 +1,5 @@
-import { ResponseUtil } from "../utils/responseUtil";
-import { EventType } from "../service/eventType";
+import { ResponseUtil } from "../utils/responseUtil.js";
+import { EventType } from "../services/eventType.js";
 const eventType = new EventType();
 export const createEventTypeController = async (event) => {
     console.log('Received event (POST /event-types):', JSON.stringify(event, null, 2));
@@ -11,7 +11,7 @@ export const createEventTypeController = async (event) => {
         throw new Error("Event body as required.");
     }
     try {
-        const body = await parse(event);
+        const body = JSON.parse(event.body); // Use JSON.parse directly as parseUtil is not imported here
         const result = await eventType.create(body);
         return ResponseUtil.createResponse(201, result?.message, result?.data);
     }

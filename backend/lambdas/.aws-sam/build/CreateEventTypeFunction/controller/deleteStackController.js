@@ -1,5 +1,5 @@
-import { ResponseUtil } from "../utils/responseUtil";
-import { Stack } from "../services/stack";
+import { ResponseUtil } from "../utils/responseUtil.js";
+import { Stack } from "../services/stack.js";
 
 const stackService = new Stack();
 

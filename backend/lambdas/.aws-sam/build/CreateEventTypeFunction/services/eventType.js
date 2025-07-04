@@ -1,4 +1,4 @@
-import { ObjectDynamoDB } from "../database/ObjectDynamoDB";
+import { ObjectDynamoDB } from "../database/ObjectDynamoDB.js";
 
 export class EventType {
   constructor() {

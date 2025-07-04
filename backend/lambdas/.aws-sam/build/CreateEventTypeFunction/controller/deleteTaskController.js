@@ -1,5 +1,5 @@
-import { ResponseUtil } from "../utils/responseUtil";
-import { Task } from "../services/task";
+import { ResponseUtil } from "../utils/responseUtil.js";
+import { Task } from "../services/task.js";
 
 const taskService = new Task();
 
