@@ -1,0 +1,1 @@
+sam local invoke CreateEventTypeFunction -e event.json --debug-port 5858 --profile localstack

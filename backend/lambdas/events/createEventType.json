@@ -1,0 +1,8 @@
+{
+  "httpMethod": "POST",
+  "body": "{\"value\": \"novo-tipo\", \"label\": \"Novo Tipo de Evento\", \"color\": \"bg-purple-100 text-purple-800\"}",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "isBase64Encoded": false
+}
