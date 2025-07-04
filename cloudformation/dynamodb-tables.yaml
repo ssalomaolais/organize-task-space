@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template for TaskFlow DynamoDB tables.
+
+Resources:
+  # Table for user profiles
+  ProfilesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: profiles
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH # Partition Key
+      BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: EmailIndex
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH # Partition Key for GSI
+          Projection:
+            ProjectionType: ALL # Project all attributes into the index
+          ProvisionedThroughput: # Required for GSI even with PAY_PER_REQUEST table
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+
+  # Table for tasks
+  TasksTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: tasks
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: start_date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH # Partition Key
+      BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: UserIdAndStartDateIndex
+          KeySchema:
+            - AttributeName: user_id
+              KeyType: HASH # Partition Key for GSI
+            - AttributeName: start_date
+              KeyType: RANGE # Sort Key for GSI
+          Projection:
+            ProjectionType: ALL # Project all attributes into the index
+          ProvisionedThroughput: # Required for GSI even with PAY_PER_REQUEST table
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+
+  # Table for stacks (communities)
+  StackTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: stack
+      AttributeDefinitions:
+        - AttributeName: value
+          AttributeType: S
+      KeySchema:
+        - AttributeName: value
+          KeyType: HASH # Partition Key
+      BillingMode: PAY_PER_REQUEST
+
+  # Table for event types
+  EventTypeTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: event_type
+      AttributeDefinitions:
+        - AttributeName: value
+          AttributeType: S
+      KeySchema:
+        - AttributeName: value
+          KeyType: HASH # Partition Key
+      BillingMode: PAY_PER_REQUEST
