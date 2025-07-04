@@ -43,7 +43,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowGetTasks
-      Handler: index.getTasksController # Updated handler
+      Handler: index.getTasksController
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -55,14 +55,14 @@ Resources:
           Properties:
             Path: /tasks
             Method: get
-            Cors: "'*'"
+          Cors: "'*'"
 
   # Lambda Function to create a task
   CreateTaskFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowCreateTask
-      Handler: index.createTaskController # Updated handler
+      Handler: index.createTaskController
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -74,14 +74,14 @@ Resources:
           Properties:
             Path: /tasks
             Method: post
-            Cors: "'*'"
+          Cors: "'*'"
 
   # Lambda Function to update a task
   UpdateTaskFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowUpdateTask
-      Handler: index.updateTaskController # Updated handler
+      Handler: index.updateTaskController
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -93,14 +93,14 @@ Resources:
           Properties:
             Path: /tasks/{id}
             Method: put
-            Cors: "'*'"
+          Cors: "'*'"
 
   # Lambda Function to delete a task
   DeleteTaskFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowDeleteTask
-      Handler: index.deleteTaskController # Updated handler
+      Handler: index.deleteTaskController
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -112,14 +112,14 @@ Resources:
           Properties:
             Path: /tasks/{id}
             Method: delete
-            Cors: "'*'"
+          Cors: "'*'"
 
   # Lambda Function to get all stacks
   GetStacksFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowGetStacks
-      Handler: index.getStacksController # Updated handler
+      Handler: index.getStacksController
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -131,14 +131,14 @@ Resources:
           Properties:
             Path: /stacks
             Method: get
-            Cors: "'*'"
+          Cors: "'*'"
 
   # Lambda Function to create a stack
   CreateStackFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowCreateStack
-      Handler: index.createStackController # Updated handler
+      Handler: index.createStackController
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -150,14 +150,14 @@ Resources:
           Properties:
             Path: /stacks
             Method: post
-            Cors: "'*'"
+          Cors: "'*'"
 
   # Lambda Function to update a stack
   UpdateStackFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowUpdateStack
-      Handler: index.updateStackController # Updated handler
+      Handler: index.updateStackController
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -169,14 +169,14 @@ Resources:
           Properties:
             Path: /stacks/{value}
             Method: put
-            Cors: "'*'"
+          Cors: "'*'"
 
   # Lambda Function to delete a stack
   DeleteStackFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowDeleteStack
-      Handler: index.deleteStackController # Updated handler
+      Handler: index.deleteStackController
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -188,14 +188,14 @@ Resources:
           Properties:
             Path: /stacks/{value}
             Method: delete
-            Cors: "'*'"
+          Cors: "'*'"
 
   # Lambda Function to get all event types
   GetEventTypesFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowGetEventTypes
-      Handler: index.getEventTypeController # Updated handler
+      Handler: index.getEventTypeController
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -207,14 +207,14 @@ Resources:
           Properties:
             Path: /event-types
             Method: get
-            Cors: "'*'"
+          Cors: "'*'"
 
   # Lambda Function to create an event type
   CreateEventTypeFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowCreateEventType
-      Handler: index.createEventTypeController # Updated handler
+      Handler: index.createEventTypeController
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -226,14 +226,14 @@ Resources:
           Properties:
             Path: /event-types
             Method: post
-            Cors: "'*'"
+          Cors: "'*'"
 
   # Lambda Function to update an event type
   UpdateEventTypeFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowUpdateEventType
-      Handler: index.updateEventTypeController # Updated handler
+      Handler: index.updateEventTypeController
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -245,14 +245,14 @@ Resources:
           Properties:
             Path: /event-types/{value}
             Method: put
-            Cors: "'*'"
+          Cors: "'*'"
 
   # Lambda Function to delete an event type
   DeleteEventTypeFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowDeleteEventType
-      Handler: index.deleteEventTypeController # Updated handler
+      Handler: index.deleteEventTypeController
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -264,7 +264,7 @@ Resources:
           Properties:
             Path: /event-types/{value}
             Method: delete
-            Cors: "'*'"
+          Cors: "'*'"
 
 Outputs:
   ApiGatewayInvokeURL:
