@@ -10,7 +10,7 @@ export const useEventType = () => {
 
   const fetchEventType = async (
     page: number = 1,
-    pageSize: number = 10,
+    pageSize: number = 50,
     searchTerm: string = ''
   ) => {
     try {
