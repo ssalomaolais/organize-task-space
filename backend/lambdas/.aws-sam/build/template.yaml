@@ -5,7 +5,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.createEventTypeController
-      Runtime: nodejs20.x
+      Runtime: nodejs18.x
       CodeUri: CreateEventTypeFunction
     Metadata:
       SamResourceId: CreateEventTypeFunction
