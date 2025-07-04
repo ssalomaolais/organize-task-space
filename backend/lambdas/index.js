@@ -1,14 +1,14 @@
-export { createEventTypeController } from "./controller/createEventTypeController";
-export { deleteEventTypeController } from "./controller/deleteEventTypeController";
-export { getEventTypeController } from "./controller/getEventTypeController";
-export { updateEventTypeController } from "./controller/updateEventTypeController";
+export { createEventTypeController } from "./controller/createEventTypeController.js";
+export { deleteEventTypeController } from "./controller/deleteEventTypeController.js";
+export { getEventTypeController } from "./controller/getEventTypeController.js";
+export { updateEventTypeController } from "./controller/updateEventTypeController.js";
 
-export { createStackController } from "./controller/createStackController";
-export { deleteStackController } from "./controller/deleteStackController";
-export { getStacksController } from "./controller/getStacksController";
-export { updateStackController } from "./controller/updateStackController";
+export { createStackController } from "./controller/createStackController.js";
+export { deleteStackController } from "./controller/deleteStackController.js";
+export { getStacksController } from "./controller/getStacksController.js";
+export { updateStackController } from "./controller/updateStackController.js";
 
-export { createTaskController } from "./controller/createTaskController";
-export { deleteTaskController } from "./controller/deleteTaskController";
-export { getTasksController } from "./controller/getTasksController";
-export { updateTaskController } from "./controller/updateTaskController";
+export { createTaskController } from "./controller/createTaskController.js";
+export { deleteTaskController } from "./controller/deleteTaskController.js";
+export { getTasksController } from "./controller/getTasksController.js";
+export { updateTaskController } from "./controller/updateTaskController.js";

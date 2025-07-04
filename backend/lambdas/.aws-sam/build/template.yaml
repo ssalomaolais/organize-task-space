@@ -6,4 +6,6 @@ Resources:
     Properties:
       Handler: index.createEventTypeController
       Runtime: nodejs20.x
-      CodeUri: .
+      CodeUri: CreateEventTypeFunction
+    Metadata:
+      SamResourceId: CreateEventTypeFunction
