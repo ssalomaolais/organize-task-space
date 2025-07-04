@@ -43,7 +43,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowGetTasks
-      Handler: getTasks.handler
+      Handler: index.getTasksController # Updated handler
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -62,7 +62,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowCreateTask
-      Handler: createTask.handler
+      Handler: index.createTaskController # Updated handler
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -81,7 +81,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowUpdateTask
-      Handler: updateTask.handler
+      Handler: index.updateTaskController # Updated handler
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -100,7 +100,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowDeleteTask
-      Handler: deleteTask.handler
+      Handler: index.deleteTaskController # Updated handler
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -119,7 +119,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowGetStacks
-      Handler: getStacks.handler
+      Handler: index.getStacksController # Updated handler
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -138,7 +138,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowCreateStack
-      Handler: createStack.handler
+      Handler: index.createStackController # Updated handler
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -157,7 +157,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowUpdateStack
-      Handler: updateStack.handler
+      Handler: index.updateStackController # Updated handler
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -176,7 +176,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowDeleteStack
-      Handler: deleteStack.handler
+      Handler: index.deleteStackController # Updated handler
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -195,7 +195,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowGetEventTypes
-      Handler: getEventTypes.handler
+      Handler: index.getEventTypeController # Updated handler
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -214,7 +214,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowCreateEventType
-      Handler: createEventType.handler
+      Handler: index.createEventTypeController # Updated handler
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -233,7 +233,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowUpdateEventType
-      Handler: updateEventType.handler
+      Handler: index.updateEventTypeController # Updated handler
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
@@ -252,7 +252,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: TaskFlowDeleteEventType
-      Handler: deleteEventType.handler
+      Handler: index.deleteEventTypeController # Updated handler
       Runtime: nodejs20.x
       Timeout: 30
       MemorySize: 128
