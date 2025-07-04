@@ -53,7 +53,7 @@ Resources:
           const dynamodb = new AWS.DynamoDB.DocumentClient();
 
           exports.handler = async (event) => {
-              console.log('Received event:', JSON.stringify(event, null, 2));
+              console.log('Received event (GET /tasks):', JSON.stringify(event, null, 2));
               const params = {
                   TableName: 'tasks'
               };
@@ -65,7 +65,7 @@ Resources:
                       headers: {
                           "Access-Control-Allow-Origin": "*",
                           "Access-Control-Allow-Headers": "Content-Type",
-                          "Access-Control-Allow-Methods": "OPTIONS,GET"
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
                       },
                       body: JSON.stringify(data.Items)
                   };
@@ -76,9 +76,184 @@ Resources:
                       headers: {
                           "Access-Control-Allow-Origin": "*",
                           "Access-Control-Allow-Headers": "Content-Type",
-                          "Access-Control-Allow-Methods": "OPTIONS,GET"
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
                       },
                       body: JSON.stringify({ message: 'Failed to fetch tasks', error: error.message })
+                  };
+              }
+          };
+
+  # Lambda Function to create a task
+  CreateTaskLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: TaskFlowCreateTask
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+          const { v4: uuidv4 } = require('uuid'); // You'd need to include uuid in your Lambda layer or zip
+
+          exports.handler = async (event) => {
+              console.log('Received event (POST /tasks):', JSON.stringify(event, null, 2));
+              try {
+                  const taskData = JSON.parse(event.body);
+                  const now = new Date().toISOString();
+                  const newTask = {
+                      id: uuidv4(), // Generate a unique ID
+                      ...taskData,
+                      created_at: now,
+                      updated_at: now
+                  };
+
+                  const params = {
+                      TableName: 'tasks',
+                      Item: newTask
+                  };
+
+                  await dynamodb.put(params).promise();
+
+                  return {
+                      statusCode: 201,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify(newTask)
+                  };
+              } catch (error) {
+                  console.error('Error creating task:', error);
+                  return {
+                      statusCode: 500,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify({ message: 'Failed to create task', error: error.message })
+                  };
+              }
+          };
+
+  # Lambda Function to update a task
+  UpdateTaskLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: TaskFlowUpdateTask
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+          exports.handler = async (event) => {
+              console.log('Received event (PUT /tasks/{id}):', JSON.stringify(event, null, 2));
+              const taskId = event.pathParameters.id;
+              try {
+                  const updateData = JSON.parse(event.body);
+                  const now = new Date().toISOString();
+
+                  let UpdateExpression = 'set updated_at = :updatedAt';
+                  let ExpressionAttributeValues = { ':updatedAt': now };
+                  let ExpressionAttributeNames = {};
+
+                  for (const key in updateData) {
+                      if (updateData.hasOwnProperty(key) && key !== 'id' && key !== 'created_at') {
+                          UpdateExpression += `, #${key} = :${key}`;
+                          ExpressionAttributeValues[`:${key}`] = updateData[key];
+                          ExpressionAttributeNames[`#${key}`] = key;
+                      }
+                  }
+
+                  const params = {
+                      TableName: 'tasks',
+                      Key: { id: taskId },
+                      UpdateExpression: UpdateExpression,
+                      ExpressionAttributeValues: ExpressionAttributeValues,
+                      ExpressionAttributeNames: Object.keys(ExpressionAttributeNames).length > 0 ? ExpressionAttributeNames : undefined,
+                      ReturnValues: 'ALL_NEW'
+                  };
+
+                  const result = await dynamodb.update(params).promise();
+
+                  return {
+                      statusCode: 200,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify(result.Attributes)
+                  };
+              } catch (error) {
+                  console.error('Error updating task:', error);
+                  return {
+                      statusCode: 500,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify({ message: 'Failed to update task', error: error.message })
+                  };
+              }
+          };
+
+  # Lambda Function to delete a task
+  DeleteTaskLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: TaskFlowDeleteTask
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+          exports.handler = async (event) => {
+              console.log('Received event (DELETE /tasks/{id}):', JSON.stringify(event, null, 2));
+              const taskId = event.pathParameters.id;
+
+              const params = {
+                  TableName: 'tasks',
+                  Key: { id: taskId }
+              };
+
+              try {
+                  await dynamodb.delete(params).promise();
+                  return {
+                      statusCode: 204, // No Content
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: ''
+                  };
+              } catch (error) {
+                  console.error('Error deleting task:', error);
+                  return {
+                      statusCode: 500,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify({ message: 'Failed to delete task', error: error.message })
                   };
               }
           };
@@ -113,29 +288,103 @@ Resources:
       PathPart: tasks
       RestApiId: !Ref TaskFlowApi
 
-  # API Gateway GET method for /tasks
+  # API Gateway Resource for /tasks/{id}
+  TaskByIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref TasksResource
+      PathPart: '{id}'
+      RestApiId: !Ref TaskFlowApi
+
+  # API Gateway GET method for /tasks (already exists, updated CORS)
   GetTasksMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: GET
       ResourceId: !Ref TasksResource
       RestApiId: !Ref TaskFlowApi
-      AuthorizationType: NONE # For now, no authorization. Will need to be updated for Cognito.
+      AuthorizationType: NONE
       Integration:
         Type: AWS_PROXY
-        IntegrationHttpMethod: POST # Lambda proxy integration always uses POST
+        IntegrationHttpMethod: POST
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetTasksLambda.Arn}/invocations"
         PassthroughBehavior: WHEN_NO_MATCH
       MethodResponses:
         - StatusCode: 200
           ResponseModels:
-            application/json: "Empty" # Define a model if you have a schema
+            application/json: "Empty"
           ResponseParameters:
             method.response.header.Access-Control-Allow-Origin: true
             method.response.header.Access-Control-Allow-Headers: true
             method.response.header.Access-Control-Allow-Methods: true
 
-  # API Gateway OPTIONS method for CORS preflight
+  # API Gateway POST method for /tasks
+  CreateTaskMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: POST
+      ResourceId: !Ref TasksResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateTaskLambda.Arn}/invocations"
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses:
+        - StatusCode: 201
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # API Gateway PUT method for /tasks/{id}
+  UpdateTaskMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: PUT
+      ResourceId: !Ref TaskByIdResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateTaskLambda.Arn}/invocations"
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # API Gateway DELETE method for /tasks/{id}
+  DeleteTaskMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: DELETE
+      ResourceId: !Ref TaskByIdResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteTaskLambda.Arn}/invocations"
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses:
+        - StatusCode: 204
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # API Gateway OPTIONS method for CORS preflight on /tasks
   OptionsTasksMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -162,15 +411,46 @@ Resources:
             method.response.header.Access-Control-Allow-Methods: true
             method.response.header.Access-Control-Allow-Origin: true
 
+  # API Gateway OPTIONS method for CORS preflight on /tasks/{id}
+  OptionsTaskByIdMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: OPTIONS
+      ResourceId: !Ref TaskByIdResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,POST,PUT,DELETE'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: "{}"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
   # API Gateway Deployment
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
-      - GetTasksMethod # Ensure methods are created before deployment
+      - GetTasksMethod
+      - CreateTaskMethod
+      - UpdateTaskMethod
+      - DeleteTaskMethod
       - OptionsTasksMethod
+      - OptionsTaskByIdMethod
     Properties:
       RestApiId: !Ref TaskFlowApi
-      Description: Initial deployment of TaskFlow API
+      Description: Deployment with full Task CRUD operations
 
   # API Gateway Stage
   ApiStage:
@@ -181,12 +461,36 @@ Resources:
       RestApiId: !Ref TaskFlowApi
       DeploymentId: !Ref ApiDeployment
 
-  # Permissions for API Gateway to invoke Lambda
-  LambdaPermission:
+  # Permissions for API Gateway to invoke Lambdas
+  LambdaPermissionGetTasks:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt GetTasksLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
+
+  LambdaPermissionCreateTask:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt CreateTaskLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
+
+  LambdaPermissionUpdateTask:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt UpdateTaskLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
+
+  LambdaPermissionDeleteTask:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt DeleteTaskLambda.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
 
