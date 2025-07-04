@@ -236,7 +236,7 @@ Resources:
               try {
                   await dynamodb.delete(params).promise();
                   return {
-                      statusCode: 204, // No Content
+                      statusCode: 204, # No Content
                       headers: {
                           "Access-Control-Allow-Origin": "*",
                           "Access-Control-Allow-Headers": "Content-Type",
@@ -254,6 +254,444 @@ Resources:
                           "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
                       },
                       body: JSON.stringify({ message: 'Failed to delete task', error: error.message })
+                  };
+              }
+          };
+
+  # Lambda Function to get all stacks
+  GetStacksLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: TaskFlowGetStacks
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+          exports.handler = async (event) => {
+              console.log('Received event (GET /stacks):', JSON.stringify(event, null, 2));
+              const params = {
+                  TableName: 'stack'
+              };
+
+              try {
+                  const data = await dynamodb.scan(params).promise();
+                  return {
+                      statusCode: 200,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify(data.Items)
+                  };
+              } catch (error) {
+                  console.error('Error fetching stacks:', error);
+                  return {
+                      statusCode: 500,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify({ message: 'Failed to fetch stacks', error: error.message })
+                  };
+              }
+          };
+
+  # Lambda Function to create a stack
+  CreateStackLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: TaskFlowCreateStack
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+          exports.handler = async (event) => {
+              console.log('Received event (POST /stacks):', JSON.stringify(event, null, 2));
+              try {
+                  const stackData = JSON.parse(event.body);
+                  const now = new Date().toISOString();
+                  const newStack = {
+                      ...stackData,
+                      created_at: now,
+                      updated_at: now
+                  };
+
+                  const params = {
+                      TableName: 'stack',
+                      Item: newStack
+                  };
+
+                  await dynamodb.put(params).promise();
+
+                  return {
+                      statusCode: 201,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify(newStack)
+                  };
+              } catch (error) {
+                  console.error('Error creating stack:', error);
+                  return {
+                      statusCode: 500,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify({ message: 'Failed to create stack', error: error.message })
+                  };
+              }
+          };
+
+  # Lambda Function to update a stack
+  UpdateStackLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: TaskFlowUpdateStack
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+          exports.handler = async (event) => {
+              console.log('Received event (PUT /stacks/{value}):', JSON.stringify(event, null, 2));
+              const stackValue = event.pathParameters.value;
+              try {
+                  const updateData = JSON.parse(event.body);
+                  const now = new Date().toISOString();
+
+                  let UpdateExpression = 'set updated_at = :updatedAt';
+                  let ExpressionAttributeValues = { ':updatedAt': now };
+                  let ExpressionAttributeNames = {};
+
+                  for (const key in updateData) {
+                      if (updateData.hasOwnProperty(key) && key !== 'value' && key !== 'created_at') {
+                          UpdateExpression += `, #${key} = :${key}`;
+                          ExpressionAttributeValues[`:${key}`] = updateData[key];
+                          ExpressionAttributeNames[`#${key}`] = key;
+                      }
+                  }
+
+                  const params = {
+                      TableName: 'stack',
+                      Key: { value: stackValue },
+                      UpdateExpression: UpdateExpression,
+                      ExpressionAttributeValues: ExpressionAttributeValues,
+                      ExpressionAttributeNames: Object.keys(ExpressionAttributeNames).length > 0 ? ExpressionAttributeNames : undefined,
+                      ReturnValues: 'ALL_NEW'
+                  };
+
+                  const result = await dynamodb.update(params).promise();
+
+                  return {
+                      statusCode: 200,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify(result.Attributes)
+                  };
+              } catch (error) {
+                  console.error('Error updating stack:', error);
+                  return {
+                      statusCode: 500,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify({ message: 'Failed to update stack', error: error.message })
+                  };
+              }
+          };
+
+  # Lambda Function to delete a stack
+  DeleteStackLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: TaskFlowDeleteStack
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+          exports.handler = async (event) => {
+              console.log('Received event (DELETE /stacks/{value}):', JSON.stringify(event, null, 2));
+              const stackValue = event.pathParameters.value;
+
+              const params = {
+                  TableName: 'stack',
+                  Key: { value: stackValue }
+              };
+
+              try {
+                  await dynamodb.delete(params).promise();
+                  return {
+                      statusCode: 204, # No Content
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: ''
+                  };
+              } catch (error) {
+                  console.error('Error deleting stack:', error);
+                  return {
+                      statusCode: 500,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify({ message: 'Failed to delete stack', error: error.message })
+                  };
+              }
+          };
+
+  # Lambda Function to get all event types
+  GetEventTypesLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: TaskFlowGetEventTypes
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+          exports.handler = async (event) => {
+              console.log('Received event (GET /event-types):', JSON.stringify(event, null, 2));
+              const params = {
+                  TableName: 'event_type'
+              };
+
+              try {
+                  const data = await dynamodb.scan(params).promise();
+                  return {
+                      statusCode: 200,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify(data.Items)
+                  };
+              } catch (error) {
+                  console.error('Error fetching event types:', error);
+                  return {
+                      statusCode: 500,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify({ message: 'Failed to fetch event types', error: error.message })
+                  };
+              }
+          };
+
+  # Lambda Function to create an event type
+  CreateEventTypeLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: TaskFlowCreateEventType
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+          exports.handler = async (event) => {
+              console.log('Received event (POST /event-types):', JSON.stringify(event, null, 2));
+              try {
+                  const eventTypeData = JSON.parse(event.body);
+                  const now = new Date().toISOString();
+                  const newEventType = {
+                      ...eventTypeData,
+                      created_at: now,
+                      updated_at: now
+                  };
+
+                  const params = {
+                      TableName: 'event_type',
+                      Item: newEventType
+                  };
+
+                  await dynamodb.put(params).promise();
+
+                  return {
+                      statusCode: 201,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify(newEventType)
+                  };
+              } catch (error) {
+                  console.error('Error creating event type:', error);
+                  return {
+                      statusCode: 500,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify({ message: 'Failed to create event type', error: error.message })
+                  };
+              }
+          };
+
+  # Lambda Function to update an event type
+  UpdateEventTypeLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: TaskFlowUpdateEventType
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+          exports.handler = async (event) => {
+              console.log('Received event (PUT /event-types/{value}):', JSON.stringify(event, null, 2));
+              const eventTypeValue = event.pathParameters.value;
+              try {
+                  const updateData = JSON.parse(event.body);
+                  const now = new Date().toISOString();
+
+                  let UpdateExpression = 'set updated_at = :updatedAt';
+                  let ExpressionAttributeValues = { ':updatedAt': now };
+                  let ExpressionAttributeNames = {};
+
+                  for (const key in updateData) {
+                      if (updateData.hasOwnProperty(key) && key !== 'value' && key !== 'created_at') {
+                          UpdateExpression += `, #${key} = :${key}`;
+                          ExpressionAttributeValues[`:${key}`] = updateData[key];
+                          ExpressionAttributeNames[`#${key}`] = key;
+                      }
+                  }
+
+                  const params = {
+                      TableName: 'event_type',
+                      Key: { value: eventTypeValue },
+                      UpdateExpression: UpdateExpression,
+                      ExpressionAttributeValues: ExpressionAttributeValues,
+                      ExpressionAttributeNames: Object.keys(ExpressionAttributeNames).length > 0 ? ExpressionAttributeNames : undefined,
+                      ReturnValues: 'ALL_NEW'
+                  };
+
+                  const result = await dynamodb.update(params).promise();
+
+                  return {
+                      statusCode: 200,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify(result.Attributes)
+                  };
+              } catch (error) {
+                  console.error('Error updating event type:', error);
+                  return {
+                      statusCode: 500,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify({ message: 'Failed to update event type', error: error.message })
+                  };
+              }
+          };
+
+  # Lambda Function to delete an event type
+  DeleteEventTypeLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: TaskFlowDeleteEventType
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+          exports.handler = async (event) => {
+              console.log('Received event (DELETE /event-types/{value}):', JSON.stringify(event, null, 2));
+              const eventTypeValue = event.pathParameters.value;
+
+              const params = {
+                  TableName: 'event_type',
+                  Key: { value: eventTypeValue }
+              };
+
+              try {
+                  await dynamodb.delete(params).promise();
+                  return {
+                      statusCode: 204, # No Content
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: ''
+                  };
+              } catch (error) {
+                  console.error('Error deleting event type:', error);
+                  return {
+                      statusCode: 500,
+                      headers: {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+                      },
+                      body: JSON.stringify({ message: 'Failed to delete event type', error: error.message })
                   };
               }
           };
@@ -294,6 +732,38 @@ Resources:
     Properties:
       ParentId: !Ref TasksResource
       PathPart: '{id}'
+      RestApiId: !Ref TaskFlowApi
+
+  # API Gateway Resource for /stacks
+  StacksResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt TaskFlowApi.RootResourceId
+      PathPart: stacks
+      RestApiId: !Ref TaskFlowApi
+
+  # API Gateway Resource for /stacks/{value}
+  StackByValueResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref StacksResource
+      PathPart: '{value}'
+      RestApiId: !Ref TaskFlowApi
+
+  # API Gateway Resource for /event-types
+  EventTypesResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt TaskFlowApi.RootResourceId
+      PathPart: event-types
+      RestApiId: !Ref TaskFlowApi
+
+  # API Gateway Resource for /event-types/{value}
+  EventTypeByValueResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref EventTypesResource
+      PathPart: '{value}'
       RestApiId: !Ref TaskFlowApi
 
   # API Gateway GET method for /tasks (already exists, updated CORS)
@@ -384,6 +854,182 @@ Resources:
             method.response.header.Access-Control-Allow-Headers: true
             method.response.header.Access-Control-Allow-Methods: true
 
+  # API Gateway GET method for /stacks
+  GetStacksMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref StacksResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetStacksLambda.Arn}/invocations"
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # API Gateway POST method for /stacks
+  CreateStackMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: POST
+      ResourceId: !Ref StacksResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateStackLambda.Arn}/invocations"
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses:
+        - StatusCode: 201
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # API Gateway PUT method for /stacks/{value}
+  UpdateStackMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: PUT
+      ResourceId: !Ref StackByValueResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateStackLambda.Arn}/invocations"
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # API Gateway DELETE method for /stacks/{value}
+  DeleteStackMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: DELETE
+      ResourceId: !Ref StackByValueResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteStackLambda.Arn}/invocations"
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses:
+        - StatusCode: 204
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # API Gateway GET method for /event-types
+  GetEventTypesMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref EventTypesResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetEventTypesLambda.Arn}/invocations"
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # API Gateway POST method for /event-types
+  CreateEventTypeMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: POST
+      ResourceId: !Ref EventTypesResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateEventTypeLambda.Arn}/invocations"
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses:
+        - StatusCode: 201
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # API Gateway PUT method for /event-types/{value}
+  UpdateEventTypeMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: PUT
+      ResourceId: !Ref EventTypeByValueResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateEventTypeLambda.Arn}/invocations"
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  # API Gateway DELETE method for /event-types/{value}
+  DeleteEventTypeMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: DELETE
+      ResourceId: !Ref EventTypeByValueResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteEventTypeLambda.Arn}/invocations"
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses:
+        - StatusCode: 204
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
   # API Gateway OPTIONS method for CORS preflight on /tasks
   OptionsTasksMethod:
     Type: AWS::ApiGateway::Method
@@ -438,6 +1084,114 @@ Resources:
             method.response.header.Access-Control-Allow-Methods: true
             method.response.header.Access-Control-Allow-Origin: true
 
+  # API Gateway OPTIONS method for CORS preflight on /stacks
+  OptionsStacksMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: OPTIONS
+      ResourceId: !Ref StacksResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,POST,PUT,DELETE'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: "{}"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # API Gateway OPTIONS method for CORS preflight on /stacks/{value}
+  OptionsStackByValueMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: OPTIONS
+      ResourceId: !Ref StackByValueResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,POST,PUT,DELETE'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: "{}"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # API Gateway OPTIONS method for CORS preflight on /event-types
+  OptionsEventTypesMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: OPTIONS
+      ResourceId: !Ref EventTypesResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,POST,PUT,DELETE'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: "{}"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # API Gateway OPTIONS method for CORS preflight on /event-types/{value}
+  OptionsEventTypeByValueMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: OPTIONS
+      ResourceId: !Ref EventTypeByValueResource
+      RestApiId: !Ref TaskFlowApi
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,POST,PUT,DELETE'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: "{}"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
   # API Gateway Deployment
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
@@ -448,9 +1202,21 @@ Resources:
       - DeleteTaskMethod
       - OptionsTasksMethod
       - OptionsTaskByIdMethod
+      - GetStacksMethod
+      - CreateStackMethod
+      - UpdateStackMethod
+      - DeleteStackMethod
+      - OptionsStacksMethod
+      - OptionsStackByValueMethod
+      - GetEventTypesMethod
+      - CreateEventTypeMethod
+      - UpdateEventTypeMethod
+      - DeleteEventTypeMethod
+      - OptionsEventTypesMethod
+      - OptionsEventTypeByValueMethod
     Properties:
       RestApiId: !Ref TaskFlowApi
-      Description: Deployment with full Task CRUD operations
+      Description: Deployment with full Task, Stack, and EventType CRUD operations
 
   # API Gateway Stage
   ApiStage:
@@ -491,6 +1257,70 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt DeleteTaskLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
+
+  LambdaPermissionGetStacks:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt GetStacksLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
+
+  LambdaPermissionCreateStack:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt CreateStackLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
+
+  LambdaPermissionUpdateStack:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt UpdateStackLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
+
+  LambdaPermissionDeleteStack:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt DeleteStackLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
+
+  LambdaPermissionGetEventTypes:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt GetEventTypesLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
+
+  LambdaPermissionCreateEventType:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt CreateEventTypeLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
+
+  LambdaPermissionUpdateEventType:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt UpdateEventTypeLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
+
+  LambdaPermissionDeleteEventType:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt DeleteEventTypeLambda.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TaskFlowApi.RootResourceId}/*"
 
