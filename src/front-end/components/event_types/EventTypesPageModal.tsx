@@ -17,15 +17,17 @@ const EventTypesPageModal = ({ onCancel }: EventTypesPageModalProps) => {
   };
   return (
     <Dialog open={true} onOpenChange={() => onCancel()}>
-      <DialogContent className="sm:max-w-[825px]">
+      <DialogContent className="sm:max-w-[85vw] max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>
             Tipo de Eventos
           </DialogTitle>
         </DialogHeader>
-        <EventTypesPage showNewForm={showNewForm}
-          setShowNewForm={setShowNewForm}
-          />
+        <div className="overflow-y-auto flex-1">
+          <EventTypesPage showNewForm={showNewForm}
+            setShowNewForm={setShowNewForm}
+            />
+        </div>
 
         <div className="flex justify-end space-x-2 pt-4">
           <Button type="button" variant="outline"

@@ -101,7 +101,7 @@ const EventTypesPage = ({showNewForm, setShowNewForm}:EventTypesPageProps) => {
                             size="sm" 
                             onClick={() => {
                               setEditingItem(item);
-                              setShowForm(true);
+                              setShowNewForm(true);
                             }}
                           >
                             <Edit className="w-4 h-4" />

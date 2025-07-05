@@ -46,11 +46,15 @@ export const TaskStatus = [
 ]
 
 export const NextEvents = [
-  { value: "semester", label: "Vertical" },
-  { value: "year", label: "Horizontal" },
+  { value: "grade", label: "Kanban" },
   { value: "calendar", label: "Calendário" },
   { value: "upcoming", label: "Próximos Eventos" },
   { value: "events-grid", label: "Apresentação" }, 
+]
+
+export const GradeLayoutOptions = [
+  { value: "vertical", label: "Vertical" },
+  { value: "horizontal", label: "Horizontal" },
 ]
 
 export const TailwindColors = [

@@ -12,6 +12,7 @@ interface VerticalViewProps {
   stack: ListValue[] | [];
   eventType: ListValue[] | [];
   selectedYear: number;
+  selectedSemesters: string[];
   role: UserRole;
   showCardContent: boolean;
   colorType: string;
@@ -21,7 +22,7 @@ interface VerticalViewProps {
   handleTypeChange: (taskId: string, newType: string) => void;
 }
 
-export const VerticalView = ({ role, showCardContent, filteredTasks, selectedYear, stack, eventType, setEditingTask, handleDeleteTask, handleStatusChange, handleTypeChange }: VerticalViewProps) => {
+export const VerticalView = ({ role, showCardContent, filteredTasks, selectedYear, selectedSemesters, stack, eventType, setEditingTask, handleDeleteTask, handleStatusChange, handleTypeChange }: VerticalViewProps) => {
   const getTasksBySemester = (year: number, semester: number) => {
     return filteredTasks.filter((task) => {
       const startDate = new Date(task.start_date);
@@ -46,12 +47,35 @@ export const VerticalView = ({ role, showCardContent, filteredTasks, selectedYea
   const handleToggleMonth = (semester: number, month: number) => { setHideMonth((prev) => ({ ...prev, [`${semester}-${month}`]: !prev[`${semester}-${month}`] })); };
   const [colorType] = React.useState<string>("bg-white");
 
+  // Verifica se deve mostrar a mensagem "Nenhuma tarefa neste semestre"
+  const shouldShowNoTasksMessage = (semester: number) => {
+    // Se não há semestres selecionados, sempre mostra a mensagem
+    if (selectedSemesters.length === 0) {
+      return true;
+    }
+    
+    // Se há semestres selecionados, verifica se este semestre está selecionado
+    const semesterKey = `${semester}/${selectedYear}`;
+    const isSemesterSelected = selectedSemesters.includes(semesterKey);
+    
+    // Se o semestre está selecionado, não mostra a mensagem (mesmo sem tarefas)
+    // Se o semestre não está selecionado, não mostra o semestre inteiro
+    return !isSemesterSelected;
+  };
+
   return (
     <div className="space-y-2">
       {[1, 2].map((semester) => {
         const semesterTasks = getTasksBySemester(selectedYear, semester);
         const monthsInSemester = semester === 1 ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12];
         const monthsWithTasks = monthsInSemester.filter((month) => getTasksByMonth(selectedYear, month).length > 0);
+        const semesterKey = `${semester}/${selectedYear}`;
+        const isSemesterSelected = selectedSemesters.length === 0 || selectedSemesters.includes(semesterKey);
+
+        // Se há semestres selecionados e este semestre não está selecionado, não renderiza
+        if (selectedSemesters.length > 0 && !isSemesterSelected) {
+          return null;
+        }
 
         return (
           <div key={semester} className="rounded-lg border-2 border-gray-200 bg-gray-50">
@@ -111,9 +135,12 @@ export const VerticalView = ({ role, showCardContent, filteredTasks, selectedYea
                     <ScrollBar orientation="horizontal" />
                   </ScrollArea>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <p className="text-sm">Nenhuma tarefa neste semestre</p>
-                  </div>
+                  // Só mostra a mensagem se não há semestres selecionados ou se o semestre não está selecionado
+                  shouldShowNoTasksMessage(semester) && (
+                    <div className="text-center py-8 text-gray-500">
+                      <p className="text-sm">Nenhuma tarefa neste semestre</p>
+                    </div>
+                  )
                 )}
               </div>
             )}

@@ -16,15 +16,17 @@ import { HorizontalView } from "@/components/dashboard/HorizontalView";
 import { VerticalView } from "@/components/dashboard/VerticalView";
 import { UpcomingView } from "@/components/dashboard/UpcomingView";
 import { EventsGridView } from "@/components/dashboard/EventsGridView";
-import { TaskStatus, NextEvents } from "@/lib/utils";
+import { TaskStatus, NextEvents, GradeLayoutOptions } from "@/lib/utils";
 import {Loading} from "../shared/loading";
+import { MultiSelect, Option } from "@/components/ui/multi-select";
 
 interface DashboardProps {
     user: User;
     colorType: string;
 }
 
-type ViewMode = "semester" | "year" | "calendar" | "upcoming" | "events-grid";
+type ViewMode = "grade" | "calendar" | "upcoming" | "events-grid";
+type GradeLayout = "vertical" | "horizontal";
 type PaletteType = "minsait" | "indra";
 
 const Dashboard = ({ user, colorType }: DashboardProps) => {
@@ -33,11 +35,12 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
     const { eventType } = useEventType();
     const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [stackFilter, setStackFilter] = useState<string | "all">("all");
-    const [statusFilter, setStatusFilter] = useState<string | "all">("all");
-    const [eventTypeFilter, setEventTypeFilter] = useState<string | "all">("all");
-    const [viewMode, setViewMode] = useState<ViewMode>("semester");
-    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+    const [stackFilter, setStackFilter] = useState<string[]>([]);
+    const [statusFilter, setStatusFilter] = useState<string[]>([]);
+    const [eventTypeFilter, setEventTypeFilter] = useState<string[]>([]);
+    const [viewMode, setViewMode] = useState<ViewMode>("grade");
+    const [gradeLayout, setGradeLayout] = useState<GradeLayout>("vertical");
+    const [selectedSemesters, setSelectedSemesters] = useState<string[]>([]);
     const [showCardContent, setShowCardContent] = useState<boolean>(true);
     const [palette, setPalette] = useState<PaletteType>("minsait");
     const [showTaskForm, setShowTaskForm] = useState(false);
@@ -61,17 +64,36 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
                     task.responsible.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
-        if (stackFilter !== "all") {
-            filtered = filtered.filter((task) => task.stack === stackFilter);
+        
+        // Filtro de Stack - se não há filtros selecionados, mostra todas
+        if (stackFilter.length > 0) {
+            filtered = filtered.filter((task) => task.stack && stackFilter.includes(task.stack));
         }
-        if (statusFilter !== "all") {
-            filtered = filtered.filter((task) => task.status === statusFilter);
+        
+        // Filtro de Status - se não há filtros selecionados, mostra todas
+        if (statusFilter.length > 0) {
+            filtered = filtered.filter((task) => task.status && statusFilter.includes(task.status));
         }
-        if (eventTypeFilter !== "all") {
-            filtered = filtered.filter((task) => task.event_type === eventTypeFilter);
+        
+        // Filtro de Tipo de Evento - se não há filtros selecionados, mostra todas
+        if (eventTypeFilter.length > 0) {
+            filtered = filtered.filter((task) => task.event_type && eventTypeFilter.includes(task.event_type));
         }
+        
+        // Filtro de Semestre - se não há filtros selecionados, mostra todas
+        if (selectedSemesters.length > 0) {
+            filtered = filtered.filter((task) => {
+                const date = new Date(task.start_date);
+                const year = date.getFullYear();
+                const month = date.getMonth() + 1;
+                const semester = month <= 6 ? 1 : 2;
+                const taskSemester = `${semester}/${year}`;
+                return selectedSemesters.includes(taskSemester);
+            });
+        }
+        
         setFilteredTasks(filtered);
-    }, [tasks, searchTerm, stackFilter, statusFilter, eventTypeFilter]);
+    }, [tasks, searchTerm, stackFilter, statusFilter, eventTypeFilter, selectedSemesters]);
 
 
     const setViewModeCombo = (value: ViewMode) => {
@@ -101,55 +123,73 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
         await updateTaskType(taskId, newType);
     };
 
-    const getAvailableYears = () => {
-        const years = new Set<number>();
+    const getAvailableSemesters = (): Option[] => {
+        const semesters = new Set<string>();
+        
         tasks.forEach((task) => {
-            years.add(new Date(task.start_date).getFullYear());
+            const date = new Date(task.start_date);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const semester = month <= 6 ? 1 : 2;
+            semesters.add(`${semester}/${year}`);
         });
-        return Array.from(years).sort();
+        
+        return Array.from(semesters)
+            .sort((a, b) => {
+                const [semA, yearA] = a.split('/').map(Number);
+                const [semB, yearB] = b.split('/').map(Number);
+                
+                if (yearA !== yearB) return yearA - yearB;
+                return semA - semB;
+            })
+            .map(semester => ({
+                value: semester,
+                label: `${semester}º Semestre`
+            }));
     };
 
-    const renderVerticalView = () => {
-        return (
-            <VerticalView
-                filteredTasks={filteredTasks}
-                selectedYear={selectedYear}
-                stack={stack}
-                eventType={eventType}
-                role={user.role}
-                showCardContent={showCardContent}
-                colorType={colorType}
-                setEditingTask={setEditingTask}
-                handleDeleteTask={handleDeleteTask}
-                handleStatusChange={handleStatusChange}
-                handleTypeChange={handleTypeChange}
-            />
-        );
-    };
-
-    const renderHorizontalView = () => {
-        return (
-            <HorizontalView
-                filteredTasks={filteredTasks}
-                selectedYear={selectedYear}
-                stack={stack}
-                eventType={eventType}
-                role={user.role}
-                showCardContent={showCardContent}
-                colorType={colorType}
-                setEditingTask={setEditingTask}
-                handleDeleteTask={handleDeleteTask}
-                handleStatusChange={handleStatusChange}
-                handleTypeChange={handleTypeChange}
-            />
-        );
+    const renderGradeView = () => {
+        if (gradeLayout === "vertical") {
+            return (
+                <VerticalView
+                    filteredTasks={filteredTasks}
+                    selectedYear={new Date().getFullYear()}
+                    selectedSemesters={selectedSemesters}
+                    stack={stack}
+                    eventType={eventType}
+                    role={user.role}
+                    showCardContent={showCardContent}
+                    colorType={colorType}
+                    setEditingTask={setEditingTask}
+                    handleDeleteTask={handleDeleteTask}
+                    handleStatusChange={handleStatusChange}
+                    handleTypeChange={handleTypeChange}
+                />
+            );
+        } else {
+            return (
+                <HorizontalView
+                    filteredTasks={filteredTasks}
+                    selectedYear={new Date().getFullYear()}
+                    stack={stack}
+                    eventType={eventType}
+                    role={user.role}
+                    showCardContent={showCardContent}
+                    colorType={colorType}
+                    setEditingTask={setEditingTask}
+                    handleDeleteTask={handleDeleteTask}
+                    handleStatusChange={handleStatusChange}
+                    handleTypeChange={handleTypeChange}
+                />
+            );
+        }
     };
 
     const renderUpcomingView = () => {
         return (
             <UpcomingView
                 filteredTasks={filteredTasks}
-                selectedYear={selectedYear}
+                selectedYear={new Date().getFullYear()}
                 stack={stack}
                 eventType={eventType}
                 role={user.role}
@@ -185,43 +225,45 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
                             <Input placeholder="Buscar tarefas..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 text-black" />
                         </div>
                         {user.role === "admin" && (
-                            <Select onValueChange={(value) => setStackFilter(value)} defaultValue="all">
-                                <SelectTrigger className="w-full sm:w-40 text-black">
-                                    <SelectValue placeholder="Stack" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Todas Stacks</SelectItem>
-                                    {stack.map((s) => (<SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>))}
-                                </SelectContent>
-                            </Select>
+                            <MultiSelect
+                                options={stack}
+                                selectedValues={stackFilter}
+                                onSelectionChange={setStackFilter}
+                                placeholder="Categorias"
+                                className="w-full sm:w-40"
+                                showAllOption={true}
+                                allOptionLabel="Todas as Stacks"
+                            />
                         )}
-                        <Select onValueChange={(value) => setStatusFilter(value)} defaultValue="all">
-                            <SelectTrigger className="w-full sm:w-40 text-black">
-                                <SelectValue placeholder="Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todos Status</SelectItem>
-                                {TaskStatus.map((status) => (<SelectItem key={status.value} value={status.value}>{status.label}</SelectItem>))}
-                            </SelectContent>
-                        </Select>
-                        <Select onValueChange={(value) => setEventTypeFilter(value)} defaultValue="all">
-                            <SelectTrigger className="w-full sm:w-40  text-black">
-                                <SelectValue placeholder="Tipo Evento" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todos Eventos</SelectItem>
-                                {eventType.map((item) => (<SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>))}
-                            </SelectContent>
-                        </Select>
-                        <Select onValueChange={(value) => setSelectedYear(parseInt(value))} defaultValue={selectedYear.toString()}>
-                            <SelectTrigger className="w-full sm:w-32  text-black">
-                                <SelectValue placeholder="Ano" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {getAvailableYears().map((year) => (<SelectItem key={year} value={year.toString()}>{year}</SelectItem>))}
-                            </SelectContent>
-                        </Select>
-                        <Select onValueChange={(value) => setViewModeCombo(value as ViewMode)} defaultValue="semester">
+
+                        <MultiSelect
+                            options={eventType}
+                            selectedValues={eventTypeFilter}
+                            onSelectionChange={setEventTypeFilter}
+                            placeholder="Evento"
+                            className="w-full sm:w-40"
+                            showAllOption={true}
+                            allOptionLabel="Todos os Eventos"
+                        />
+                        <MultiSelect
+                            options={TaskStatus}
+                            selectedValues={statusFilter}
+                            onSelectionChange={setStatusFilter}
+                            placeholder="Status"
+                            className="w-full sm:w-40"
+                            showAllOption={true}
+                            allOptionLabel="Todos os Status"
+                        />                        
+                        <MultiSelect
+                            options={getAvailableSemesters()}
+                            selectedValues={selectedSemesters}
+                            onSelectionChange={setSelectedSemesters}
+                            placeholder="Semestre"
+                            className="w-full sm:w-40"
+                            showAllOption={true}
+                            allOptionLabel="Todos os Semestres"
+                        />
+                        <Select onValueChange={(value) => setViewModeCombo(value as ViewMode)} defaultValue="grade">
                             <SelectTrigger className="w-full sm:w-40  text-black">
                                 <SelectValue placeholder="Visualização" />
                             </SelectTrigger>
@@ -229,6 +271,17 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
                                 {NextEvents.map((item) => (<SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>))}
                             </SelectContent>
                         </Select>
+                        
+                        {viewMode === "grade" && (
+                            <Select onValueChange={(value) => setGradeLayout(value as GradeLayout)} defaultValue="vertical">
+                                <SelectTrigger className="w-full sm:w-40  text-black">
+                                    <SelectValue placeholder="Layout" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {GradeLayoutOptions.map((item) => (<SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>))}
+                                </SelectContent>
+                            </Select>
+                        )}
                         {(viewMode === "events-grid") && (
                             <Select onValueChange={(value) => setPalette(value as PaletteType)} defaultValue="minsait">
                                 <SelectTrigger className="w-full sm:w-40  text-black"><SelectValue placeholder="Paleta" /></SelectTrigger>
@@ -245,8 +298,7 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
 
             <div className="p-0">
                 <Tabs value={viewMode} className="w-full">
-                    <TabsContent value="semester" className="mt-0">{renderVerticalView()}</TabsContent>
-                    <TabsContent value="year" className="mt-0">{renderHorizontalView()}</TabsContent>
+                    <TabsContent value="grade" className="mt-0">{renderGradeView()}</TabsContent>
                     <TabsContent value="calendar" className="mt-0">{renderCalendarView()}</TabsContent>
                     <TabsContent value="upcoming" className="mt-0">{renderUpcomingView()}</TabsContent>
                     <TabsContent value="events-grid" className="mt-0">{renderEventsGridView()}</TabsContent>
