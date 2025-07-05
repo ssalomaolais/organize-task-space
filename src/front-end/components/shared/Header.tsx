@@ -1,4 +1,4 @@
-import { useState } from "react"; // Remova o useEffect não necessário
+import { useState, useEffect } from "react";
 import { User } from "@/types/auth";
 import { Button } from "@/components/ui/button";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -8,11 +8,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import UsersPage from "@/components/users/UsersPage";
 import EventTypesPageModal from "@/components/event_types/EventTypesPageModal";
 import StacksPageModal from "@/components/stacks/StacksPageModal";
+import DisciplinesPageModal from "@/components/disciplines/DisciplinesPageModal";
 import { useStack } from "@/hooks/useStack";
 import Dashboard from "@/components/dashboard/Dashboard";
 import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
 
-type ManagementPage = "none" | "users" | "event-types" | "stacks";
+type ManagementPage = "none" | "users" | "event-types" | "stacks" | "disciplines";
 
 interface HeaderProps {
   user: User;
@@ -23,36 +24,23 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
   const [currentManagementPage, setCurrentManagementPage] = useState<ManagementPage>("none");
   const [colorType] = useState<string>("minsait");
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [dashboardKey, setDashboardKey] = useState(0); // Para forçar refresh do dashboard
   const { stack } = useStack();
-  // Renderize os componentes condicionalmente no return principal
-  const renderManagementPage = () => {
-    switch (currentManagementPage) {
-      case "users":
-        return (
-          <main className="flex-1 pt-16">
-            <UsersPage stack={stack} colorType={colorType} onBack={() => setCurrentManagementPage("none")} />
-          </main>);
-      case "event-types":
-        return (
-          <EventTypesPageModal
-            onCancel={() => {
-              setCurrentManagementPage("none");
-            }}
-          />);
-      case "stacks":
-        return (
-          <StacksPageModal
-            onCancel={() => {
-              setCurrentManagementPage("none");
-            }}
-          />
-        )
-      default:
-        return (
-          <main className="flex-1 pt-16"><Dashboard colorType={colorType} user={user} />
-          </main>);
-    }
+
+  const handleCloseModal = () => {
+    setCurrentManagementPage("none");
   };
+
+  // Atualiza o dashboard periodicamente quando um modal está aberto
+  useEffect(() => {
+    if (currentManagementPage !== "none") {
+      const interval = setInterval(() => {
+        setDashboardKey(prev => prev + 1);
+      }, 5000); // Atualiza a cada 5 segundos quando modal está aberto
+
+      return () => clearInterval(interval);
+    }
+  }, [currentManagementPage]);
 
   return (
     <>
@@ -96,7 +84,7 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            
+
             {user.role === "admin" && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -115,10 +103,13 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
                   <DropdownMenuItem onClick={() => setCurrentManagementPage("event-types")}>
                     Eventos
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrentManagementPage("disciplines")}>
+                    Disciplinas
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            
+
             <Button variant="outline" className="text-black" onClick={onLogout}>
               Sair
             </Button>
@@ -126,9 +117,27 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
         </div>
       </header>
 
-      {/* Renderize a página de gestão condicionalmente */}
-      {renderManagementPage()}
-      
+      {/* Dashboard sempre visível */}
+      <main className="flex-1 pt-16">
+        {currentManagementPage === "users" ? (
+          <UsersPage stack={stack} colorType={colorType} onBack={handleCloseModal} />
+        ) : (
+          <Dashboard key={dashboardKey} colorType={colorType} user={user} />
+        )}
+      </main>
+
+      {currentManagementPage === "event-types" && (
+        <EventTypesPageModal onCancel={handleCloseModal} />
+      )}
+
+      {currentManagementPage === "stacks" && (
+        <StacksPageModal onCancel={handleCloseModal} />
+      )}
+
+      {currentManagementPage === "disciplines" && (
+        <DisciplinesPageModal onCancel={handleCloseModal} />
+      )}
+
       {/* Modal de alteração de senha */}
       {showChangePassword && (
         <ChangePasswordForm

@@ -15,7 +15,7 @@ export const getFormatDate = (data:string) =>{
 }
 
 export const getStatusColor = (status) => {
-  return TaskStatus.find((t) => t.value == status).color;
+  return TaskStatusOptions.find((t) => t.value == status).color;
 }
 
 export const getMonthName = (month: number) => {
@@ -38,14 +38,14 @@ export const getSemesterName = (semester: number) => {
   return semester === 1 ? "1º Semestre" : "2º Semestre";
 }
 
-export const TaskStatus = [
+export const TaskStatusOptions = [
   { value: "Pendente", label: "Pendente", color: "bg-yellow-100 text-yellow-800" },
   { value: "Em Andamento", label: "Em Andamento", color: "bg-blue-100 text-blue-800" },
   { value: "Completo", label: "Completo", color: "bg-green-100 text-green-800" },
   { value: "Cancelado", label: "Cancelado", color: "bg-red-100 text-red-800" },
 ]
 
-export const NextEvents = [
+export const NextEventsOptions = [
   { value: "grade", label: "Kanban" },
   { value: "calendar", label: "Calendário" },
   { value: "upcoming", label: "Próximos Eventos" },
@@ -55,6 +55,13 @@ export const NextEvents = [
 export const GradeLayoutOptions = [
   { value: "vertical", label: "Vertical" },
   { value: "horizontal", label: "Horizontal" },
+]
+
+export const SeniorityOptions = [
+  { value: "junior", label: "Junior" },
+  { value: "pleno", label: "Pleno" },
+  { value: "senior", label: "Senior" },
+  { value: "especialista", label: "Especialista" },
 ]
 
 export const TailwindColors = [

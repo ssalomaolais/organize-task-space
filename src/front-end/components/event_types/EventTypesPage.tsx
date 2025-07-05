@@ -13,9 +13,10 @@ import {Loading} from "../shared/loading";
 interface EventTypesPageProps {
   showNewForm: boolean;
   setShowNewForm: (boolean) => void;
+  onDataChanged?: () => void;
 }
 
-const EventTypesPage = ({showNewForm, setShowNewForm}:EventTypesPageProps) => {
+const EventTypesPage = ({showNewForm, setShowNewForm, onDataChanged}:EventTypesPageProps) => {
   const { eventType, loading, totalCount, fetchEventType, createEventType, updateEventType, deleteEventType } = useEventType();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,6 +43,7 @@ const EventTypesPage = ({showNewForm, setShowNewForm}:EventTypesPageProps) => {
     if (result.data) {
       setShowNewForm(false);
       fetchEventType(currentPage, pageSize, searchTerm);
+      if (onDataChanged) onDataChanged();
     }
   };
 
@@ -52,6 +54,7 @@ const EventTypesPage = ({showNewForm, setShowNewForm}:EventTypesPageProps) => {
       setEditingItem(null);
       setShowNewForm(false); // Add this line to close the form
       fetchEventType(currentPage, pageSize, searchTerm);
+      if (onDataChanged) onDataChanged();
     }
   };
 
@@ -60,6 +63,7 @@ const EventTypesPage = ({showNewForm, setShowNewForm}:EventTypesPageProps) => {
       await deleteEventType(deletingItemValue);
       setDeletingItemValue(null);
       fetchEventType(currentPage, pageSize, searchTerm);
+      if (onDataChanged) onDataChanged();
     }
   };
 

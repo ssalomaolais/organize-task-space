@@ -3,12 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { ListValue } from "@/types/task";
 import { toast } from "@/hooks/use-toast";
 
-export const useEventType = () => {
-  const [eventType, setEventType] = useState<ListValue[]>([]);
+export const useDiscipline = () => {
+  const [discipline, setDiscipline] = useState<ListValue[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
 
-  const fetchEventType = async (
+  const fetchDiscipline = async (
     page: number = 1,
     pageSize: number = 50,
     searchTerm: string = ''
@@ -16,7 +16,7 @@ export const useEventType = () => {
     try {
       setLoading(true);
       let query = supabase
-        .from('event_type')
+        .from('discipline')
         .select('*', { count: 'exact' });
 
       if (searchTerm) {
@@ -37,13 +37,13 @@ export const useEventType = () => {
         ...item
       }));
 
-      setEventType(values);
+      setDiscipline(values);
       setTotalCount(count || 0);
     } catch (error) {
-      console.error('Error fetching event_type:', error);
+      console.error('Error fetching discipline:', error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar tipos de evento.",
+        description: "Erro ao carregar disciplinas.",
         variant: "destructive",
       });
     } finally {
@@ -52,86 +52,86 @@ export const useEventType = () => {
   };
 
   useEffect(() => {
-    fetchEventType();
+    fetchDiscipline();
   }, []);
 
-  const createEventType = async (eventData: Omit<ListValue, 'id'>) => {
+  const createDiscipline = async (disciplineData: Omit<ListValue, 'id'>) => {
     try {
       const { data, error } = await supabase
-        .from('event_type')
-        .insert([eventData])
+        .from('discipline')
+        .insert([disciplineData])
         .select()
         .single();
 
       if (error) throw error;
 
-      setEventType(prev => [...prev, data]);
+      setDiscipline(prev => [...prev, data]);
       toast({
         title: "Sucesso!",
-        description: "Tipo de evento criado com sucesso.",
+        description: "Disciplina criada com sucesso.",
       });
       return { data, error: null };
     } catch (error) {
-      console.error('Error creating event type:', error);
+      console.error('Error creating discipline:', error);
       toast({
         title: "Erro",
-        description: "Erro ao criar tipo de evento.",
+        description: "Erro ao criar disciplina.",
         variant: "destructive",
       });
       return { data: null, error };
     }
   };
 
-  const updateEventType = async (value: string, eventData: Partial<ListValue>) => {
+  const updateDiscipline = async (value: string, disciplineData: Partial<ListValue>) => {
     try {
       const { data, error } = await supabase
-        .from('event_type')
-        .update(eventData)
+        .from('discipline')
+        .update(disciplineData)
         .eq('value', value)
         .select()
         .single();
 
       if (error) throw error;
 
-      setEventType(prev => prev.map(item =>
+      setDiscipline(prev => prev.map(item =>
         item.value === value ? data : item
       ));
       toast({
         title: "Sucesso!",
-        description: "Tipo de evento atualizado com sucesso.",
+        description: "Disciplina atualizada com sucesso.",
       });
       return { data, error: null };
     } catch (error) {
-      console.error('Error updating event type:', error);
+      console.error('Error updating discipline:', error);
       toast({
         title: "Erro",
-        description: "Erro ao atualizar tipo de evento.",
+        description: "Erro ao atualizar disciplina.",
         variant: "destructive",
       });
       return { data: null, error };
     }
   };
 
-  const deleteEventType = async (value: string) => {
+  const deleteDiscipline = async (value: string) => {
     try {
       const { error } = await supabase
-        .from('event_type')
+        .from('discipline')
         .delete()
         .eq('value', value);
 
       if (error) throw error;
 
-      setEventType(prev => prev.filter(item => item.value !== value));
+      setDiscipline(prev => prev.filter(item => item.value !== value));
       toast({
         title: "Sucesso!",
-        description: "Tipo de evento removido com sucesso.",
+        description: "Disciplina removida com sucesso.",
       });
       return { error: null };
     } catch (error) {
-      console.error('Error deleting event type:', error);
+      console.error('Error deleting discipline:', error);
       toast({
         title: "Erro",
-        description: "Erro ao remover tipo de evento.",
+        description: "Erro ao remover disciplina.",
         variant: "destructive",
       });
       return { error };
@@ -139,12 +139,12 @@ export const useEventType = () => {
   };
 
   return {
-    eventType,
+    discipline,
     loading,
     totalCount,
-    fetchEventType,
-    createEventType,
-    updateEventType,
-    deleteEventType,
+    fetchDiscipline,
+    createDiscipline,
+    updateDiscipline,
+    deleteDiscipline,
   };
-};
+}; 

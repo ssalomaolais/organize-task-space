@@ -9,8 +9,8 @@ import React from "react";
 
 interface VerticalViewProps {
   filteredTasks: Task[];
-  stack: ListValue[] | [];
-  eventType: ListValue[] | [];
+  stack: ListValue[];
+  eventType: ListValue[];
   selectedYear: number;
   selectedSemesters: string[];
   role: UserRole;

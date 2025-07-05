@@ -16,6 +16,30 @@ export interface Task {
   updated_at: string;
   comments?: Comment[];
   attachments?: string[];
+  // Campos adicionais
+  responsibles?: Responsible[];
+  student_count?: number;
+  vacancy_count?: number;
+  syllabus?: string;
+  seniority?: string;
+  schedule?: Schedule[];
+}
+
+export interface Schedule {
+  id: string;
+  day: string;
+  timeStart: string;
+  timeEnd: string;
+  instructor: string;
+}
+
+export interface Responsible {
+  id: string;
+  name: string;
+  type: string;
+  discipline?: string;
+  email?: string;
+  syllabus?: string;
 }
 
 export interface ListValue {

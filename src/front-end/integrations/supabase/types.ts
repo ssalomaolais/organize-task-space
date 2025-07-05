@@ -52,13 +52,17 @@ export type Database = {
           id: string
           people?: number | 0
           responsible: string
+          responsibles?: Json
+          seniority?: string | null
           stack: string
           start_date: string
           status: string
-          title: string
+          student_count?: number | null
           subtitle: string
+          syllabus?: string | null
           updated_at: string | null
           user_id: string
+          vacancy_count?: number | null
         }
         Insert: {
           created_at?: string | null
@@ -69,13 +73,17 @@ export type Database = {
           id?: string
           people?: number | 0
           responsible: string
+          responsibles?: Json
+          seniority?: string | null
           stack: string
           start_date: string
           status: string
-          title: string
+          student_count?: number | null
           subtitle: string
+          syllabus?: string | null
           updated_at?: string | null
           user_id: string
+          vacancy_count?: number | null
         }
         Update: {
           created_at?: string | null
@@ -86,13 +94,18 @@ export type Database = {
           id?: string
           people?: number | 0
           responsible?: string
+          responsibles?: Json
+          seniority?: string | null
           stack?: string
           start_date?: string
           status?: string
+          student_count?: number | null
           title?: string
           subtitle: string
+          syllabus?: string | null
           updated_at?: string | null
           user_id?: string
+          vacancy_count?: number | null
         }
         Relationships: [
           {

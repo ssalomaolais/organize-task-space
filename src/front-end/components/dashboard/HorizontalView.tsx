@@ -9,8 +9,8 @@ import React from "react";
 
 interface HorizontalViewProps {
   filteredTasks: Task[];
-  stack: ListValue[] | [];
-  eventType: ListValue[] | [];
+  stack: ListValue[];
+  eventType: ListValue[];
   selectedYear: number;
   role: UserRole;
   showCardContent: boolean;

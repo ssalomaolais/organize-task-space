@@ -26,7 +26,7 @@ interface CalendarViewProps {
   tasks: Task[];
   stack: ListValue[];
   eventType: ListValue[];
-  onUpdateTask: (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => void;
+  onUpdateTask: (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => Promise<{ success: boolean; error?: string }>;
   onDeleteTask: (taskId: string) => void;
 }
 
@@ -55,10 +55,15 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
     resource: task.event_type,
   }));
 
-  const handleUpdateAndClose = (updatedTaskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
-    onUpdateTask(updatedTaskData);
-    setIsEditModalOpen(false);
-    setSelectedTask(null);
+  const handleUpdateAndClose = async (updatedTaskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
+    // onUpdateTask agora retorna um resultado
+    const result = await onUpdateTask(updatedTaskData);
+    if (result?.success) {
+      // Só fechamos o modal se a operação foi bem-sucedida
+      setIsEditModalOpen(false);
+      setSelectedTask(null);
+    }
+    // Se não foi bem-sucedido, o modal permanece aberto
   };
   
   const handleDeleteAndClose = (taskId: string) => {

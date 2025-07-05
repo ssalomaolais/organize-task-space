@@ -1,31 +1,35 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import EventTypesPage from "@/components/event_types/EventTypesPage";
+import DisciplinesPage from "@/components/disciplines/DisciplinesPage";
 import { Plus } from "lucide-react";
 import { useState, useEffect } from "react";
-interface EventTypesPageModalProps {
+
+interface DisciplinesPageModalProps {
   onCancel: () => void;
   onDataChanged?: () => void;
 }
 
-const EventTypesPageModal = ({ onCancel, onDataChanged }: EventTypesPageModalProps) => {
+const DisciplinesPageModal = ({ onCancel, onDataChanged }: DisciplinesPageModalProps) => {
   const [showNewForm, setShowNewForm] = useState(false);
-  const handleNewStackSubmit = () => {
+  
+  const handleNewDisciplineSubmit = () => {
     setShowNewForm(true)
   };
+  
   const handleFormComplete = () => {
     setShowNewForm(false); // Resetar após a submissão
   };
+  
   return (
     <Dialog open={true} onOpenChange={() => onCancel()}>
       <DialogContent className="sm:max-w-[85vw] max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>
-            Tipo de Eventos
+            Disciplinas
           </DialogTitle>
         </DialogHeader>
         <div className="overflow-y-auto flex-1">
-          <EventTypesPage showNewForm={showNewForm}
+          <DisciplinesPage showNewForm={showNewForm}
             setShowNewForm={setShowNewForm}
             onDataChanged={onDataChanged}
             />
@@ -33,7 +37,7 @@ const EventTypesPageModal = ({ onCancel, onDataChanged }: EventTypesPageModalPro
 
         <div className="flex justify-end space-x-2 pt-4">
           <Button type="button" variant="outline"
-            onClick={handleNewStackSubmit}
+            onClick={handleNewDisciplineSubmit}
             disabled={showNewForm} // Desabilita se já estiver mostrando o form
           >
             <Plus className="w-4 h-4" />
@@ -48,4 +52,4 @@ const EventTypesPageModal = ({ onCancel, onDataChanged }: EventTypesPageModalPro
   );
 };
 
-export default EventTypesPageModal;
+export default DisciplinesPageModal; 

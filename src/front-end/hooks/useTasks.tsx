@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Task, ListValue } from "@/types/task";
@@ -20,7 +19,9 @@ export const useTasks = () => {
       // Cast the data to match our Task interface
       const typedTasks: Task[] = (data || []).map((task: any) => ({
         ...task,
-        event_type: task.event_type as string
+        event_type: task.event_type as string,
+        responsibles: task.responsibles || [],
+        schedule: task.schedule || []
       }));
 
       setTasks(typedTasks);
@@ -40,7 +41,7 @@ export const useTasks = () => {
     fetchTasks();
   }, []);
 
-  const createTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
+  const createTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">): Promise<{ success: boolean; error?: string }> => {
     try {
       // Get the current user
       const { data: { user } } = await supabase.auth.getUser();
@@ -49,10 +50,14 @@ export const useTasks = () => {
         throw new Error("User not authenticated");
       }
 
+      // Debug log para verificar se o schedule está sendo enviado
+      console.log('Creating task with schedule:', taskData.schedule);
+
       const { data, error } = await supabase
         .from('tasks')
         .insert([{
           title: taskData.title,
+          subtitle: taskData.subtitle,
           description: taskData.description,
           responsible: taskData.responsible,
           start_date: taskData.start_date,
@@ -62,6 +67,12 @@ export const useTasks = () => {
           status: taskData.status,
           stack: taskData.stack,
           event_type: taskData.event_type,
+          responsibles: taskData.responsibles || [],
+          student_count: taskData.student_count,
+          vacancy_count: taskData.vacancy_count,
+          syllabus: taskData.syllabus,
+          seniority: taskData.seniority,
+          schedule: taskData.schedule || [],
           user_id: user.id // Set the user_id to the authenticated user
         }])
         .select()
@@ -69,10 +80,15 @@ export const useTasks = () => {
 
       if (error) throw error;
 
+      // Debug log para verificar se o schedule foi retornado
+      console.log('Task created, returned schedule:', data.schedule);
+
       // Cast the returned data to match our Task interface
       const typedTask: Task = {
         ...data,
-        event_type: data.event_type as string
+        event_type: data.event_type as string,
+        responsibles: data.responsibles || [],
+        schedule: data.schedule || []
       };
 
       setTasks(prev => [...prev, typedTask]);
@@ -81,17 +97,21 @@ export const useTasks = () => {
         title: "Sucesso!",
         description: "Tarefa criada com sucesso.",
       });
+
+      return { success: true };
     } catch (error) {
       console.error('Error creating task:', error);
+      const errorMessage = error instanceof Error ? error.message : "Erro ao criar tarefa.";
       toast({
         title: "Erro",
-        description: "Erro ao criar tarefa.",
+        description: errorMessage,
         variant: "destructive",
       });
+      return { success: false, error: errorMessage };
     }
   };
 
-  const updateTask = async (taskId: string, taskData: Partial<Task>) => {
+  const updateTask = async (taskId: string, taskData: Partial<Task>): Promise<{ success: boolean; error?: string }> => {
     try {
       const updateData: any = {};
 
@@ -106,6 +126,12 @@ export const useTasks = () => {
       if (taskData.status) updateData.status = taskData.status;
       if (taskData.stack) updateData.stack = taskData.stack;
       if (taskData.event_type) updateData.event_type = taskData.event_type;
+      if (taskData.responsibles !== undefined) updateData.responsibles = taskData.responsibles;
+      if (taskData.student_count !== undefined) updateData.student_count = taskData.student_count;
+      if (taskData.vacancy_count !== undefined) updateData.vacancy_count = taskData.vacancy_count;
+      if (taskData.syllabus !== undefined) updateData.syllabus = taskData.syllabus;
+      if (taskData.seniority !== undefined) updateData.seniority = taskData.seniority;
+      if (taskData.schedule !== undefined) updateData.schedule = taskData.schedule;
 
       const { data, error } = await supabase
         .from('tasks')
@@ -119,7 +145,9 @@ export const useTasks = () => {
       // Cast the returned data to match our Task interface
       const typedTask: Task = {
         ...data,
-        event_type: data.event_type as string
+        event_type: data.event_type as string,
+        responsibles: data.responsibles || [],
+        schedule: data.schedule || []
       };
 
       setTasks(prev => prev.map(task =>
@@ -130,13 +158,17 @@ export const useTasks = () => {
         title: "Sucesso!",
         description: "Tarefa atualizada com sucesso.",
       });
+
+      return { success: true };
     } catch (error) {
       console.error('Error updating task:', error);
+      const errorMessage = error instanceof Error ? error.message : "Erro ao atualizar tarefa.";
       toast({
         title: "Erro",
-        description: "Erro ao atualizar tarefa.",
+        description: errorMessage,
         variant: "destructive",
       });
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -165,12 +197,12 @@ export const useTasks = () => {
     }
   };
 
-  const updateTaskStatus = async (taskId: string, newStatus: string) => {
-    await updateTask(taskId, { status: newStatus });
+  const updateTaskStatus = async (taskId: string, newStatus: string): Promise<{ success: boolean; error?: string }> => {
+    return await updateTask(taskId, { status: newStatus });
   };
 
-  const updateTaskType = async (taskId: string, newStatus: string) => {
-    await updateTask(taskId, { event_type: newStatus });
+  const updateTaskType = async (taskId: string, newStatus: string): Promise<{ success: boolean; error?: string }> => {
+    return await updateTask(taskId, { event_type: newStatus });
   };
 
   return {

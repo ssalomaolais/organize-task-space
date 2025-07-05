@@ -1,26 +1,28 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Task } from "@/types/task";
-import { TaskStatus } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Task, Responsible, Schedule } from "@/types/task";
 import { User } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
 import { ListValue } from "@/types/task";
-import { Plus } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 import EventTypeForm from "@/components/event_types/EventTypeForm";
 import StackForm from "@/components/stacks/StackForm";
+import DisciplineForm from "@/components/disciplines/DisciplineForm";
+import TaskBasicTab from "./TaskBasicTab";
+import TaskResponsiblesTab from "./TaskResponsiblesTab";
+import TaskDetailsTab from "./TaskDetailsTab";
+import TaskScheduleTab from "./TaskScheduleTab";
 import { useEventType } from "@/hooks/useEventType";
 import { useStack } from "@/hooks/useStack";
+import { useDiscipline } from "@/hooks/useDiscipline";
 
 interface TaskFormProps {
   task?: Task | null;
-  stack: ListValue[] | [];
-  eventType: ListValue[] | [];
+  stack: ListValue[];
+  eventType: ListValue[];
   user: User;
   onSubmit: (taskData: Omit<Task, "id" | "created_at" | "updated_at" | "user_id">) => void;
   onDelete: (taskId: string) => void;
@@ -30,6 +32,7 @@ interface TaskFormProps {
 const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }: TaskFormProps) => {
   const { createEventType, fetchEventType } = useEventType();
   const { createStack, fetchStack } = useStack();
+  const { createDiscipline, fetchDiscipline } = useDiscipline();
 
   const [startDateTime, setStartDateTime] = useState(
     new Date().toISOString().slice(0, 16)
@@ -38,6 +41,9 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     new Date().toISOString().slice(0, 16)
   );
 
+  const [showAdvancedFields, setShowAdvancedFields] = useState(false);
+  const [activeTab, setActiveTab] = useState("basic");
+  
   const [formData, setFormData] = useState({
     title: "",
     subtitle: "",
@@ -50,10 +56,18 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     status: "Pendente",
     stack: (user.role === "user" ? user.stack : "Java"),
     event_type: "Outros",
+    // Campos adicionais
+    responsibles: [] as Responsible[],
+    student_count: 0,
+    vacancy_count: 0,
+    syllabus: "",
+    seniority: "",
+    schedule: [] as Schedule[],
   });
 
   const [showNewEventTypeModal, setShowNewEventTypeModal] = useState(false);
   const [showNewStackModal, setShowNewStackModal] = useState(false);
+  const [showNewDisciplineModal, setShowNewDisciplineModal] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -77,7 +91,40 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
         status: task.status,
         stack: task.stack,
         event_type: task.event_type || "Outros",
+        // Campos adicionais
+        responsibles: task.responsibles || [],
+        student_count: task.student_count || 0,
+        vacancy_count: task.vacancy_count || 0,
+        syllabus: task.syllabus || "",
+        seniority: task.seniority || "",
+        schedule: task.schedule || [],
       });
+
+      // Verificar se há dados nas abas avançadas para mostrar automaticamente
+      const hasResponsibles = task.responsibles && task.responsibles.length > 0;
+      const hasDetails = task.student_count > 0 || task.vacancy_count > 0 || task.syllabus || task.seniority;
+      const hasSchedule = task.schedule && task.schedule.length > 0;
+      
+      if (hasResponsibles || hasDetails || hasSchedule) {
+        setShowAdvancedFields(true);
+        // Definir a aba ativa baseada nos dados disponíveis
+        if (hasResponsibles && (hasDetails || hasSchedule)) {
+          setActiveTab("responsibles"); // Prioriza responsáveis se existem
+        } else if (hasResponsibles) {
+          setActiveTab("responsibles");
+        } else if (hasDetails) {
+          setActiveTab("details");
+        } else if (hasSchedule) {
+          setActiveTab("schedule");
+        }
+      } else {
+        // Se não há dados avançados, sempre mostrar campos básicos
+        setActiveTab("basic");
+      }
+    } else {
+      // Para novas tarefas, sempre começar com campos básicos
+      setActiveTab("basic");
+      setShowAdvancedFields(false);
     }
   }, [task]);
 
@@ -110,7 +157,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     });
   };
 
-  const handleInputChange = (field: keyof typeof formData, value: any) => {
+  const handleInputChange = (field: keyof typeof formData, value: string | number | Responsible[] | Schedule[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -134,7 +181,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     // Update formData with the ISO string that treats local input as UTC
     setFormData(prev => {
       const newDate = date; // This is the UTC date object representing the entered time
-      let updatedPrev = { ...prev, [field]: isoStringForStorage };
+      const updatedPrev = { ...prev, [field]: isoStringForStorage };
 
       // Auto-adjust logic
       const currentStartDate = field === 'start_date' ? newDate : new Date(prev.start_date);
@@ -180,9 +227,29 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     }
   };
 
+  const handleNewDisciplineSubmit = async (newDisciplineData: Omit<ListValue, 'id'>) => {
+    const result = await createDiscipline(newDisciplineData);
+    if (result.data) {
+      await fetchDiscipline(); // Refresh disciplines in the dropdown
+      setShowNewDisciplineModal(false);
+    }
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
+  const handleToggleAdvancedFields = () => {
+    if (showAdvancedFields) {
+      // Se está ocultando os campos avançados, sempre volta para a aba "basic"
+      setActiveTab("basic");
+    }
+    setShowAdvancedFields(!showAdvancedFields);
+  };
+
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className={`${showAdvancedFields ? 'max-w-6xl' : 'max-w-2xl'} max-h-[90vh] overflow-y-auto transition-all duration-300`}>
         <DialogHeader>
           <DialogTitle>
             {task ? "Editar Tarefa" : "Nova Tarefa"}
@@ -190,180 +257,95 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2 flex flex-col justify-end h-full">
-              <Label htmlFor="title">Título *</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => handleInputChange("title", e.target.value)}
-                placeholder="Digite o título da tarefa"
-                required
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <div className="min-h-[600px]">
+            {showAdvancedFields && (
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="basic">Principal</TabsTrigger>
+                <TabsTrigger value="responsibles">Responsáveis</TabsTrigger>
+                <TabsTrigger value="details">Detalhes</TabsTrigger>
+                <TabsTrigger value="schedule">Grade de Horário</TabsTrigger>
+              </TabsList>
+            )}
+            
+            <TabsContent value="basic">
+              <TaskBasicTab
+                formData={formData}
+                startDateTime={startDateTime}
+                endDateTime={endDateTime}
+                stack={stack}
+                eventType={eventType}
+                onInputChange={handleInputChange}
+                onInputDataChange={handleInputDataChange}
+                onShowNewStackModal={() => setShowNewStackModal(true)}
+                onShowNewEventTypeModal={() => setShowNewEventTypeModal(true)}
               />
-            </div>
-            <div className="md:col-span-2 flex flex-col justify-end h-full">
-              <Label htmlFor="title">Sub Título</Label>
-              <Input
-                id="subtitle"
-                value={formData.subtitle}
-                onChange={(e) => handleInputChange("subtitle", e.target.value)}
-                placeholder="Digite o sub-título da tarefa"
-              />
-            </div>            
-            <div className="md:col-span-2 flex flex-col justify-end h-full">
-              <Label htmlFor="description">Resumo *</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
-                placeholder="Descreva a tarefa em detalhes"
-                rows={3}                
-              />
-            </div>
+            </TabsContent>
             
-            <div className="flex flex-col justify-end h-full">
-              <Label htmlFor="responsible">Responsável *</Label>
-              <Input
-                id="responsible"
-                value={formData.responsible}
-                onChange={(e) => handleInputChange("responsible", e.target.value)}
-                placeholder="Nome do responsável"
-                required
-              />
+            {showAdvancedFields && (
+              <>
+                <TabsContent value="responsibles">
+                  <TaskResponsiblesTab
+                    responsibles={formData.responsibles}
+                    onResponsiblesChange={(responsibles) => handleInputChange("responsibles", responsibles)}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="details">
+                  <TaskDetailsTab
+                    formData={formData}
+                    onInputChange={handleInputChange}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="schedule">
+                  <TaskScheduleTab
+                    schedule={formData.schedule}
+                    responsibles={formData.responsibles}
+                    onScheduleChange={(schedule) => handleInputChange("schedule", schedule)}
+                  />
+                </TabsContent>
+              </>
+            )}
             </div>
-            
-            <div className="flex items-end gap-2 h-full">
-              <div className="flex-1 flex flex-col justify-end h-full">
-                <Label htmlFor="stack">Comunidade *</Label>
-                <Select 
-                  onValueChange={(value) => handleInputChange("stack", value)} 
-                  value={formData.stack}                
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a stack" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {stack.map((stack) => (
-                      <SelectItem key={stack.value} value={stack.value}>
-                        {stack.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewStackModal(true)}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <div className="flex flex-col justify-end h-full">
-              <Label htmlFor="start_date">Data e Hora de Início *</Label>
-              <Input
-                type="datetime-local"
-                className="form-control"
-                id="startDateTime"
-                name="startDateTime"
-                value={startDateTime}
-                onChange={(e) => handleInputDataChange("start_date", e.target.value)}
-                required
-              />              
-            </div>
-            
-            <div className="flex flex-col justify-end h-full">
-              <Label htmlFor="end_date">Data e Hora Fim * </Label>
-              <Input
-                type="datetime-local"
-                className="form-control"
-                id="end_date"
-                value={endDateTime}
-                onChange={(e) => handleInputDataChange("end_date", e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="flex flex-col justify-end h-full">
-              <Label htmlFor="hours">Horas Estimadas</Label>
-              <Input
-                id="hours"
-                type="number"
-                min="0"
-                value={formData.hours}
-                onChange={(e) => handleInputChange("hours", parseInt(e.target.value) || 0)}
-                placeholder="Ex: 40"
-              />
-            </div>
-            
-            <div className="flex flex-col justify-end h-full">
-              <Label htmlFor="people">Número de Pessoas</Label>
-              <Input
-                id="people"
-                type="number"
-                min="0"
-                value={formData.people}
-                onChange={(e) => handleInputChange("people", parseInt(e.target.value) || 0)}
-                placeholder="Ex: 2"
-              />
-            </div>
-            
-            <div className="flex flex-col justify-end h-full">
-              <Label htmlFor="status">Status</Label>
-              <Select 
-                onValueChange={(value) => handleInputChange("status", value)} 
-                value={formData.status}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TaskStatus.map((status) => (
-                    <SelectItem key={status.value} value={status.value}>
-                      {status.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex items-end gap-2 h-full">
-              <div className="flex-1 flex flex-col justify-end h-full">
-                <Label htmlFor="event_type">Tipo de Evento</Label>
-                <Select 
-                  onValueChange={(value) => handleInputChange("event_type", value)} 
-                  value={formData.event_type}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo de evento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {eventType.map((item2) => (
-                      <SelectItem key={item2.value} value={item2.value}>
-                        {item2.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewEventTypeModal(true)}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          </Tabs>
           
-          <div className="flex gap-2 justify-end pt-4">
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancelar
-            </Button>
+          <div className="flex gap-2 justify-between pt-4">
             <Button
               type="button"
               variant="outline"
-              onClick={() => task && onDelete(task.id)}
-              disabled={!task}
+              onClick={handleToggleAdvancedFields}
+              className="flex items-center gap-2"
             >
-               Excluir
+              {showAdvancedFields ? (
+                <>
+                  <ChevronUp className="h-4 w-4" />
+                  Menos...
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-4 w-4" />
+                  Mais...
+                </>
+              )}
             </Button>
-            <Button type="submit">
-              {task ? "Atualizar" : "Criar"} Tarefa
-            </Button>
+            
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={onCancel}>
+                Cancelar
+              </Button>
+              {task &&  (<Button
+                type="button"
+                variant="outline"
+                onClick={() => task && onDelete(task.id)}
+                disabled={!task}
+              >
+                 Excluir
+              </Button>)} 
+              <Button type="submit">
+                {task ? "Atualizar" : "Salvar"} 
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
@@ -379,6 +361,13 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
         <StackForm
           onSubmit={handleNewStackSubmit}
           onCancel={() => setShowNewStackModal(false)}
+        />
+      )}
+
+      {showNewDisciplineModal && (
+        <DisciplineForm
+          onSubmit={handleNewDisciplineSubmit}
+          onCancel={() => setShowNewDisciplineModal(false)}
         />
       )}
     </Dialog>

@@ -16,7 +16,7 @@ import { HorizontalView } from "@/components/dashboard/HorizontalView";
 import { VerticalView } from "@/components/dashboard/VerticalView";
 import { UpcomingView } from "@/components/dashboard/UpcomingView";
 import { EventsGridView } from "@/components/dashboard/EventsGridView";
-import { TaskStatus, NextEvents, GradeLayoutOptions } from "@/lib/utils";
+import { TaskStatusOptions, NextEventsOptions, GradeLayoutOptions } from "@/lib/utils";
 import {Loading} from "../shared/loading";
 import { MultiSelect, Option } from "@/components/ui/multi-select";
 
@@ -101,14 +101,21 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
         setPalette("minsait");
     }
     const handleCreateTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
-        await createTask(taskData);
-        setShowTaskForm(false);
+        const result = await createTask(taskData);
+        if (result.success) {
+            setShowTaskForm(false);
+        }
+        // Se não foi bem-sucedido, o formulário permanece aberto
     };
 
     const handleUpdateTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
         if (!editingTask) return;
-        await updateTask(editingTask.id, taskData);
-        setEditingTask(null);
+        const result = await updateTask(editingTask.id, taskData);
+        if (result.success) {
+            setEditingTask(null);
+        }
+        // Se não foi bem-sucedido, o formulário permanece aberto
+        return result; // Retornar o resultado para que outros componentes possam usar
     };
 
     const handleDeleteTask = async (taskId: string) => {
@@ -116,11 +123,19 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
     };
 
     const handleStatusChange = async (taskId: string, newStatus: string) => {
-        await updateTaskStatus(taskId, newStatus);
+        const result = await updateTaskStatus(taskId, newStatus);
+        if (!result.success) {
+            // Se falhou, pode mostrar uma mensagem adicional ou fazer algo específico
+            console.error('Failed to update task status:', result.error);
+        }
     };
 
     const handleTypeChange = async (taskId: string, newType: string) => {
-        await updateTaskType(taskId, newType);
+        const result = await updateTaskType(taskId, newType);
+        if (!result.success) {
+            // Se falhou, pode mostrar uma mensagem adicional ou fazer algo específico
+            console.error('Failed to update task type:', result.error);
+        }
     };
 
     const getAvailableSemesters = (): Option[] => {
@@ -246,7 +261,7 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
                             allOptionLabel="Todos os Eventos"
                         />
                         <MultiSelect
-                            options={TaskStatus}
+                            options={TaskStatusOptions}
                             selectedValues={statusFilter}
                             onSelectionChange={setStatusFilter}
                             placeholder="Status"
@@ -268,7 +283,7 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
                                 <SelectValue placeholder="Visualização" />
                             </SelectTrigger>
                             <SelectContent>
-                                {NextEvents.map((item) => (<SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>))}
+                                {NextEventsOptions.map((item) => (<SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>))}
                             </SelectContent>
                         </Select>
                         
