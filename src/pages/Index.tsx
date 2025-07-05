@@ -2,10 +2,12 @@
 import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "@/components/dashboard/Dashboard";
 import AuthPage from "@/components/auth/AuthPage";
+import { useState } from "react";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
-
+  const [colorType] = useState<string >("minsait");
+  
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -23,7 +25,7 @@ const Index = () => {
     return <AuthPage />;
   }
 
-  return <Dashboard user={user} onLogout={signOut} />;
+  return <Dashboard user={user}  colorType={colorType} onLogout={signOut} />;
 };
 
 export default Index;

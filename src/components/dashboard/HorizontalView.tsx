@@ -14,6 +14,7 @@ interface HorizontalViewProps {
   selectedYear: number;
   role: UserRole;
   showCardContent: boolean;
+  colorType:string;
   setEditingTask: (task: Task) => void;
   handleDeleteTask: (taskId: string) => void;
   handleStatusChange: (taskId: string, newStatus: string) => void;
@@ -45,6 +46,8 @@ export const HorizontalView = ({ role, showCardContent, filteredTasks, selectedY
   const [hideMonth, setHideMonth] = React.useState<{ [key: string]: boolean }>({});
   const handleToggleYear = (year: number) => { setHideYear((prev) => ({ ...prev, [year]: !prev[year] })); };
   const handleToggleMonth = (year: number, month: number) => { setHideMonth((prev) => ({ ...prev, [`${year}-${month}`]: !prev[`${year}-${month}`] })); };
+  const [colorType] = React.useState<string>("bg-white");
+
 
   return (
     <div className="rounded-lg border-2 border-gray-200 bg-gray-50">
@@ -53,10 +56,6 @@ export const HorizontalView = ({ role, showCardContent, filteredTasks, selectedY
           <h3 className="font-medium text-gray-900">Ano {selectedYear}</h3>
           <div className="flex items-center space-x-2">
             <Badge variant="outline">{yearTasks.length}</Badge>
-            <button type="button" onClick={() => handleToggleYear(selectedYear)} className="focus:outline-none" aria-label={hideYear[selectedYear] ? "Mostrar ano" : "Ocultar ano"} >
-              {hideYear[selectedYear] ? (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-eye-closed"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M21 9c-2.4 2.667 -5.4 4 -9 4c-3.6 0 -6.6 -1.333 -9 -4" /><path d="M3 15l2.5 -3.8" /><path d="M21 14.976l-2.492 -3.776" /><path d="M9 17l.5 -4" /><path d="M15 17l-.5 -4" /></svg>)
-                : (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-eye"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /></svg>)}
-            </button>
           </div>
         </div>
       </div>
@@ -64,22 +63,18 @@ export const HorizontalView = ({ role, showCardContent, filteredTasks, selectedY
       {!hideYear[selectedYear] && (
         <div className="p-0">
           {monthsWithTasks.length > 0 ? (
-            <ScrollArea className="w-full whitespace-nowrap">
-              <div className="flex space-x-1 pb-4">
+            <ScrollArea className="w-full">
+              <div className="flex space-x-1 pb-0">
                 {monthsWithTasks.map((monthX) => {
                   const month = parseInt(monthX);
                   const monthTasks = getTasksByMonth(selectedYear, month);
                   const key = `${selectedYear}-${month}`;
                   return (
-                    <div key={month} className="w-[312px] bg-white rounded-lg border border-gray-200"> {/* Reverted to flex-auto min-w-[280px] max-w-full */}
+                    <div key={month} className={`flex-shrink-0 w-[312px] rounded-lg border border-gray-200 p-1 ${colorType}`}>
                       <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium text-sm text-gray-700">{getMonthName(month)}</h4>
+                        <h4  className={`font-medium text-sm ${colorType==="minsait"?"text-white":"text-gray-700"}`}>{getMonthName(month)}</h4>
                         <div className="flex items-center space-x-2">
-                          <Badge variant="outline">{monthTasks.length}</Badge>
-                          <button type="button" onClick={() => handleToggleMonth(selectedYear, month)} className="focus:outline-none" aria-label={hideMonth[key] ? "Mostrar mês" : "Ocultar mês"} >
-                            {hideMonth[key] ? (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-eye-closed"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M21 9c-2.4 2.667 -5.4 4 -9 4c-3.6 0 -6.6 -1.333 -9 -4" /><path d="M3 15l2.5 -3.8" /><path d="M21 14.976l-2.492 -3.776" /><path d="M9 17l.5 -4" /><path d="M15 17l-.5 -4" /></svg>)
-                              : (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-eye"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /></svg>)}
-                          </button>
+                          <Badge variant="outline" className={colorType==="minsait"?"text-white":"text-black-700"}>{monthTasks.length}</Badge>
                         </div>
                       </div>
 
