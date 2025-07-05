@@ -9,18 +9,18 @@ import UsersPage from "@/components/users/UsersPage";
 import EventTypesPageModal from "@/components/event_types/EventTypesPageModal";
 import StacksPageModal from "@/components/stacks/StacksPageModal";
 import { useStack } from "@/hooks/useStack";
-import DashboardPage from "../dashboard/DashboardPage";
+import Dashboard from "@/components/dashboard/Dashboard";
 
 type ManagementPage = "none" | "users" | "event-types" | "stacks";
 
 interface HeaderProps {
   user: User;
-  colorType: string;
   onLogout: () => void;
 }
 
-export const Header = ({ user, colorType, onLogout }: HeaderProps) => {
+export const Header = ({ user, onLogout }: HeaderProps) => {
   const [currentManagementPage, setCurrentManagementPage] = useState<ManagementPage>("none");
+  const [colorType] = useState<string>("minsait");
   const { stack } = useStack();
   // Renderize os componentes condicionalmente no return principal
   const renderManagementPage = () => {
@@ -47,7 +47,7 @@ export const Header = ({ user, colorType, onLogout }: HeaderProps) => {
         )
       default:
         return (
-          <main className="flex-1 pt-16"><DashboardPage colorType={colorType} user={user} />
+          <main className="flex-1 pt-16"><Dashboard colorType={colorType} user={user} />
           </main>);
     }
   };

@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import TaskCard from "./TaskCard";
+import TaskCard from "../task/TaskCard";
 import { getMonthName, getMonthFromDate } from "@/lib/utils";
 import { Task } from "@/types/task";
 import { UserRole } from "@/types/auth";

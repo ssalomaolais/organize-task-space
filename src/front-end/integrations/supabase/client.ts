@@ -2,10 +2,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const VITE_SUPABASE_URL="https://auphzfwcxsqbmkemydbn.supabase.co"
-const VITE_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1cGh6ZndjeHNxYm1rZW15ZGJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1MjMzNDYsImV4cCI6MjA2NDA5OTM0Nn0.sQlo9boHNESQLlr9-4tC1lZgptojjyJJI4pXNcPqwUI"
-const VITE_SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1cGh6ZndjeHNxYm1rZW15ZGJuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODUyMzM0NiwiZXhwIjoyMDY0MDk5MzQ2fQ.8jqxZ8Q8vWbj2A9MsZyrwTJrLGeooyjx0C56epF6eQA"
+export const supabase = createClient<Database>(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
 
-export const supabase = createClient<Database>(VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY);
-
-export const supabaseAdmin = createClient(VITE_SUPABASE_URL, VITE_SUPABASE_SERVICE_ROLE_KEY);
+export const supabaseAdmin = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY);

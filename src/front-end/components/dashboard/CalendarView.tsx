@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Task, ListValue } from "@/types/task";
 import { User } from "@/types/auth";
 import { Dialog, DialogContent } from "../ui/dialog";
-import TaskForm from "./TaskForm";
+import TaskForm from "../task/TaskForm";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "@/CalendarView.css";
 
