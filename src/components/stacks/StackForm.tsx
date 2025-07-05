@@ -48,16 +48,6 @@ const StackForm = ({ stack, onSubmit, onCancel }: StackFormProps) => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="label">Nome da Comunidade</Label>
-            <Input
-              id="label"
-              value={formData.label}
-              onChange={(e) => setFormData(prev => ({ ...prev, label: e.target.value }))}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="value">Identificador (único)</Label>
             <Input
               id="value"
@@ -65,6 +55,15 @@ const StackForm = ({ stack, onSubmit, onCancel }: StackFormProps) => {
               onChange={(e) => setFormData(prev => ({ ...prev, value: e.target.value }))}
               required
               disabled={isEditing}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="label">Nome da Comunidade</Label>
+            <Input
+              id="label"
+              value={formData.label}
+              onChange={(e) => setFormData(prev => ({ ...prev, label: e.target.value }))}
+              required
             />
           </div>
 
@@ -94,8 +93,8 @@ const StackForm = ({ stack, onSubmit, onCancel }: StackFormProps) => {
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancelar
             </Button>
-            <Button type="submit">
-              {isEditing ? 'Atualizar' : 'Criar'} Comunidade
+            <Button type="submit" className="w-[95px]">
+              {isEditing ? 'Atualizar' : 'Criar'}
             </Button>
           </div>
         </form>

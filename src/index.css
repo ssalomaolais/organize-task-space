@@ -98,4 +98,8 @@
   body {
     @apply bg-background text-foreground;
   }
+  .minsait{
+    background-color: hsl(0deg 90.83% 21.37%);
+    color: white;
+  }
 }

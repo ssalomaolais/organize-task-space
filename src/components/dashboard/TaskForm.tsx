@@ -211,7 +211,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               />
             </div>            
             <div className="md:col-span-2 flex flex-col justify-end h-full">
-              <Label htmlFor="description">Descrição</Label>
+              <Label htmlFor="description">Resumo *</Label>
               <Textarea
                 id="description"
                 value={formData.description}
@@ -234,7 +234,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
             
             <div className="flex items-end gap-2 h-full">
               <div className="flex-1 flex flex-col justify-end h-full">
-                <Label htmlFor="stack">Comunidade</Label>
+                <Label htmlFor="stack">Comunidade *</Label>
                 <Select 
                   onValueChange={(value) => handleInputChange("stack", value)} 
                   value={formData.stack}                

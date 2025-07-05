@@ -14,10 +14,11 @@ import { ListValue } from "@/types/task";
 
 interface UsersPageProps {
   stack: ListValue[] | [];
+  colorType: string;
   onBack: () => void;
 }
 
-const UsersPage = ({ stack, onBack }: UsersPageProps) => {
+const UsersPage = ({ stack, colorType, onBack }: UsersPageProps) => {
   const { users, loading, totalCount, fetchUsers, updateUser, createUser } = useUsers();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -74,42 +75,23 @@ const UsersPage = ({ stack, onBack }: UsersPageProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={onBack}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar
-            </Button>
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">Gerenciamento de Usuários</h1>
-              <p className="text-sm text-gray-500">Gerencie usuários do sistema</p>
-            </div>
-          </div>
-          <Button onClick={() => setShowUserForm(true)} className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Novo Usuário
-          </Button>
-        </div>
-      </header>
 
       {/* Filters */}
-      <div className="px-6 py-4 bg-white border-b border-gray-200">
+      <div className={`px-1 py-2 border-b border-gray-200 ${colorType}`}>
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="flex flex-col sm:flex-row gap-4 flex-1">
-            <div className="relative flex-1 max-w-md">
+          <div className="flex items-center space-x-4">
+            <div className="relative flex-1 w-[312px] max-w-xs">
               <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input 
-                placeholder="Buscar por nome ou email..." 
-                value={searchTerm} 
-                onChange={(e) => handleSearch(e.target.value)} 
-                className="pl-10" 
+              <Input
+                placeholder="Buscar por nome ou email..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="pl-10"
               />
             </div>
 
             <Select onValueChange={handleStatusFilter} defaultValue="all">
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 text-black">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -120,7 +102,7 @@ const UsersPage = ({ stack, onBack }: UsersPageProps) => {
             </Select>
 
             <Select onValueChange={handlePageSizeChange} defaultValue="10">
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-32 text-black">
                 <SelectValue placeholder="Por página" />
               </SelectTrigger>
               <SelectContent>
@@ -130,11 +112,21 @@ const UsersPage = ({ stack, onBack }: UsersPageProps) => {
               </SelectContent>
             </Select>
           </div>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => setShowUserForm(true)} >
+              <Plus className="w-4 h-4" />
+              Novo Usuário
+            </Button>
+            <Button onClick={onBack} >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-0">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
@@ -183,9 +175,9 @@ const UsersPage = ({ stack, onBack }: UsersPageProps) => {
                           {new Date(user.created_at).toLocaleDateString('pt-BR')}
                         </TableCell>
                         <TableCell>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => setEditingUser(user)}
                           >
                             <Edit className="w-4 h-4" />
@@ -199,14 +191,14 @@ const UsersPage = ({ stack, onBack }: UsersPageProps) => {
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-center space-x-2 mt-6">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage(currentPage - 1)}
                     >
                       Anterior
                     </Button>
-                    
+
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                       <Button
                         key={page}
@@ -216,9 +208,9 @@ const UsersPage = ({ stack, onBack }: UsersPageProps) => {
                         {page}
                       </Button>
                     ))}
-                    
-                    <Button 
-                      variant="outline" 
+
+                    <Button
+                      variant="outline"
                       disabled={currentPage === totalPages}
                       onClick={() => setCurrentPage(currentPage + 1)}
                     >
@@ -235,7 +227,7 @@ const UsersPage = ({ stack, onBack }: UsersPageProps) => {
       {/* User Form Modal */}
       {(showUserForm || editingUser) && (
         <UserForm
-          stack ={stack}
+          stack={stack}
           user={editingUser}
           onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
           onCancel={() => {
