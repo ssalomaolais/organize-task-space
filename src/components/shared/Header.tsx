@@ -27,7 +27,10 @@ export const Header = ({ user, colorType, onLogout }: HeaderProps) => {
   const renderManagementPage = () => {
     switch (currentManagementPage) {
       case "users":
-        return <UsersPage stack={stack} colorType={colorType} onBack={() => setCurrentManagementPage("none")} />;
+        return (
+          <main className="flex-1 pt-16">
+            <UsersPage stack={stack} colorType={colorType} onBack={() => setCurrentManagementPage("none")} />
+          </main>);
       case "event-types":
         return (
           <EventTypesPageModal
@@ -44,28 +47,29 @@ export const Header = ({ user, colorType, onLogout }: HeaderProps) => {
           />
         )
       default:
-        return <DashboardPage colorType={colorType} user={user} />;
+        return (
+          <main className="flex-1 pt-16"><DashboardPage colorType={colorType} user={user} />
+          </main>);
     }
   };
 
   return (
     <>
-      <header className={`border-b border-gray-200 px-2 py-2 ${colorType}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 border-b border-gray-200 px-2 py-2 ${colorType}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-minsait rounded-lg flex items-center justify-center">
               <span className="text-white font-bold">TF</span>
             </div>
             <div>
               <h1 className="text-xl font-semibold text-white-900">TaskFlow</h1>
-              <p className="text-sm text-white-500">Gerenciamento de Tarefas</p>
+              <p className="text-sm text-white-500 color-minsait">Gerenciamento de Tarefas</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <UserIcon className="w-4 h-4 text-gray-500" />
               <span>{user.name}</span>
-              <Badge variant={user.role === "admin" ? "default" : "secondary"}>{user.role === "admin" ? "Admin" : user.stack}</Badge>
             </div>
             {user.role === "admin" && (
               <DropdownMenu>

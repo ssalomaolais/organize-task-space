@@ -77,7 +77,7 @@ const UsersPage = ({ stack, colorType, onBack }: UsersPageProps) => {
     <div className="min-h-screen bg-gray-50">
 
       {/* Filters */}
-      <div className={`px-1 py-2 border-b border-gray-200 ${colorType}`}>
+      <div className={`sticky top-16 z-40 px-1 py-2 border-b border-gray-200 ${colorType}`}>
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="relative flex-1 w-[312px] max-w-xs">

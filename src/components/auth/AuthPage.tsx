@@ -34,14 +34,14 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 minsait">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+          <div className="w-12 h-12 bg-minsait rounded-lg flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-xl">TF</span>
           </div>
           <CardTitle className="text-2xl">TaskFlow</CardTitle>
-          <CardDescription>Gerenciamento de Tarefas</CardDescription>
+          <CardDescription className="color-minsait">Gerenciamento de Tarefas</CardDescription>
         </CardHeader>
         
         <CardContent>
@@ -70,6 +70,7 @@ const AuthPage = () => {
                   {isLoading ? "Entrando..." : "Entrar"}
                 </Button>
               </form>
+              <br/>
         </CardContent>
       </Card>
     </div>

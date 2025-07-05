@@ -51,9 +51,9 @@ export const HorizontalView = ({ role, showCardContent, filteredTasks, selectedY
 
   return (
     <div className="rounded-lg border-2 border-gray-200 bg-gray-50">
-      <div className="p-2 border-b border-gray-200 bg-white rounded-t-lg">
+      <div className={`p-2 border-b border-gray-200 ${colorType==="minsait"?"bg-minsait":""}`}>
         <div className="flex items-center justify-between">
-          <h3 className="font-medium text-gray-900">Ano {selectedYear}</h3>
+          <h3 className="font-medium ">Ano {selectedYear}</h3>
           <div className="flex items-center space-x-2">
             <Badge variant="outline">{yearTasks.length}</Badge>
           </div>
@@ -72,7 +72,7 @@ export const HorizontalView = ({ role, showCardContent, filteredTasks, selectedY
                   return (
                     <div key={month} className={`flex-shrink-0 w-[312px] rounded-lg border border-gray-200 p-1 ${colorType}`}>
                       <div className="flex items-center justify-between mb-4">
-                        <h4  className={`font-medium text-sm ${colorType==="minsait"?"text-white":"text-gray-700"}`}>{getMonthName(month)}</h4>
+                        <h4  className={`font-medium text-sm  ${colorType==="minsait"?"text-white":"text-gray-700"}`}>{getMonthName(month)}</h4>
                         <div className="flex items-center space-x-2">
                           <Badge variant="outline" className={colorType==="minsait"?"text-white":"text-black-700"}>{monthTasks.length}</Badge>
                         </div>

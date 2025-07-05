@@ -99,7 +99,13 @@
     @apply bg-background text-foreground;
   }
   .minsait{
-    background-color: hsl(0deg 90.83% 21.37%);
+    background-color: #4f062a;
     color: white;
+  }
+  .color-minsait{
+    color: rgb(255 0 84);
+  }
+  .bg-minsait{
+     background-color: rgb(255 0 84);
   }
 }
