@@ -7,7 +7,7 @@ import { User } from "@/types/auth";
 import { Task } from "@/types/task";
 import TaskForm from "../task/TaskForm";
 
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, FileDown } from "lucide-react";
 import { useTasks } from "@/hooks/useTasks";
 import { useStack } from "@/hooks/useStack";
 import { useEventType } from "@/hooks/useEventType";
@@ -16,9 +16,12 @@ import { HorizontalView } from "@/components/dashboard/HorizontalView";
 import { VerticalView } from "@/components/dashboard/VerticalView";
 import { UpcomingView } from "@/components/dashboard/UpcomingView";
 import { EventsGridView } from "@/components/dashboard/EventsGridView";
+import { PowerPointExportModal } from "@/components/dashboard/PowerPointExportModal";
+import { exportToPowerPoint } from "@/lib/powerpoint-export";
 import { TaskStatusOptions, NextEventsOptions, GradeLayoutOptions } from "@/lib/utils";
 import {Loading} from "../shared/loading";
 import { MultiSelect, Option } from "@/components/ui/multi-select";
+import { toast } from "sonner";
 
 interface DashboardProps {
     user: User;
@@ -45,6 +48,7 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
     const [palette, setPalette] = useState<PaletteType>("minsait");
     const [showTaskForm, setShowTaskForm] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
+    const [showPowerPointModal, setShowPowerPointModal] = useState(false);
 
     useEffect(() => {
         let filtered = tasks.sort((a, b) => {
@@ -135,6 +139,20 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
         if (!result.success) {
             // Se falhou, pode mostrar uma mensagem adicional ou fazer algo específico
             console.error('Failed to update task type:', result.error);
+        }
+    };
+
+    const handlePowerPointExport = async (title: string) => {
+        try {
+            await exportToPowerPoint({
+                tasks: filteredTasks,
+                palette,
+                title
+            });
+            toast.success("Apresentação PowerPoint exportada com sucesso!");
+        } catch (error) {
+            console.error("Erro ao exportar PowerPoint:", error);
+            toast.error("Erro ao exportar apresentação PowerPoint");
         }
     };
 
@@ -298,13 +316,24 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
                             </Select>
                         )}
                         {(viewMode === "events-grid") && (
-                            <Select onValueChange={(value) => setPalette(value as PaletteType)} defaultValue="minsait">
-                                <SelectTrigger className="w-full sm:w-40  text-black"><SelectValue placeholder="Paleta" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="minsait">Minsait</SelectItem>
-                                    <SelectItem value="indra">Indra</SelectItem>
-                                </SelectContent>
-                            </Select>)}
+                            <>
+                                <Select onValueChange={(value) => setPalette(value as PaletteType)} defaultValue="minsait">
+                                    <SelectTrigger className="w-full sm:w-40  text-black"><SelectValue placeholder="Paleta" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="minsait">Minsait</SelectItem>
+                                        <SelectItem value="indra">Indra</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Button 
+                                    onClick={() => setShowPowerPointModal(true)} 
+                                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                                    title="Exportar para PowerPoint"
+                                >
+                                    <FileDown className="w-4 h-4" />
+                                    Exportar PPT
+                                </Button>
+                            </>
+                        )}
                     </div>
                     <Button onClick={() => setShowTaskForm(true)} className="flex items-center gap-2"><Plus className="w-4 h-4" />Nova Tarefa</Button>
 
@@ -331,6 +360,12 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
                     onCancel={() => { setShowTaskForm(false); setEditingTask(null); }}
                 />
             )}
+
+            <PowerPointExportModal
+                isOpen={showPowerPointModal}
+                onClose={() => setShowPowerPointModal(false)}
+                onExport={handlePowerPointExport}
+            />
         </>
     );
 };
