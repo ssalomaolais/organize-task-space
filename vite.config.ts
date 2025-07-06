@@ -14,10 +14,13 @@ export default defineConfig(({ mode }) => ({
   root: path.resolve(__dirname, 'src/front-end'),
   build: {
     outDir: path.resolve(__dirname, 'dist'), // Pasta de saída (opcional)
-  },  
+    //sourcemap: mode === 'development' ? 'inline' : false, // 👈 Gera source maps em dev
+    sourcemap: false,
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src/front-end"),
+      "@/*": path.resolve(__dirname, "src/front-end/*") // 👈 Adicione esta linha
     },
   },/*
   define: {

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ListValue } from "@/types/task";
 import { toast } from "@/hooks/use-toast";
+import { encryptData, decryptData } from "@/lib/utils";
 
 export const useStack = () => {
   const [stack, setStack] = useState<ListValue[]>([]);
@@ -15,6 +16,27 @@ export const useStack = () => {
   ) => {
     try {
       setLoading(true);
+      const cacheKey = `stackCache_${page}_${pageSize}_${searchTerm}`;
+      const cacheDateKey = `stackCacheDate_${page}_${pageSize}_${searchTerm}`;
+      const today = new Date().toISOString().slice(0, 10);
+      const cached = localStorage.getItem(cacheKey);
+      const cachedDate = localStorage.getItem(cacheDateKey);
+      const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if (cached && cachedDate && key) {
+        try {
+          const decrypted = await decryptData(cached, key);
+          const parsed = JSON.parse(decrypted);
+          const decryptedDate = await decryptData(cachedDate, key);
+          if (decryptedDate === today) {
+            setStack(parsed.values);
+            setTotalCount(parsed.count);
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          // Se falhar, ignora o cache
+        }
+      }
       let query = supabase
         .from('stack')
         .select('*', { count: 'exact' });
@@ -39,6 +61,13 @@ export const useStack = () => {
 
       setStack(values);
       setTotalCount(count || 0);
+      // Salvar no cache criptografado
+      if (key) {
+        const encrypted = await encryptData(JSON.stringify({ values, count }), key);
+        const encryptedDate = await encryptData(today, key);
+        localStorage.setItem(cacheKey, encrypted);
+        localStorage.setItem(cacheDateKey, encryptedDate);
+      }
     } catch (error) {
       console.error('Error fetching stacks:', error);
       toast({
@@ -55,6 +84,15 @@ export const useStack = () => {
     fetchStack();
   }, []);
   
+  // Função para limpar o cache local
+  const clearStackCache = () => {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('stackCache_') || key.startsWith('stackCacheDate_')) {
+        localStorage.removeItem(key);
+      }
+    });
+  };
+
   const createStack = async (stackData: Omit<ListValue, 'id'>) => {
     try {
       const { data, error } = await supabase
@@ -66,6 +104,7 @@ export const useStack = () => {
       if (error) throw error;
 
       setStack(prev => [...prev, data]);
+      clearStackCache();
       toast({
         title: "Sucesso!",
         description: "Comunidade criada com sucesso.",
@@ -96,6 +135,7 @@ export const useStack = () => {
       setStack(prev => prev.map(item =>
         item.value === value ? data : item
       ));
+      clearStackCache();
       toast({
         title: "Sucesso!",
         description: "Comunidade atualizada com sucesso.",
@@ -122,6 +162,7 @@ export const useStack = () => {
       if (error) throw error;
 
       setStack(prev => prev.filter(item => item.value !== value));
+      clearStackCache();
       toast({
         title: "Sucesso!",
         description: "Comunidade removida com sucesso.",

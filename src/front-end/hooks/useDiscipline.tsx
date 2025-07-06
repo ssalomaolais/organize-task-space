@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ListValue } from "@/types/task";
 import { toast } from "@/hooks/use-toast";
+import { encryptData, decryptData } from "@/lib/utils";
 
 export const useDiscipline = () => {
   const [discipline, setDiscipline] = useState<ListValue[]>([]);
@@ -10,11 +11,32 @@ export const useDiscipline = () => {
 
   const fetchDiscipline = async (
     page: number = 1,
-    pageSize: number = 50,
+    pageSize: number = 100,
     searchTerm: string = ''
   ) => {
     try {
       setLoading(true);
+      const cacheKey = `disciplineCache_${page}_${pageSize}_${searchTerm}`;
+      const cacheDateKey = `disciplineCacheDate_${page}_${pageSize}_${searchTerm}`;
+      const today = new Date().toISOString().slice(0, 10);
+      const cached = localStorage.getItem(cacheKey);
+      const cachedDate = localStorage.getItem(cacheDateKey);
+      const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if (cached && cachedDate && key) {
+        try {
+          const decrypted = await decryptData(cached, key);
+          const parsed = JSON.parse(decrypted);
+          const decryptedDate = await decryptData(cachedDate, key);
+          if (decryptedDate === today) {
+            setDiscipline(parsed.values);
+            setTotalCount(parsed.count);
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          // Se falhar, ignora o cache
+        }
+      }
       let query = supabase
         .from('discipline')
         .select('*', { count: 'exact' });
@@ -39,6 +61,13 @@ export const useDiscipline = () => {
 
       setDiscipline(values);
       setTotalCount(count || 0);
+      // Salvar no cache criptografado
+      if (key) {
+        const encrypted = await encryptData(JSON.stringify({ values, count }), key);
+        const encryptedDate = await encryptData(today, key);
+        localStorage.setItem(cacheKey, encrypted);
+        localStorage.setItem(cacheDateKey, encryptedDate);
+      }
     } catch (error) {
       console.error('Error fetching discipline:', error);
       toast({
@@ -55,6 +84,15 @@ export const useDiscipline = () => {
     fetchDiscipline();
   }, []);
 
+  // Função para limpar o cache local
+  const clearDisciplineCache = () => {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('disciplineCache_') || key.startsWith('disciplineCacheDate_')) {
+        localStorage.removeItem(key);
+      }
+    });
+  };
+
   const createDiscipline = async (disciplineData: Omit<ListValue, 'id'>) => {
     try {
       const { data, error } = await supabase
@@ -66,6 +104,7 @@ export const useDiscipline = () => {
       if (error) throw error;
 
       setDiscipline(prev => [...prev, data]);
+      clearDisciplineCache();
       toast({
         title: "Sucesso!",
         description: "Disciplina criada com sucesso.",
@@ -96,6 +135,7 @@ export const useDiscipline = () => {
       setDiscipline(prev => prev.map(item =>
         item.value === value ? data : item
       ));
+      clearDisciplineCache();
       toast({
         title: "Sucesso!",
         description: "Disciplina atualizada com sucesso.",
@@ -122,6 +162,7 @@ export const useDiscipline = () => {
       if (error) throw error;
 
       setDiscipline(prev => prev.filter(item => item.value !== value));
+      clearDisciplineCache();
       toast({
         title: "Sucesso!",
         description: "Disciplina removida com sucesso.",

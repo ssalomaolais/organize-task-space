@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Task, ListValue } from "@/types/task";
 import { toast } from "@/hooks/use-toast";
+import { encryptData, decryptData } from "@/lib/utils";
 
 export const useTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -9,13 +10,31 @@ export const useTasks = () => {
 
   const fetchTasks = async () => {
     try {
+      const cacheKey = `tasksCache`;
+      const cacheDateKey = `tasksCacheDate`;
+      const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const cached = localStorage.getItem(cacheKey);
+      const cachedDate = localStorage.getItem(cacheDateKey);
+      const now = Date.now();
+      if (cached && cachedDate && key) {
+        try {
+          const decrypted = await decryptData(cached, key);
+          const parsed = JSON.parse(decrypted);
+          const decryptedDate = await decryptData(cachedDate, key);
+          if (now - Number(decryptedDate) < 10 * 60 * 1000) { // 10 minutos
+            setTasks(parsed.tasks);
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          // Se falhar, ignora o cache
+        }
+      }
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
         .order('start_date', { ascending: true });
-
       if (error) throw error;
-
       // Cast the data to match our Task interface
       const typedTasks: Task[] = (data || []).map((task: any) => ({
         ...task,
@@ -23,8 +42,14 @@ export const useTasks = () => {
         responsibles: task.responsibles || [],
         schedule: task.schedule || []
       }));
-
       setTasks(typedTasks);
+      // Salvar no cache criptografado
+      if (key) {
+        const encrypted = await encryptData(JSON.stringify({ tasks: typedTasks }), key);
+        const encryptedDate = await encryptData(String(now), key);
+        localStorage.setItem(cacheKey, encrypted);
+        localStorage.setItem(cacheDateKey, encryptedDate);
+      }
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast({
@@ -40,6 +65,12 @@ export const useTasks = () => {
   useEffect(() => {
     fetchTasks();
   }, []);
+
+  // Função para limpar o cache local de tasks
+  const clearTasksCache = () => {
+    localStorage.removeItem('tasksCache');
+    localStorage.removeItem('tasksCacheDate');
+  };
 
   const createTask = async (taskData: Omit<Task, "id" | "created_at" | "updated_at">): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -92,7 +123,7 @@ export const useTasks = () => {
       };
 
       setTasks(prev => [...prev, typedTask]);
-
+      clearTasksCache();
       toast({
         title: "Sucesso!",
         description: "Tarefa criada com sucesso.",
@@ -153,7 +184,7 @@ export const useTasks = () => {
       setTasks(prev => prev.map(task =>
         task.id === taskId ? typedTask : task
       ));
-
+      clearTasksCache();
       toast({
         title: "Sucesso!",
         description: "Tarefa atualizada com sucesso.",
@@ -182,7 +213,7 @@ export const useTasks = () => {
       if (error) throw error;
 
       setTasks(prev => prev.filter(task => task.id !== taskId));
-
+      clearTasksCache();
       toast({
         title: "Sucesso!",
         description: "Tarefa removida com sucesso.",

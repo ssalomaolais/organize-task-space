@@ -8,6 +8,7 @@ import { Dialog, DialogContent } from "../ui/dialog";
 import TaskForm from "../task/TaskForm";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "@/CalendarView.css";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const locales = {
   "pt-BR": ptBR,
@@ -34,25 +35,24 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  const getEventTypeColor = (eventTypeValue: string) => {
+    return eventType.find((et) => et.value === eventTypeValue)?.color || "#6c757d";
+  };
+
+  const eventStyleGetter = (event: any) => {
+    const colorClass = getEventTypeColor(event.resource.event_type);
+    return {
+      className: colorClass,
+    };
+  };
+
   const events = tasks.map((task) => ({
     id: task.id,
-    title: (
-      <div className="event-title">
-        <span
-          onClick={(e) => {
-            e.stopPropagation();
-            setSelectedTask(task);
-            setIsEditModalOpen(true);
-          }}
-        >
-          {task.title}
-        </span>
-      </div>
-    ),
+    title: task.title,
     start: new Date(task.start_date),
     end: new Date(task.end_date || task.start_date),
     allDay: false,
-    resource: task.event_type,
+    resource: task,
   }));
 
   const handleUpdateAndClose = async (updatedTaskData: Omit<Task, "id" | "created_at" | "updated_at">) => {
@@ -71,21 +71,6 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
     setIsEditModalOpen(false);
     setSelectedTask(null);
   }
-
-  const eventStyleGetter = (event: any) => {
-    const backgroundColor = {
-      "Forum Técnico": "#007bff",
-      "Meetup Interno": "#28a745",
-      "Meetup Externo": "#17a2b8",
-      "Techup Interno": "#ffc107",
-      "Techup Externo": "#dc3545",
-      "Outros": "#6c757d",
-    }[event.resource] || "#6c757d";
-
-    return {
-      style: { backgroundColor, borderColor: backgroundColor },
-    };
-  };
 
   return (
     <>
@@ -111,7 +96,37 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
           max={new Date(new Date().setHours(20, 0, 0))}
           eventPropGetter={eventStyleGetter}
           components={{
-            event: (props) => <div>{props.title}</div>,
+            event: (props) => {
+              const task = props.event.resource;
+              return (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="event-title">
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedTask(task);
+                            setIsEditModalOpen(true);
+                          }}
+                        >
+                          {props.title}
+                        </span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className={`max-w-xs break-words whitespace-pre-line max-h-48 overflow-y-auto ${getEventTypeColor(task.event_type)}`} style={{ color: '#222' }}>
+                      <div className="space-y-1">
+                        <div className="font-bold text-base">{task.title}</div>
+                        <div className="text-base">Responsável: {task.responsible}</div>
+                        <div><strong>Início:</strong> {new Date(task.start_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+                        <div><strong>Fim:</strong> {task.end_date ? new Date(task.end_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '-'}</div>
+                        <div className="text-xs mt-1">{task.description}</div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              );
+            },
           }}
         />
       </div>

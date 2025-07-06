@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ListValue } from "@/types/task";
 import { toast } from "@/hooks/use-toast";
+import { encryptData, decryptData } from "@/lib/utils";
 
 export const useEventType = () => {
   const [eventType, setEventType] = useState<ListValue[]>([]);
@@ -15,6 +16,27 @@ export const useEventType = () => {
   ) => {
     try {
       setLoading(true);
+      const cacheKey = `eventTypeCache_${page}_${pageSize}_${searchTerm}`;
+      const cacheDateKey = `eventTypeCacheDate_${page}_${pageSize}_${searchTerm}`;
+      const today = new Date().toISOString().slice(0, 10);
+      const cached = localStorage.getItem(cacheKey);
+      const cachedDate = localStorage.getItem(cacheDateKey);
+      const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if (cached && cachedDate && key) {
+        try {
+          const decrypted = await decryptData(cached, key);
+          const parsed = JSON.parse(decrypted);
+          const decryptedDate = await decryptData(cachedDate, key);
+          if (decryptedDate === today) {
+            setEventType(parsed.values);
+            setTotalCount(parsed.count);
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          // Se falhar, ignora o cache
+        }
+      }
       let query = supabase
         .from('event_type')
         .select('*', { count: 'exact' });
@@ -39,6 +61,13 @@ export const useEventType = () => {
 
       setEventType(values);
       setTotalCount(count || 0);
+      // Salvar no cache criptografado
+      if (key) {
+        const encrypted = await encryptData(JSON.stringify({ values, count }), key);
+        const encryptedDate = await encryptData(today, key);
+        localStorage.setItem(cacheKey, encrypted);
+        localStorage.setItem(cacheDateKey, encryptedDate);
+      }
     } catch (error) {
       console.error('Error fetching event_type:', error);
       toast({
@@ -55,6 +84,15 @@ export const useEventType = () => {
     fetchEventType();
   }, []);
 
+  // Função para limpar o cache local
+  const clearEventTypeCache = () => {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('eventTypeCache_') || key.startsWith('eventTypeCacheDate_')) {
+        localStorage.removeItem(key);
+      }
+    });
+  };
+
   const createEventType = async (eventData: Omit<ListValue, 'id'>) => {
     try {
       const { data, error } = await supabase
@@ -66,6 +104,7 @@ export const useEventType = () => {
       if (error) throw error;
 
       setEventType(prev => [...prev, data]);
+      clearEventTypeCache();
       toast({
         title: "Sucesso!",
         description: "Tipo de evento criado com sucesso.",
@@ -96,6 +135,7 @@ export const useEventType = () => {
       setEventType(prev => prev.map(item =>
         item.value === value ? data : item
       ));
+      clearEventTypeCache();
       toast({
         title: "Sucesso!",
         description: "Tipo de evento atualizado com sucesso.",
@@ -122,6 +162,7 @@ export const useEventType = () => {
       if (error) throw error;
 
       setEventType(prev => prev.filter(item => item.value !== value));
+      clearEventTypeCache();
       toast({
         title: "Sucesso!",
         description: "Tipo de evento removido com sucesso.",

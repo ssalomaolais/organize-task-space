@@ -81,3 +81,73 @@ export const getPreviewColorClass = (tailwindClass: string) => {
   const found = TailwindColors.find(tc => tc.value === tailwindClass);
   return found ? found.preview : "bg-gray-500"; // Fallback
 }
+
+// Funções utilitárias para criptografia AES-GCM
+export async function encryptData(data: string, keyString: string): Promise<string> {
+  const enc = new TextEncoder();
+  const keyMaterial = await window.crypto.subtle.importKey(
+    'raw',
+    enc.encode(keyString),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveKey']
+  );
+  const salt = window.crypto.getRandomValues(new Uint8Array(16));
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const key = await window.crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt,
+      iterations: 100000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt']
+  );
+  const encrypted = await window.crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    enc.encode(data)
+  );
+  // Retorna base64(salt + iv + encrypted)
+  const result = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+  result.set(salt, 0);
+  result.set(iv, salt.length);
+  result.set(new Uint8Array(encrypted), salt.length + iv.length);
+  return btoa(String.fromCharCode(...result));
+}
+
+export async function decryptData(encryptedBase64: string, keyString: string): Promise<string> {
+  const data = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+  const salt = data.slice(0, 16);
+  const iv = data.slice(16, 28);
+  const encrypted = data.slice(28);
+  const enc = new TextEncoder();
+  const keyMaterial = await window.crypto.subtle.importKey(
+    'raw',
+    enc.encode(keyString),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveKey']
+  );
+  const key = await window.crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt,
+      iterations: 100000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+  const decrypted = await window.crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    encrypted
+  );
+  return new TextDecoder().decode(decrypted);
+}
