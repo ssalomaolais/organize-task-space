@@ -1,4 +1,3 @@
-
 .calendar-container {
   padding: 20px;
   background: white;
@@ -53,4 +52,10 @@
 .rbc-event-content {
   position: relative;
   padding-right: 24px;
+}
+
+/* Remove blue outline/focus from calendar events */
+.rbc-event:focus, .rbc-event.rbc-selected {
+  outline: none !important;
+  box-shadow: none !important;
 }

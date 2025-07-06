@@ -38,6 +38,10 @@ export const getSemesterName = (semester: number) => {
   return semester === 1 ? "1º Semestre" : "2º Semestre";
 }
 
+export const getDayLabel = (dayValue: string) => {
+  return DaysOfWeek.find(d => d.value === dayValue)?.label || dayValue;
+};
+
 export const TaskStatusOptions = [
   { value: "Pendente", label: "Pendente", color: "bg-yellow-100 text-yellow-800" },
   { value: "Em Andamento", label: "Em Andamento", color: "bg-blue-100 text-blue-800" },
@@ -76,6 +80,23 @@ export const TailwindColors = [
   { value: "bg-orange-100 text-orange-800", label: "Laranja", preview: "bg-orange-500" },
   { value: "bg-teal-100 text-teal-800", label: "Verde-azulado", preview: "bg-teal-500" },
 ]
+
+export const DaysOfWeek = [
+  { value: "monday", label: "Segunda-feira" },
+  { value: "tuesday", label: "Terça-feira" },
+  { value: "wednesday", label: "Quarta-feira" },
+  { value: "thursday", label: "Quinta-feira" },
+  { value: "friday", label: "Sexta-feira" },
+  { value: "saturday", label: "Sábado" },
+  { value: "sunday", label: "Domingo" }
+];
+
+export const TimeSlots = [
+  "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+  "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
+  "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30",
+  //"20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"
+];
 
 export const getPreviewColorClass = (tailwindClass: string) => {
   const found = TailwindColors.find(tc => tc.value === tailwindClass);

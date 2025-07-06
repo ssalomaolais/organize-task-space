@@ -33,6 +33,7 @@ interface CalendarViewProps {
 
 export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDeleteTask }: CalendarViewProps) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const getEventTypeColor = (eventTypeValue: string) => {
@@ -41,6 +42,15 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
 
   const eventStyleGetter = (event: any) => {
     const colorClass = getEventTypeColor(event.resource.event_type);
+    if (selectedTaskId === event.id) {
+      return {
+        className: colorClass,
+        style: {
+          border: "2px dashed #222",
+          boxSizing: "border-box",
+        },
+      };
+    }
     return {
       className: colorClass,
     };
@@ -102,14 +112,16 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="event-title">
-                        <span
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedTask(task);
-                            setIsEditModalOpen(true);
-                          }}
-                        >
+                      <div
+                        className="event-title"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTask(task);
+                          setSelectedTaskId(props.event.id);
+                          setIsEditModalOpen(true);
+                        }}
+                      >
+                        <span>
                           {props.title}
                         </span>
                       </div>
@@ -130,7 +142,13 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
           }}
         />
       </div>
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+      <Dialog open={isEditModalOpen} onOpenChange={(open) => {
+        setIsEditModalOpen(open);
+        if (!open) {
+          setSelectedTask(null);
+          setSelectedTaskId(null);
+        }
+      }}>
         <DialogContent className="max-w-3xl">
           {selectedTask && (
             <TaskForm
@@ -143,6 +161,7 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
               onCancel={() => {
                 setIsEditModalOpen(false);
                 setSelectedTask(null);
+                setSelectedTaskId(null);
               }}
             />
           )}

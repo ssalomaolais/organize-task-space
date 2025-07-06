@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Schedule, Responsible } from "@/types/task";
 import { Plus, Edit, Trash2, Clock, User, Calendar, ArrowRight, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
+import { getDayLabel, DaysOfWeek, TimeSlots } from "@/lib/utils";
 interface TaskScheduleTabProps {
   schedule: Schedule[];
   responsibles: Responsible[];
@@ -23,23 +23,6 @@ const TaskScheduleTab = ({ schedule, responsibles, onScheduleChange }: TaskSched
     timeEnd: "",
     instructor: ""
   });
-
-  const daysOfWeek = [
-    { value: "monday", label: "Segunda-feira" },
-    { value: "tuesday", label: "Terça-feira" },
-    { value: "wednesday", label: "Quarta-feira" },
-    { value: "thursday", label: "Quinta-feira" },
-    { value: "friday", label: "Sexta-feira" },
-    { value: "saturday", label: "Sábado" },
-    { value: "sunday", label: "Domingo" }
-  ];
-
-  const timeSlots = [
-    "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-    "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
-    "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30",
-    "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"
-  ];
 
   const handleAdd = () => {
     if (!formData.day || !formData.timeStart || !formData.timeEnd || !formData.instructor) {
@@ -101,9 +84,6 @@ const TaskScheduleTab = ({ schedule, responsibles, onScheduleChange }: TaskSched
     setIsAdding(false);
   };
 
-  const getDayLabel = (dayValue: string) => {
-    return daysOfWeek.find(d => d.value === dayValue)?.label || dayValue;
-  };
 
   const getInstructorName = (instructorId: string) => {
     return responsibles.find(r => r.id === instructorId)?.name || instructorId;
@@ -148,7 +128,7 @@ const TaskScheduleTab = ({ schedule, responsibles, onScheduleChange }: TaskSched
                     <SelectValue placeholder="Selecione o dia" />
                   </SelectTrigger>
                   <SelectContent>
-                    {daysOfWeek.map((day) => (
+                    {DaysOfWeek.map((day) => (
                       <SelectItem key={day.value} value={day.value}>
                         {day.label}
                       </SelectItem>
@@ -167,7 +147,7 @@ const TaskScheduleTab = ({ schedule, responsibles, onScheduleChange }: TaskSched
                     <SelectValue placeholder="Início" />
                   </SelectTrigger>
                   <SelectContent>
-                    {timeSlots.map((time) => (
+                    {TimeSlots.map((time) => (
                       <SelectItem key={time} value={time}>
                         {time}
                       </SelectItem>
@@ -186,7 +166,7 @@ const TaskScheduleTab = ({ schedule, responsibles, onScheduleChange }: TaskSched
                     <SelectValue placeholder="Fim" />
                   </SelectTrigger>
                   <SelectContent>
-                    {timeSlots.map((time) => (
+                    {TimeSlots.map((time) => (
                       <SelectItem key={time} value={time}>
                         {time}
                       </SelectItem>

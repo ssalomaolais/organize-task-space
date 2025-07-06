@@ -17,17 +17,14 @@ export const useDiscipline = () => {
     try {
       setLoading(true);
       const cacheKey = `disciplineCache_${page}_${pageSize}_${searchTerm}`;
-      const cacheDateKey = `disciplineCacheDate_${page}_${pageSize}_${searchTerm}`;
       const today = new Date().toISOString().slice(0, 10);
       const cached = localStorage.getItem(cacheKey);
-      const cachedDate = localStorage.getItem(cacheDateKey);
       const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      if (cached && cachedDate && key) {
+      if (cached && key) {
         try {
           const decrypted = await decryptData(cached, key);
           const parsed = JSON.parse(decrypted);
-          const decryptedDate = await decryptData(cachedDate, key);
-          if (decryptedDate === today) {
+          if (parsed.today === today) {
             setDiscipline(parsed.values);
             setTotalCount(parsed.count);
             setLoading(false);
@@ -63,10 +60,8 @@ export const useDiscipline = () => {
       setTotalCount(count || 0);
       // Salvar no cache criptografado
       if (key) {
-        const encrypted = await encryptData(JSON.stringify({ values, count }), key);
-        const encryptedDate = await encryptData(today, key);
+        const encrypted = await encryptData(JSON.stringify({ today, values, count }), key);
         localStorage.setItem(cacheKey, encrypted);
-        localStorage.setItem(cacheDateKey, encryptedDate);
       }
     } catch (error) {
       console.error('Error fetching discipline:', error);

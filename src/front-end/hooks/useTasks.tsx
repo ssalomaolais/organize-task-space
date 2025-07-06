@@ -14,14 +14,12 @@ export const useTasks = () => {
       const cacheDateKey = `tasksCacheDate`;
       const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
       const cached = localStorage.getItem(cacheKey);
-      const cachedDate = localStorage.getItem(cacheDateKey);
       const now = Date.now();
-      if (cached && cachedDate && key) {
+      if (cached && key) {
         try {
           const decrypted = await decryptData(cached, key);
           const parsed = JSON.parse(decrypted);
-          const decryptedDate = await decryptData(cachedDate, key);
-          if (now - Number(decryptedDate) < 10 * 60 * 1000) { // 10 minutos
+          if (now - Number(parsed.date) < 10 * 60 * 1000) { // 10 minutos
             setTasks(parsed.tasks);
             setLoading(false);
             return;
@@ -45,10 +43,8 @@ export const useTasks = () => {
       setTasks(typedTasks);
       // Salvar no cache criptografado
       if (key) {
-        const encrypted = await encryptData(JSON.stringify({ tasks: typedTasks }), key);
-        const encryptedDate = await encryptData(String(now), key);
+        const encrypted = await encryptData(JSON.stringify({ date: String(now), tasks: typedTasks }), key);
         localStorage.setItem(cacheKey, encrypted);
-        localStorage.setItem(cacheDateKey, encryptedDate);
       }
     } catch (error) {
       console.error('Error fetching tasks:', error);
