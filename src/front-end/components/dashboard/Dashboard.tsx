@@ -191,7 +191,7 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
                     return {
                         title: task.title,
                         description: task.description || "",
-                        date: new Date(task.start_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' + new Date(task.start_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                        date: new Date(task.start_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' + new Date(task.start_date).toLocaleTimeString('pt-BR', { hour: '2-digit' }).replace(':00', '') + 'h',
                         people: task.people || 0,
                         palette: scheme
                     };
