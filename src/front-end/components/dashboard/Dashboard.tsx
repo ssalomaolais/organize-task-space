@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,11 +18,16 @@ import { VerticalView } from "@/components/dashboard/VerticalView";
 import { UpcomingView } from "@/components/dashboard/UpcomingView";
 import { EventsGridView } from "@/components/dashboard/EventsGridView";
 import { PowerPointExportModal } from "@/components/dashboard/PowerPointExportModal";
-import { exportToPowerPoint } from "@/lib/powerpoint-export";
+import { exportGridImageToPowerPoint } from "@/lib/powerpoint-export";
 import { TaskStatusOptions, NextEventsOptions, GradeLayoutOptions } from "@/lib/utils";
 import {Loading} from "../shared/loading";
 import { MultiSelect, Option } from "@/components/ui/multi-select";
 import { toast } from "sonner";
+import html2canvas from "html2canvas";
+import { EventsGridSVGExport } from "@/components/dashboard/EventsGridSVGExport";
+import { svgComponentToPngBase64 } from "@/lib/svg-to-image";
+import ReactDOMServer from "react-dom/server";
+import { drawCardsGridToCanvas } from "@/lib/draw-cards-grid-canvas";
 
 interface DashboardProps {
     user: User;
@@ -49,6 +55,7 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
     const [showTaskForm, setShowTaskForm] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const [showPowerPointModal, setShowPowerPointModal] = useState(false);
+    const gridRef = React.useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         let filtered = tasks.sort((a, b) => {
@@ -144,12 +151,98 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
 
     const handlePowerPointExport = async (title: string) => {
         try {
-            await exportToPowerPoint({
-                tasks: filteredTasks,
-                palette,
-                title
-            });
-            toast.success("Apresentação PowerPoint exportada com sucesso!");
+            if (viewMode === "events-grid") {
+                // Montar dados dos cards
+                const paletteObj = {
+                    minsait: {
+                        cardBackground: "#4f062a",
+                        titleText: "#e4023f",
+                        dateText: "#ffffff",
+                        descriptionText: "#ffffff",
+                        participantText: "#ffffff"
+                    },
+                    minsaitLight: {
+                        cardBackground: "#ffffff",
+                        titleText: "#63284b",
+                        dateText: "#6b7280",
+                        descriptionText: "#ff3d88",
+                        participantText: "#63284b"
+                    },
+                    indra: {
+                        cardBackground: "#00434F",
+                        titleText: "#FFFFFF",
+                        dateText: "#FFFFFF",
+                        descriptionText: "#FFFFFF",
+                        participantText: "#FFFFFF"
+                    },
+                    indraLight: {
+                        cardBackground: "#ADD8E6",
+                        titleText: "#000000",
+                        dateText: "#000000",
+                        descriptionText: "#000000",
+                        participantText: "#000000"
+                    }
+                };
+                const cards = filteredTasks.map((task, i) => {
+                    const row = Math.floor(i / 6);
+                    const scheme = palette === "minsait"
+                        ? (row + i) % 2 !== 0 ? paletteObj.minsaitLight : paletteObj.minsait
+                        : (row + i) % 2 !== 0 ? paletteObj.indraLight : paletteObj.indra;
+                    return {
+                        title: task.title,
+                        description: task.description || "",
+                        date: new Date(task.start_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' + new Date(task.start_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                        people: task.people || 0,
+                        palette: scheme
+                    };
+                });
+                
+                //const slideWidth = 1920; // ou 1280
+                //const slideHeight = 1080; // ou 720
+                const scale = 2; // Mantém a qualidade
+                //const canvas = drawCardsGridToCanvas(cards, { width: slideWidth, height: slideHeight, scale });
+                const canvas = drawCardsGridToCanvas(cards, { scale });
+                const imageBase64 = canvas.toDataURL("image/png");
+
+                // Exportar PowerPoint
+                await exportGridImageToPowerPoint({ imageBase64, title, cards });
+                
+                /*
+                // Exportar imagem PNG separadamente
+                const pngLink = document.createElement('a');
+                pngLink.download = `grid_${title}_${new Date().toISOString().slice(0, 10)}.png`;
+                pngLink.href = imageBase64;
+                document.body.appendChild(pngLink);
+                pngLink.click();
+                document.body.removeChild(pngLink);
+                
+
+                // Exportar SVG separadamente
+                const svgEvents = cards.map(card => ({
+                    title: card.title,
+                    description: card.description,
+                    date: card.date,
+                    people: card.people
+                }));
+                
+                const svgElement = <EventsGridSVGExport events={svgEvents} paletteType={palette} />;
+                const svgString = ReactDOMServer.renderToStaticMarkup(svgElement);
+                const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
+                const svgUrl = URL.createObjectURL(svgBlob);
+                
+                const svgLink = document.createElement('a');
+                svgLink.download = `grid_${title}_${new Date().toISOString().slice(0, 10)}.svg`;
+                svgLink.href = svgUrl;
+                document.body.appendChild(svgLink);
+                svgLink.click();
+                document.body.removeChild(svgLink);
+                URL.revokeObjectURL(svgUrl);
+                */
+
+                toast.success("Apresentação PowerPoint, imagem PNG e SVG exportadas com sucesso!");
+            } else {
+                toast.error("A exportação como imagem só está disponível no modo apresentação (Events Grid)");
+            }
         } catch (error) {
             console.error("Erro ao exportar PowerPoint:", error);
             toast.error("Erro ao exportar apresentação PowerPoint");
@@ -240,7 +333,11 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
     };
 
     const renderEventsGridView = () => {
-        return <EventsGridView filteredTasks={filteredTasks} palette={palette} setEditingTask={setEditingTask} />;
+        return (
+            <div ref={gridRef} id="events-grid-export-area">
+                <EventsGridView filteredTasks={filteredTasks} palette={palette} setEditingTask={setEditingTask} />
+            </div>
+        );
     }
 
     if (loading)
@@ -326,11 +423,16 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
                                 </Select>
                                 <Button 
                                     onClick={() => setShowPowerPointModal(true)} 
-                                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                                    className="flex items-center justify-center bg-[#E3E2DA] hover:bg-[#d6d5cd] p-2 rounded" 
                                     title="Exportar para PowerPoint"
                                 >
-                                    <FileDown className="w-4 h-4" />
-                                    Exportar PPT
+                                    {/* Ícone PowerPoint SVG */}
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                      <rect width="24" height="24" rx="4" fill="#D24726"/>
+                                      <path d="M7.5 7.5H12.5V16.5H7.5V7.5Z" fill="#fff"/>
+                                      <path d="M13.5 7.5C15.9853 7.5 18 9.51472 18 12C18 14.4853 15.9853 16.5 13.5 16.5V7.5Z" fill="#fff"/>
+                                      <text x="8.5" y="15.5" font-size="6" fill="#D24726" font-family="Arial" font-weight="bold">P</text>
+                                    </svg>
                                 </Button>
                             </>
                         )}
