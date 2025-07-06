@@ -22,7 +22,7 @@ const DisciplinesPageModal = ({ onCancel, onDataChanged }: DisciplinesPageModalP
   
   return (
     <Dialog open={true} onOpenChange={() => onCancel()}>
-      <DialogContent className="sm:max-w-[85vw] max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-[825px] max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>
             Disciplinas

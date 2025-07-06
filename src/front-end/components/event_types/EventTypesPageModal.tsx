@@ -18,7 +18,7 @@ const EventTypesPageModal = ({ onCancel, onDataChanged }: EventTypesPageModalPro
   };
   return (
     <Dialog open={true} onOpenChange={() => onCancel()}>
-      <DialogContent className="sm:max-w-[85vw] max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-[825px] max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>
             Tipo de Eventos
