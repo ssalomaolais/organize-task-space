@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Task, Responsible, Schedule } from "@/types/task";
 import { User } from "@/types/auth";
@@ -80,16 +80,16 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
       setEndDateTime(formattedEndDate);
 
       setFormData({
-        title: task.title,
-        subtitle: task.subtitle,
-        description: task.description,
-        responsible: task.responsible,
-        start_date: task.start_date, // Keep the full ISO string for formData
-        end_date: task.end_date,     // Keep the full ISO string for formData
-        hours: task.hours,
-        people: task.people,
-        status: task.status,
-        stack: task.stack,
+        title: task.title || "",
+        subtitle: task.subtitle || "",
+        description: task.description || "",
+        responsible: task.responsible || "",
+        start_date: task.start_date || startDateTime, // Keep the full ISO string for formData
+        end_date: task.end_date || endDateTime,     // Keep the full ISO string for formData
+        hours: task.hours || 0,
+        people: task.people || 0,
+        status: task.status || "Pendente",
+        stack: task.stack || (user.role === "user" ? user.stack : "Java"),
         event_type: task.event_type || "Outros",
         // Campos adicionais
         responsibles: task.responsibles || [],
@@ -254,6 +254,12 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
           <DialogTitle>
             {task ? "Editar Tarefa" : "Nova Tarefa"}
           </DialogTitle>
+          <DialogDescription>
+            {task 
+              ? "Modifique os detalhes da tarefa. Todos os campos obrigatórios devem ser preenchidos."
+              : "Preencha os detalhes da nova tarefa. Todos os campos obrigatórios devem ser preenchidos."
+            }
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">

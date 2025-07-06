@@ -4,7 +4,7 @@ import { ptBR } from "date-fns/locale";
 import { useState } from "react";
 import { Task, ListValue } from "@/types/task";
 import { User } from "@/types/auth";
-import { Dialog, DialogContent } from "../ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../ui/dialog";
 import TaskForm from "../task/TaskForm";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "@/CalendarView.css";
@@ -150,6 +150,10 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
         }
       }}>
         <DialogContent className="max-w-3xl">
+          <DialogTitle>Editar Tarefa</DialogTitle>
+          <DialogDescription>
+            Modifique os detalhes da tarefa selecionada. Todos os campos obrigatórios devem ser preenchidos.
+          </DialogDescription>
           {selectedTask && (
             <TaskForm
               task={selectedTask}

@@ -91,7 +91,7 @@ const TaskBasicTab = ({
             <Label htmlFor="stack">Comunidade *</Label>
             <Select 
               onValueChange={(value) => onInputChange("stack", value)} 
-              value={formData.stack}                
+              value={formData.stack || ""}                
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a stack" />
@@ -141,7 +141,7 @@ const TaskBasicTab = ({
             id="hours"
             type="number"
             min="0"
-            value={formData.hours}
+            value={formData.hours || 0}
             onChange={(e) => onInputChange("hours", parseInt(e.target.value) || 0)}
             placeholder="Ex: 40"
           />
@@ -153,7 +153,7 @@ const TaskBasicTab = ({
             id="people"
             type="number"
             min="0"
-            value={formData.people}
+            value={formData.people || 0}
             onChange={(e) => onInputChange("people", parseInt(e.target.value) || 0)}
             placeholder="Ex: 2"
           />
@@ -163,7 +163,7 @@ const TaskBasicTab = ({
           <Label htmlFor="status">Status</Label>
           <Select 
             onValueChange={(value) => onInputChange("status", value)} 
-            value={formData.status}
+            value={formData.status || ""}
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecione o status" />
@@ -183,7 +183,7 @@ const TaskBasicTab = ({
             <Label htmlFor="event_type">Tipo de Evento</Label>
             <Select 
               onValueChange={(value) => onInputChange("event_type", value)} 
-              value={formData.event_type}
+              value={formData.event_type || ""}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de evento" />
