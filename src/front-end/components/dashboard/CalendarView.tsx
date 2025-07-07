@@ -192,6 +192,27 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
       newEndDate = new Date(startDate.getTime() + duration);
     }
 
+    // Validar se a data não é anterior ao ano 2000
+    if (newStartDate.getFullYear() < 2000) {
+      toast({
+        title: "Erro de Data",
+        description: "A data de início não pode ser anterior ao ano 2000. Por favor, selecione uma data válida.",
+        variant: "destructive",
+      });
+      info.revert();
+      return;
+    }
+    
+    if (newEndDate.getFullYear() < 2000) {
+      toast({
+        title: "Erro de Data",
+        description: "A data de fim não pode ser anterior ao ano 2000. Por favor, selecione uma data válida.",
+        variant: "destructive",
+      });
+      info.revert();
+      return;
+    }
+    
     // Validar se a data/hora de fim é posterior à data/hora de início
     if (newEndDate <= newStartDate) {
       toast({
@@ -227,6 +248,27 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
       return;
     }
 
+    // Validar se a data não é anterior ao ano 2000
+    if (newStart.getFullYear() < 2000) {
+      toast({
+        title: "Erro de Data",
+        description: "A data de início não pode ser anterior ao ano 2000. Por favor, selecione uma data válida.",
+        variant: "destructive",
+      });
+      info.revert();
+      return;
+    }
+    
+    if (newEnd.getFullYear() < 2000) {
+      toast({
+        title: "Erro de Data",
+        description: "A data de fim não pode ser anterior ao ano 2000. Por favor, selecione uma data válida.",
+        variant: "destructive",
+      });
+      info.revert();
+      return;
+    }
+    
     // Validar se a data/hora de fim é posterior à data/hora de início
     if (newEnd <= newStart) {
       toast({

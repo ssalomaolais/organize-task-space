@@ -27,6 +27,7 @@ interface TaskBasicTabProps {
   eventType: ListValue[];
   onInputChange: (field: keyof Task, value: string | number) => void;
   onInputDataChange: (field: 'start_date' | 'end_date', value: string) => void;
+  onInputDataBlur: (field: 'start_date' | 'end_date', value: string) => void;
   onShowNewStackModal: () => void;
   onShowNewEventTypeModal: () => void;
 }
@@ -39,6 +40,7 @@ const TaskBasicTab = ({
   eventType,
   onInputChange,
   onInputDataChange,
+  onInputDataBlur,
   onShowNewStackModal,
   onShowNewEventTypeModal
 }: TaskBasicTabProps) => {
@@ -119,6 +121,7 @@ const TaskBasicTab = ({
             name="startDateTime"
             value={startDateTime}
             onChange={(e) => onInputDataChange("start_date", e.target.value)}
+            onBlur={(e) => onInputDataBlur("start_date", e.target.value)}
             required
           />              
         </div>
@@ -131,6 +134,7 @@ const TaskBasicTab = ({
             id="end_date"
             value={endDateTime}
             onChange={(e) => onInputDataChange("end_date", e.target.value)}
+            onBlur={(e) => onInputDataBlur("end_date", e.target.value)}
             required
           />
         </div>

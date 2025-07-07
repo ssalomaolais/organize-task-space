@@ -6,6 +6,7 @@ import { Task, Responsible, Schedule } from "@/types/task";
 import { User } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
 import { ListValue } from "@/types/task";
+import { validateTaskDates, validateDateString, validateDateNotBefore2000 } from "@/lib/date-validation";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useVacancies } from "@/hooks/useVacancies";
 import { Label } from "@/components/ui/label";
@@ -162,16 +163,11 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
       return;
     }
 
-    // Validar se a data/hora de fim é posterior à data/hora de início
+    // Validar datas usando função centralizada
     const startDate = new Date(formData.start_date);
     const endDate = new Date(formData.end_date);
     
-    if (endDate <= startDate) {
-      toast({
-        title: "Erro de Data/Hora",
-        description: "A data e hora de fim deve ser posterior à data e hora de início.",
-        variant: "destructive",
-      });
+    if (!validateTaskDates(startDate, endDate)) {
       return;
     }
 
@@ -188,26 +184,31 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleInputDataBlur = (field: 'start_date' | 'end_date', value: string) => {
+    // Validar apenas quando o usuário sair do campo
+    const isoStringForStorage = `${value}:00.000Z`;
+    
+    // Basic validation for the input format
+    if (!validateDateString(isoStringForStorage)) {
+      return;
+    }
+
+    // Validar se a data não é anterior ao ano 2000
+    const date = new Date(isoStringForStorage);
+    if (!validateDateNotBefore2000(date, field === 'start_date' ? 'data de início' : 'data de fim')) {
+      return;
+    }
+  };
+
   const handleInputDataChange = (field: 'start_date' | 'end_date', value: string) => {
     // The value from datetime-local input is already in YYYY-MM-DDTHH:mm format.
     // We want to treat this local time as if it were UTC for storage.
     // Append seconds and milliseconds and the 'Z' (Zulu/UTC) indicator.
     const isoStringForStorage = `${value}:00.000Z`;
 
-    // Basic validation for the input format
-    const date = new Date(isoStringForStorage); // This will parse it as UTC
-    if (isNaN(date.getTime())) {
-      toast({
-        title: "Erro de Data",
-        description: "Formato de data/hora inválido. Por favor, use o formato AAAA-MM-DDTHH:mm.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     // Update formData with the ISO string that treats local input as UTC
     setFormData(prev => {
-      const newDate = date; // This is the UTC date object representing the entered time
+      const newDate = new Date(isoStringForStorage); // This is the UTC date object representing the entered time
       const updatedPrev = { ...prev, [field]: isoStringForStorage };
 
       // Validar se a data/hora de fim é posterior à data/hora de início
@@ -325,6 +326,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                   eventType={eventType}
                   onInputChange={handleInputChange}
                   onInputDataChange={handleInputDataChange}
+                  onInputDataBlur={handleInputDataBlur}
                   onShowNewStackModal={() => setShowNewStackModal(true)}
                   onShowNewEventTypeModal={() => setShowNewEventTypeModal(true)}
                 />
