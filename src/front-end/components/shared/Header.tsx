@@ -13,6 +13,7 @@ import { useStack } from "@/hooks/useStack";
 import Dashboard from "@/components/dashboard/Dashboard";
 import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
 import VacanciesPage from "@/components/vacancy/VacanciesPage";
+import Footer from "./Footer";
 
 type ManagementPage = "none" | "users" | "event-types" | "stacks" | "disciplines" | "vacancies";
 
@@ -86,7 +87,6 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
             {user.role === "admin" && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -113,7 +113,7 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
       </header>
 
       {/* Dashboard sempre visível */}
-      <main className="flex-1 pt-16">
+      <main className="flex-1 pt-16 pb-12">
         {currentManagementPage === "users" ? (
           <UsersPage stack={stack} colorType={colorType} onBack={handleCloseModal} />
         ) : currentManagementPage === "vacancies" ? (
@@ -122,6 +122,8 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
           <Dashboard key={dashboardKey} colorType={colorType} user={user} />
         )}
       </main>
+
+      <Footer />
 
       {currentManagementPage === "event-types" && (
         <EventTypesPageModal onCancel={handleCloseModal} />

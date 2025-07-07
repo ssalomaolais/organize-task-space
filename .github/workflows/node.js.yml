@@ -45,6 +45,14 @@ jobs:
     - name: Verify dependencies
       run: npm list react-big-calendar
     
+    - name: Generate Build Version
+      id: build-version
+      run: |
+        # Gera o número da versão e captura a saída
+        BUILD_NUMBER=$(node scripts/build-version.js)
+        echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+        echo "Build number generated: $BUILD_NUMBER"
+    
     - name: Build App
       run: |
         npm run build || (echo "Build failed, listing react-big-calendar files:" && ls -R node_modules/react-big-calendar && exit 1)
@@ -52,6 +60,7 @@ jobs:
         VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
         VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         VITE_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.VITE_SUPABASE_SERVICE_ROLE_KEY }}
+        BUILD_NUMBER: ${{ steps.build-version.outputs.build_number }}
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2

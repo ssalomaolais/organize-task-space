@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 src/front-end/.env.local
+
+# Build versioning
+.build-counter.json

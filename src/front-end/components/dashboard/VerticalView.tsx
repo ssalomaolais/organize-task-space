@@ -64,7 +64,7 @@ export const VerticalView = ({ role, showCardContent, filteredTasks, selectedYea
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 pb-16">
       {[1, 2].map((semester) => {
         const semesterTasks = getTasksBySemester(selectedYear, semester);
         const monthsInSemester = semester === 1 ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12];
