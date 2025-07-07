@@ -124,6 +124,14 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
         const result = await updateTask(editingTask.id, taskData);
         if (result.success) {
             setEditingTask(null);
+            // Forçar re-render do calendário se estiver na visualização de calendário
+            if (viewMode === "calendar") {
+                // Pequeno delay para garantir que o estado foi atualizado
+                setTimeout(() => {
+                    // Forçar re-render do componente
+                    setViewMode("calendar");
+                }, 100);
+            }
         }
         // Se não foi bem-sucedido, o formulário permanece aberto
         return result; // Retornar o resultado para que outros componentes possam usar
@@ -329,7 +337,7 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
     };
 
     const renderCalendarView = () => {
-        return <CalendarView tasks={tasks} user={user} stack={stack} eventType={eventType} onUpdateTask={handleUpdateTask} onDeleteTask={handleDeleteTask} />;
+        return <CalendarView tasks={filteredTasks} user={user} stack={stack} eventType={eventType} onUpdateTask={handleUpdateTask} onDeleteTask={handleDeleteTask} setEditingTask={setEditingTask} />;
     };
 
     const renderEventsGridView = () => {
@@ -459,7 +467,16 @@ const Dashboard = ({ user, colorType }: DashboardProps) => {
                     eventType={eventType}
                     onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
                     onDelete={(id) => { handleDeleteTask(id); setEditingTask(null); }}
-                    onCancel={() => { setShowTaskForm(false); setEditingTask(null); }}
+                    onCancel={() => { 
+                        setShowTaskForm(false); 
+                        setEditingTask(null); 
+                        // Forçar re-render do calendário se estiver na visualização de calendário
+                        if (viewMode === "calendar") {
+                            setTimeout(() => {
+                                setViewMode("calendar");
+                            }, 100);
+                        }
+                    }}
                 />
             )}
 
