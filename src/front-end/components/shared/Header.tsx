@@ -29,17 +29,18 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
 
   const handleCloseModal = () => {
     setCurrentManagementPage("none");
+    setDashboardKey(prev => prev + 1);
   };
 
   // Atualiza o dashboard periodicamente quando um modal está aberto
   useEffect(() => {
-    if (currentManagementPage !== "none") {
+    /*if (currentManagementPage !== "none") {
       const interval = setInterval(() => {
         setDashboardKey(prev => prev + 1);
       }, 5000); // Atualiza a cada 5 segundos quando modal está aberto
 
       return () => clearInterval(interval);
-    }
+    }*/
   }, [currentManagementPage]);
 
   return (

@@ -100,6 +100,7 @@ export const useTasks = () => {
           syllabus: taskData.syllabus,
           seniority: taskData.seniority,
           schedule: taskData.schedule || [],
+          vacancy: taskData.vacancy,
           user_id: user.id // Set the user_id to the authenticated user
         }])
         .select()
@@ -159,6 +160,7 @@ export const useTasks = () => {
       if (taskData.syllabus !== undefined) updateData.syllabus = taskData.syllabus;
       if (taskData.seniority !== undefined) updateData.seniority = taskData.seniority;
       if (taskData.schedule !== undefined) updateData.schedule = taskData.schedule;
+      if (taskData.vacancy !== undefined) updateData.vacancy = taskData.vacancy;
 
       const { data, error } = await supabase
         .from('tasks')

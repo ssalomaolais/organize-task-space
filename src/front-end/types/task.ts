@@ -23,6 +23,7 @@ export interface Task {
   syllabus?: string;
   seniority?: string;
   schedule?: Schedule[];
+  vacancy: Vacancy;
 }
 
 export interface Schedule {
@@ -42,6 +43,12 @@ export interface Responsible {
   syllabus?: string;
 }
 
+export interface Knowledge {
+  id: string;
+  name: string;
+  min: number;
+}
+
 export interface ListValue {
   value: string;
   label: string;
@@ -53,4 +60,16 @@ export interface Comment {
   author: string;
   content: string;
   created_at: string;
+}
+
+export interface Vacancy {
+  teams: string;
+  dayToDay: string;
+  regime: "offsite" | "hybrid";
+  local:string;
+  gupyLink: string;
+  knowledges: Array<{
+    knowledge: string;
+    required: boolean; // true = requerido, false = desejado
+  }>;
 }

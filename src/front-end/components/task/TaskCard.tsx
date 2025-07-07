@@ -222,18 +222,12 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
             )}
 
             {/* Detalhes adicionais */}
-            {(task.syllabus || task.seniority) && (
+            {(task.seniority) && (
               <div className="space-y-1 pt-1 border-t border-gray-100">
                 {task.seniority && (
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <span className="font-medium">Senioridade:</span>
                     <span>{task.seniority}</span>
-                  </div>
-                )}
-                {task.syllabus && (
-                  <div className="text-xs text-gray-500">
-                    <span className="font-medium">Ementa:</span>
-                    <p className="mt-1 line-clamp-2">{task.syllabus}</p>
                   </div>
                 )}
               </div>

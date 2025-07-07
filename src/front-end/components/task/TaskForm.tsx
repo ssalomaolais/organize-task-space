@@ -18,6 +18,7 @@ import TaskScheduleTab from "./TaskScheduleTab";
 import { useEventType } from "@/hooks/useEventType";
 import { useStack } from "@/hooks/useStack";
 import { useDiscipline } from "@/hooks/useDiscipline";
+import TaskVagaTab from "./TaskVagaTab";
 
 interface TaskFormProps {
   task?: Task | null;
@@ -43,7 +44,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
 
   const [showAdvancedFields, setShowAdvancedFields] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
-  
+
   const [formData, setFormData] = useState({
     title: "",
     subtitle: "",
@@ -63,6 +64,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     syllabus: "",
     seniority: "",
     schedule: [] as Schedule[],
+    vacancy: { teams: "", dayToDay: "", regime: "offsite" as "offsite" | "hybrid", gupyLink: "", knowledges: [] as any[] },
   });
 
   const [showNewEventTypeModal, setShowNewEventTypeModal] = useState(false);
@@ -98,13 +100,14 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
         syllabus: task.syllabus || "",
         seniority: task.seniority || "",
         schedule: task.schedule || [],
+        vacancy: task.vacancy || { teams: "", dayToDay: "", regime: "offsite" as "offsite" | "hybrid", gupyLink: "", knowledges: [] as any[] },
       });
 
       // Verificar se há dados nas abas avançadas para mostrar automaticamente
       const hasResponsibles = task.responsibles && task.responsibles.length > 0;
       const hasDetails = task.student_count > 0 || task.vacancy_count > 0 || task.syllabus || task.seniority;
       const hasSchedule = task.schedule && task.schedule.length > 0;
-      
+
       if (hasResponsibles || hasDetails || hasSchedule) {
         setShowAdvancedFields(true);
         // Definir a aba ativa baseada nos dados disponíveis
@@ -130,7 +133,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title || !formData.description || !formData.responsible) {
       toast({
         title: "Erro",
@@ -177,7 +180,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
       });
       return;
     }
-    
+
     // Update formData with the ISO string that treats local input as UTC
     setFormData(prev => {
       const newDate = date; // This is the UTC date object representing the entered time
@@ -255,67 +258,95 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
             {task ? "Editar Tarefa" : "Nova Tarefa"}
           </DialogTitle>
           <DialogDescription>
-            {task 
+            {task
               ? "Modifique os detalhes da tarefa. Todos os campos obrigatórios devem ser preenchidos."
               : "Preencha os detalhes da nova tarefa. Todos os campos obrigatórios devem ser preenchidos."
             }
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <div className="min-h-[600px]">
-            {showAdvancedFields && (
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="basic">Principal</TabsTrigger>
-                <TabsTrigger value="responsibles">Responsáveis</TabsTrigger>
-                <TabsTrigger value="details">Detalhes</TabsTrigger>
-                <TabsTrigger value="schedule">Grade de Horário</TabsTrigger>
-              </TabsList>
-            )}
-            
-            <TabsContent value="basic">
-              <TaskBasicTab
-                formData={formData}
-                startDateTime={startDateTime}
-                endDateTime={endDateTime}
-                stack={stack}
-                eventType={eventType}
-                onInputChange={handleInputChange}
-                onInputDataChange={handleInputDataChange}
-                onShowNewStackModal={() => setShowNewStackModal(true)}
-                onShowNewEventTypeModal={() => setShowNewEventTypeModal(true)}
-              />
-            </TabsContent>
-            
-            {showAdvancedFields && (
-              <>
-                <TabsContent value="responsibles">
-                  <TaskResponsiblesTab
-                    responsibles={formData.responsibles}
-                    onResponsiblesChange={(responsibles) => handleInputChange("responsibles", responsibles)}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="details">
-                  <TaskDetailsTab
-                    formData={formData}
-                    onInputChange={handleInputChange}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="schedule">
-                  <TaskScheduleTab
-                    schedule={formData.schedule}
-                    responsibles={formData.responsibles}
-                    onScheduleChange={(schedule) => handleInputChange("schedule", schedule)}
-                  />
-                </TabsContent>
-              </>
-            )}
+              {showAdvancedFields && (
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="basic">Principal</TabsTrigger>
+                  <TabsTrigger value="responsibles">Responsáveis</TabsTrigger>
+                  {formData.event_type === 'ET' ? (
+                    <TabsTrigger value="vaga">Vaga</TabsTrigger>
+
+                  ) : ((formData.event_type === 'JP' || formData.event_type === 'CT') && (
+                    <>
+                      <TabsTrigger value="details">Detalhes</TabsTrigger>
+                      <TabsTrigger value="schedule">Grade de Horário</TabsTrigger>
+                    </>
+                  ))}
+                </TabsList>
+              )}
+
+              <TabsContent value="basic">
+                <TaskBasicTab
+                  formData={formData}
+                  startDateTime={startDateTime}
+                  endDateTime={endDateTime}
+                  stack={stack}
+                  eventType={eventType}
+                  onInputChange={handleInputChange}
+                  onInputDataChange={handleInputDataChange}
+                  onShowNewStackModal={() => setShowNewStackModal(true)}
+                  onShowNewEventTypeModal={() => setShowNewEventTypeModal(true)}
+                />
+              </TabsContent>
+
+              {showAdvancedFields && (
+                <>
+                  <TabsContent value="responsibles">
+                    <TaskResponsiblesTab
+                      responsibles={formData.responsibles}
+                      onResponsiblesChange={(responsibles) => handleInputChange("responsibles", responsibles)}
+                    />
+                  </TabsContent>
+                  {formData.event_type !== 'ET' ? (
+                    <>
+                      <TabsContent value="details">
+                        <TaskDetailsTab
+                          formData={formData}
+                          onInputChange={handleInputChange}
+                        />
+                      </TabsContent>
+                      <TabsContent value="schedule">
+                        <TaskScheduleTab
+                          schedule={formData.schedule}
+                          responsibles={formData.responsibles}
+                          onScheduleChange={(schedule) => handleInputChange("schedule", schedule)}
+                        />
+                      </TabsContent>
+                    </>
+                  ) : (
+                    <TabsContent value="vaga">
+                      <TaskVagaTab
+                        formData={formData}
+                        vacancy={formData.vacancy || { teams: "", dayToDay: "", regime: "offsite" as "offsite" | "hybrid", gupyLink: "", knowledges: [] as any[] }}
+                        onVacancyChange={(field, value) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            vacancy: {
+                              ...prev.vacancy,
+                              [field]: value,
+                            },
+                          }));
+                        }}
+                        syllabus={formData.syllabus}
+                        seniority={formData.seniority}
+                        onInputChange={handleInputChange}
+                      />
+                    </TabsContent>
+                  )}
+                </>
+              )}
             </div>
           </Tabs>
-          
+
           <div className="flex gap-2 justify-between pt-4">
             <Button
               type="button"
@@ -335,21 +366,21 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                 </>
               )}
             </Button>
-            
+
             <div className="flex gap-2">
               <Button type="button" variant="outline" onClick={onCancel}>
                 Cancelar
               </Button>
-              {task &&  (<Button
+              {task && (<Button
                 type="button"
                 variant="outline"
                 onClick={() => task && onDelete(task.id)}
                 disabled={!task}
               >
-                 Excluir
-              </Button>)} 
+                Excluir
+              </Button>)}
               <Button type="submit">
-                {task ? "Atualizar" : "Salvar"} 
+                {task ? "Atualizar" : "Salvar"}
               </Button>
             </div>
           </div>
