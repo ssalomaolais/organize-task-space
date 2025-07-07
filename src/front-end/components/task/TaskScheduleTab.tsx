@@ -8,6 +8,7 @@ import { Schedule, Responsible } from "@/types/task";
 import { Plus, Edit, Trash2, Clock, User, Calendar, ArrowRight, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getDayLabel, DaysOfWeek, TimeSlots } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 interface TaskScheduleTabProps {
   schedule: Schedule[];
   responsibles: Responsible[];
@@ -26,6 +27,16 @@ const TaskScheduleTab = ({ schedule, responsibles, onScheduleChange }: TaskSched
 
   const handleAdd = () => {
     if (!formData.day || !formData.timeStart || !formData.timeEnd || !formData.instructor) {
+      return;
+    }
+
+    // Validar se o horário de fim é posterior ao horário de início
+    if (formData.timeEnd <= formData.timeStart) {
+      toast({
+        title: "Erro de Horário",
+        description: "O horário de fim deve ser posterior ao horário de início.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -58,6 +69,16 @@ const TaskScheduleTab = ({ schedule, responsibles, onScheduleChange }: TaskSched
 
   const handleUpdate = () => {
     if (!formData.day || !formData.timeStart || !formData.timeEnd || !formData.instructor || !editingId) {
+      return;
+    }
+
+    // Validar se o horário de fim é posterior ao horário de início
+    if (formData.timeEnd <= formData.timeStart) {
+      toast({
+        title: "Erro de Horário",
+        description: "O horário de fim deve ser posterior ao horário de início.",
+        variant: "destructive",
+      });
       return;
     }
 

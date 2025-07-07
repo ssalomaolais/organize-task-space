@@ -8,7 +8,7 @@ interface TaskResponsiblesTabProps {
 
 const TaskResponsiblesTab = ({ responsibles, onResponsiblesChange }: TaskResponsiblesTabProps) => {
   return (
-    <div className="space-y-4 min-h-[400px]">
+    <div className="">
       <ResponsibleList
         responsibles={responsibles}
         onResponsiblesChange={onResponsiblesChange}

@@ -63,6 +63,7 @@ export type Database = {
           updated_at: string | null
           user_id: string
           vacancy_count?: number | null
+          vacancy?:string 
         }
         Insert: {
           created_at?: string | null
@@ -84,6 +85,7 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           vacancy_count?: number | null
+          vacancy?:string 
         }
         Update: {
           created_at?: string | null
@@ -106,6 +108,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           vacancy_count?: number | null
+          vacancy?:string 
         }
         Relationships: [
           {

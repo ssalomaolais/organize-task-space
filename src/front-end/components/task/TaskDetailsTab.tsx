@@ -10,14 +10,15 @@ interface TaskDetailsTabProps {
     student_count: number;
     vacancy_count: number;
     syllabus: string;
-    seniority: string;
+    seniority: number;
   };
   onInputChange: (field: keyof Task, value: string | number) => void;
 }
 
 const TaskDetailsTab = ({ formData, onInputChange }: TaskDetailsTabProps) => {
   return (
-    <div className="space-y-4 min-h-[400px]">
+    <div className="">
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="md:col-span-2 flex flex-col">
           <Label htmlFor="syllabus">Ementa Geral</Label>
@@ -57,7 +58,7 @@ const TaskDetailsTab = ({ formData, onInputChange }: TaskDetailsTabProps) => {
           <Label htmlFor="seniority">Senioridade</Label>
           <Select 
             onValueChange={(value) => onInputChange("seniority", value === "none" ? "" : value)} 
-            value={formData.seniority || "none"}
+            value={formData.seniority.toString()}
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecione a senioridade" />
@@ -65,7 +66,7 @@ const TaskDetailsTab = ({ formData, onInputChange }: TaskDetailsTabProps) => {
             <SelectContent>
               <SelectItem value="none">Nenhuma</SelectItem>
               {SeniorityOptions.map((seniority) => (
-                <SelectItem key={seniority.value} value={seniority.value}>
+                <SelectItem key={seniority.value} value={seniority.value.toString()}>
                   {seniority.label}
                 </SelectItem>
               ))}

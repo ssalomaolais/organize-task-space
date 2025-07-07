@@ -21,6 +21,7 @@ const RESPONSIBLE_TYPES = [
   { value: "manager", label: "Gestor" },
   { value: "coordinator", label: "Coordenador" },
   { value: "facilitator", label: "Facilitador" },
+  { value: "interviewer", label: "Entrevistador" },
   { value: "other", label: "Outro" },
 ];
 
@@ -131,7 +132,7 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
             className="flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
-            Adicionar Responsável
+            Adicionar
           </Button>
         )}
       </div>
@@ -149,6 +150,16 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
                 placeholder="Nome do responsável"
               />
             </div>
+            <div>
+              <Label htmlFor="responsible-email">Email</Label>
+              <Input
+                id="responsible-email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="email@exemplo.com"
+              />
+            </div>            
             <div>
               <Label htmlFor="responsible-type">Tipo *</Label>
               <Select
@@ -168,48 +179,46 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
               </Select>
             </div>
             <div className="flex items-end gap-2 h-full">
-              <div className="flex-1 flex flex-col justify-end h-full">
-                <Label htmlFor="responsible-discipline">Disciplina</Label>
-                <Select
-                  value={formData.discipline}
-                  onValueChange={(value) => setFormData({ ...formData, discipline: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a disciplina" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {discipline.map((disc) => (
-                      <SelectItem key={disc.value} value={disc.value}>
-                        {disc.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {formData.type === "instructor" && (
+                <>
+                  <div className="flex-1 flex flex-col justify-end h-full">
+                    <Label htmlFor="responsible-discipline">Disciplina</Label>
+                    <Select
+                      value={formData.discipline}
+                      onValueChange={(value) => setFormData({ ...formData, discipline: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a disciplina" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {discipline.map((disc) => (
+                          <SelectItem key={disc.value} value={disc.value}>
+                            {disc.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button type="button" variant="outline" size="icon" onClick={() => setShowNewDisciplineModal(true)}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {/* Campo Ementa só aparece se o tipo for instrutor */}
+            {formData.type === "instructor" && (
+              <div className="md:col-span-4">
+                <Label htmlFor="responsible-syllabus">Ementa</Label>
+                <textarea
+                  id="responsible-syllabus"
+                  className="w-full min-h-[80px] border rounded p-2 resize-none"
+                  value={formData.syllabus}
+                  onChange={(e) => setFormData({ ...formData, syllabus: e.target.value })}
+                  placeholder="Ementa do responsável"
+                />
               </div>
-              <Button type="button" variant="outline" size="icon" onClick={() => setShowNewDisciplineModal(true)}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            <div>
-              <Label htmlFor="responsible-email">Email</Label>
-              <Input
-                id="responsible-email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="email@exemplo.com"
-              />
-            </div>
-            <div className="md:col-span-4">
-              <Label htmlFor="responsible-syllabus">Ementa</Label>
-              <textarea
-                id="responsible-syllabus"
-                className="w-full min-h-[80px] border rounded p-2 resize-none"
-                value={formData.syllabus}
-                onChange={(e) => setFormData({ ...formData, syllabus: e.target.value })}
-                placeholder="Ementa do responsável"
-              />
-            </div>
+            )}
           </div>
           <div className="flex gap-2">
             <Button
@@ -233,9 +242,9 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Disciplina</TableHead>
-                <TableHead>Email</TableHead>
                 <TableHead className="w-[100px]">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -243,9 +252,9 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
               {responsibles.map((responsible) => (
                 <TableRow key={responsible.id}>
                   <TableCell className="font-medium">{responsible.name}</TableCell>
+                  <TableCell>{responsible.email || "-"}</TableCell>
                   <TableCell>{getTypeLabel(responsible.type)}</TableCell>
                   <TableCell>{responsible.discipline ? getDisciplineLabel(responsible.discipline) : "-"}</TableCell>
-                  <TableCell>{responsible.email || "-"}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Button

@@ -7,6 +7,10 @@ import { User } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
 import { ListValue } from "@/types/task";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useVacancies } from "@/hooks/useVacancies";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 import EventTypeForm from "@/components/event_types/EventTypeForm";
 import StackForm from "@/components/stacks/StackForm";
@@ -19,6 +23,7 @@ import { useEventType } from "@/hooks/useEventType";
 import { useStack } from "@/hooks/useStack";
 import { useDiscipline } from "@/hooks/useDiscipline";
 import TaskVagaTab from "./TaskVagaTab";
+import VacancyForm from "@/components/vacancy/VacancyForm";
 
 interface TaskFormProps {
   task?: Task | null;
@@ -34,6 +39,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
   const { createEventType, fetchEventType } = useEventType();
   const { createStack, fetchStack } = useStack();
   const { createDiscipline, fetchDiscipline } = useDiscipline();
+  const { vacancies, fetchVacancies } = useVacancies();
 
   const [startDateTime, setStartDateTime] = useState(
     new Date().toISOString().slice(0, 16)
@@ -62,14 +68,19 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     student_count: 0,
     vacancy_count: 0,
     syllabus: "",
-    seniority: "",
+    seniority: -1,
     schedule: [] as Schedule[],
-    vacancy: { teams: "", dayToDay: "", regime: "offsite" as "offsite" | "hybrid", gupyLink: "", knowledges: [] as any[] },
+    vacancy: ""
   });
 
   const [showNewEventTypeModal, setShowNewEventTypeModal] = useState(false);
   const [showNewStackModal, setShowNewStackModal] = useState(false);
   const [showNewDisciplineModal, setShowNewDisciplineModal] = useState(false);
+
+  const [selectedVacancyId, setSelectedVacancyId] = useState<string>("");
+  const [vacancyFieldsDisabled, setVacancyFieldsDisabled] = useState(false);
+  
+  const [showVacancyForm, setShowVacancyForm] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -98,9 +109,9 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
         student_count: task.student_count || 0,
         vacancy_count: task.vacancy_count || 0,
         syllabus: task.syllabus || "",
-        seniority: task.seniority || "",
+        seniority: task.seniority,
         schedule: task.schedule || [],
-        vacancy: task.vacancy || { teams: "", dayToDay: "", regime: "offsite" as "offsite" | "hybrid", gupyLink: "", knowledges: [] as any[] },
+        vacancy: task.vacancy || ""
       });
 
       // Verificar se há dados nas abas avançadas para mostrar automaticamente
@@ -108,21 +119,9 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
       const hasDetails = task.student_count > 0 || task.vacancy_count > 0 || task.syllabus || task.seniority;
       const hasSchedule = task.schedule && task.schedule.length > 0;
 
+      setActiveTab("basic");
       if (hasResponsibles || hasDetails || hasSchedule) {
         setShowAdvancedFields(true);
-        // Definir a aba ativa baseada nos dados disponíveis
-        if (hasResponsibles && (hasDetails || hasSchedule)) {
-          setActiveTab("responsibles"); // Prioriza responsáveis se existem
-        } else if (hasResponsibles) {
-          setActiveTab("responsibles");
-        } else if (hasDetails) {
-          setActiveTab("details");
-        } else if (hasSchedule) {
-          setActiveTab("schedule");
-        }
-      } else {
-        // Se não há dados avançados, sempre mostrar campos básicos
-        setActiveTab("basic");
       }
     } else {
       // Para novas tarefas, sempre começar com campos básicos
@@ -130,6 +129,26 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
       setShowAdvancedFields(false);
     }
   }, [task]);
+
+  useEffect(() => {
+    fetchVacancies(1, 1000, ""); // Busca todas as vagas (ajuste o pageSize se necessário)
+  }, []);
+
+  useEffect(() => {
+    if (selectedVacancyId) {
+      const selected = vacancies.find(v => v.id === selectedVacancyId);
+      if (selected) {
+        setFormData(prev => ({
+          ...prev,
+          vacancy: selected.id,
+          seniority: selected.seniority,
+        }));
+        setVacancyFieldsDisabled(true);
+      }
+    } else {
+      setVacancyFieldsDisabled(false);
+    }
+  }, [selectedVacancyId, vacancies]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,10 +162,14 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
       return;
     }
 
-    if (new Date(formData.end_date) < new Date(formData.start_date)) {
+    // Validar se a data/hora de fim é posterior à data/hora de início
+    const startDate = new Date(formData.start_date);
+    const endDate = new Date(formData.end_date);
+    
+    if (endDate <= startDate) {
       toast({
-        title: "Erro",
-        description: "A data de fim deve ser posterior à data de início.",
+        title: "Erro de Data/Hora",
+        description: "A data e hora de fim deve ser posterior à data e hora de início.",
         variant: "destructive",
       });
       return;
@@ -154,6 +177,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
 
     onSubmit({
       ...formData,
+      vacancy: formData.vacancy === "" ? null : formData.vacancy,
       start_date: formData.start_date,
       end_date: formData.end_date,
       event_type: formData.event_type,
@@ -186,19 +210,27 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
       const newDate = date; // This is the UTC date object representing the entered time
       const updatedPrev = { ...prev, [field]: isoStringForStorage };
 
-      // Auto-adjust logic
+      // Validar se a data/hora de fim é posterior à data/hora de início
       const currentStartDate = field === 'start_date' ? newDate : new Date(prev.start_date);
       const currentEndDate = field === 'end_date' ? newDate : new Date(prev.end_date);
 
-      if (currentEndDate < currentStartDate) {
+      if (currentEndDate <= currentStartDate) {
+        // Mostrar erro apenas se ambos os campos estiverem preenchidos
+        if (prev.start_date && prev.end_date) {
+          toast({
+            title: "Erro de Data/Hora",
+            description: "A data e hora de fim deve ser posterior à data e hora de início.",
+            variant: "destructive",
+          });
+        }
+        
+        // Auto-adjust logic apenas para start_date
         if (field === 'start_date') {
-          // If start date is set after end date, update end date to match start date
-          setEndDateTime(value); // Update end date input field
-          updatedPrev.end_date = isoStringForStorage; // Update end date in formData
-        } else { // field === 'end_date'
-          // If end date is set before start date, update start date to match end date
-          setStartDateTime(value); // Update start date input field
-          updatedPrev.start_date = isoStringForStorage; // Update start date in formData
+          // Se a data de início for posterior à data de fim, ajustar automaticamente a data de fim
+          const newEndDate = new Date(newDate.getTime() + 60 * 60 * 1000); // Adicionar 1 hora
+          const newEndDateTime = newEndDate.toISOString().slice(0, 16);
+          setEndDateTime(newEndDateTime);
+          updatedPrev.end_date = `${newEndDateTime}:00.000Z`;
         }
       }
       return updatedPrev;
@@ -265,9 +297,9 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <div className="min-h-[600px]">
+        <form onSubmit={handleSubmit} className="space-y-4 ">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full min-h-[650px]">
+            <div className="">
               {showAdvancedFields && (
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="basic">Principal</TabsTrigger>
@@ -326,19 +358,17 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                     <TabsContent value="vaga">
                       <TaskVagaTab
                         formData={formData}
-                        vacancy={formData.vacancy || { teams: "", dayToDay: "", regime: "offsite" as "offsite" | "hybrid", gupyLink: "", knowledges: [] as any[] }}
+                        vacancies={vacancies}
+                        selectedVacancyId={selectedVacancyId}
+                        setSelectedVacancyId={setSelectedVacancyId}
+                        setShowVacancyForm={setShowVacancyForm}
                         onVacancyChange={(field, value) => {
                           setFormData(prev => ({
                             ...prev,
-                            vacancy: {
-                              ...prev.vacancy,
-                              [field]: value,
-                            },
                           }));
                         }}
-                        syllabus={formData.syllabus}
-                        seniority={formData.seniority}
                         onInputChange={handleInputChange}
+                        fieldsDisabled={vacancyFieldsDisabled}
                       />
                     </TabsContent>
                   )}
@@ -406,6 +436,20 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
           onSubmit={handleNewDisciplineSubmit}
           onCancel={() => setShowNewDisciplineModal(false)}
         />
+      )}
+
+      {showVacancyForm && (
+        <Dialog open={showVacancyForm} onOpenChange={setShowVacancyForm}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Cadastrar Nova Vaga</DialogTitle>
+            </DialogHeader>
+            <VacancyForm
+              onSubmit={() => setShowVacancyForm(false)}
+              onCancel={() => setShowVacancyForm(false)}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </Dialog>
   );

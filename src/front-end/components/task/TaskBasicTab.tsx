@@ -71,7 +71,7 @@ const TaskBasicTab = ({
             value={formData.description}
             onChange={(e) => onInputChange("description", e.target.value)}
             placeholder="Descreva a tarefa em detalhes"
-            rows={3}                
+            rows={6}                
           />
         </div>
         

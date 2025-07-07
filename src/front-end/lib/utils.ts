@@ -62,11 +62,14 @@ export const GradeLayoutOptions = [
 ]
 
 export const SeniorityOptions = [
-  { value: "junior", label: "Junior" },
-  { value: "pleno", label: "Pleno" },
-  { value: "senior", label: "Senior" },
-  { value: "especialista", label: "Especialista" },
+  { value: -1, label: "Não se aplica" },  
+  { value: 0, label: "Jovem Aprendiz" },
+  { value: 1, label: "Júnior" },
+  { value: 2, label: "Pleno" },
+  { value: 3, label: "Sênior" },
+  { value: 4, label: "Especialista" },
 ]
+
 
 export const TailwindColors = [
   { value: "bg-gray-100 text-gray-800", label: "Cinza", preview: "bg-gray-500" },

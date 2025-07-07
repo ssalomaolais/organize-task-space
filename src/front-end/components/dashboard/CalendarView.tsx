@@ -10,6 +10,7 @@ import { User } from "@/types/auth";
 import { ResizeConfirmationModal } from "./ResizeConfirmationModal";
 import { EventContent } from "./EventContent";
 import { useCalendarUtils } from "@/hooks/useCalendarUtils";
+import { toast } from "@/hooks/use-toast";
 import "@/CalendarView.css";
 
 interface CalendarViewProps {
@@ -191,6 +192,17 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
       newEndDate = new Date(startDate.getTime() + duration);
     }
 
+    // Validar se a data/hora de fim é posterior à data/hora de início
+    if (newEndDate <= newStartDate) {
+      toast({
+        title: "Erro de Data/Hora",
+        description: "A data e hora de fim deve ser posterior à data e hora de início.",
+        variant: "destructive",
+      });
+      info.revert();
+      return;
+    }
+
     const updatedTaskData: Omit<Task, "id" | "created_at" | "updated_at"> = {
       ...task,
       start_date: formatDateForStorage(newStartDate),
@@ -211,6 +223,17 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
 
     // Para eventos recorrentes, não permitir redimensionamento individual
     if (isRecurring) {
+      info.revert();
+      return;
+    }
+
+    // Validar se a data/hora de fim é posterior à data/hora de início
+    if (newEnd <= newStart) {
+      toast({
+        title: "Erro de Data/Hora",
+        description: "A data e hora de fim deve ser posterior à data e hora de início.",
+        variant: "destructive",
+      });
       info.revert();
       return;
     }

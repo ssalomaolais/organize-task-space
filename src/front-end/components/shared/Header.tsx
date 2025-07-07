@@ -12,8 +12,9 @@ import DisciplinesPageModal from "@/components/disciplines/DisciplinesPageModal"
 import { useStack } from "@/hooks/useStack";
 import Dashboard from "@/components/dashboard/Dashboard";
 import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
+import VacanciesPage from "@/components/vacancy/VacanciesPage";
 
-type ManagementPage = "none" | "users" | "event-types" | "stacks" | "disciplines";
+type ManagementPage = "none" | "users" | "event-types" | "stacks" | "disciplines" | "vacancies";
 
 interface HeaderProps {
   user: User;
@@ -94,19 +95,12 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setCurrentManagementPage("users")}>
-                    Usuários
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrentManagementPage("users")}>Usuários</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrentManagementPage("vacancies")}>Vagas</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setCurrentManagementPage("stacks")}>
-                    Comunidades
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setCurrentManagementPage("event-types")}>
-                    Eventos
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setCurrentManagementPage("disciplines")}>
-                    Disciplinas
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrentManagementPage("stacks")}>Comunidades</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrentManagementPage("event-types")}>Eventos</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCurrentManagementPage("disciplines")}>Disciplinas</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
@@ -122,6 +116,8 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
       <main className="flex-1 pt-16">
         {currentManagementPage === "users" ? (
           <UsersPage stack={stack} colorType={colorType} onBack={handleCloseModal} />
+        ) : currentManagementPage === "vacancies" ? (
+          <VacanciesPage colorType={colorType} onBack={handleCloseModal} />
         ) : (
           <Dashboard key={dashboardKey} colorType={colorType} user={user} />
         )}

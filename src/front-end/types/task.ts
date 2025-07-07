@@ -21,9 +21,9 @@ export interface Task {
   student_count?: number;
   vacancy_count?: number;
   syllabus?: string;
-  seniority?: string;
+  seniority?: number;
   schedule?: Schedule[];
-  vacancy: Vacancy;
+  vacancy: string;
 }
 
 export interface Schedule {
@@ -63,13 +63,22 @@ export interface Comment {
 }
 
 export interface Vacancy {
+  id: string;
+  title: string;
   teams: string;
-  dayToDay: string;
-  regime: "offsite" | "hybrid";
-  local:string;
-  gupyLink: string;
+  daytoday: string;
+  seniority: -1 | 0 | 1 | 2 | 3 | 4; // 0=Jovem Aprendiz, 1=Júnior, 2=Pleno, 3=Senior, 4=Especialista
+  regime: "offsite" | "hybrid" | "físico";
+  quantity: number;
+  gupylink: string;
+  local: string;
+  detail: string;
+  knowledge: string;
   knowledges: Array<{
     knowledge: string;
-    required: boolean; // true = requerido, false = desejado
+    required: boolean;
   }>;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
 }
