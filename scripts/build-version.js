@@ -36,8 +36,8 @@ function saveBuildCounter(counter) {
     // Em ambiente CI/CD, pode não ser possível escrever o arquivo
     // Nesse caso, apenas loga o contador
     if (process.env.CI) {
-      console.log('CI environment detected, skipping build counter file write');
-      console.log('Current build counter:', JSON.stringify(counter, null, 2));
+      console.error('CI environment detected, skipping build counter file write');
+      console.error('Current build counter:', JSON.stringify(counter, null, 2));
       return;
     }
     
@@ -71,20 +71,19 @@ function main() {
     try {
       buildNumber = getNextBuildNumber();
     } catch (error) {
-      console.log('Using timestamp-based build number for CI/CD');
+      console.error('Using timestamp-based build number for CI/CD');
       buildNumber = generateTimestampBuildNumber();
     }
   } else {
     buildNumber = getNextBuildNumber();
   }
   
-  console.log(`Build number: ${buildNumber}`);
-  
   // Define a variável de ambiente para o processo atual
   process.env.BUILD_NUMBER = buildNumber;
   
   // Se executado diretamente, retorna o número
   if (import.meta.url === `file://${process.argv[1]}`) {
+    console.log(buildNumber);
     return buildNumber;
   }
 }
