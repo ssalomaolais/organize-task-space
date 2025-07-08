@@ -1,8 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-
 const BUILD_COUNTER_FILE = './.build-counter.json';
-
 // Função para obter a data atual no formato YYYY-MM-DD
 function getCurrentDate() {
   const now = new Date();
@@ -54,11 +52,10 @@ function getNextBuildNumber() {
   
   if (!counter[currentDate]) {
     counter[currentDate] = 0;
-  }
-  
+  }  
   counter[currentDate]++;
   saveBuildCounter(counter);
-  
+
   return counter[currentDate].toString();
 }
 
