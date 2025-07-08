@@ -32,7 +32,7 @@ const Footer = () => {
     <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white px-4 py-2 shadow-sm">
       <div className="flex items-center justify-center">
         <span className="text-sm text-gray-600">
-          Minsait Brasil - Versão {generateVersion()}
+          Delivery Network - Versão {generateVersion()}
         </span>
       </div>
     </footer>
