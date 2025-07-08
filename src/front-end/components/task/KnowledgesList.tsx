@@ -8,21 +8,13 @@ import { Knowledge, ListValue } from "@/types/task";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { useDiscipline } from "@/hooks/useDiscipline";
 import DisciplineForm from "@/components/disciplines/DisciplineForm";
+import {getResponsibleTypesLabel} from "@/lib/utils"
 
 interface KnowledgesListProps {
   knowledges: Knowledge[];
   onKnowledgesChange: (knowledges: Knowledge[]) => void;
 }
 
-const Knowledge_TYPES = [
-  { value: "instructor", label: "Instrutor" },
-  { value: "Knowledge_dnw", label: "Responsável DNW" },
-  { value: "Knowledge_rh", label: "Responsável RH" },
-  { value: "manager", label: "Gestor" },
-  { value: "coordinator", label: "Coordenador" },
-  { value: "facilitator", label: "Facilitador" },
-  { value: "other", label: "Outro" },
-];
 
 const KnowledgesList = ({ knowledges, onKnowledgesChange }: KnowledgesListProps) => {
   const { discipline, createDiscipline, fetchDiscipline } = useDiscipline();
@@ -87,10 +79,6 @@ const KnowledgesList = ({ knowledges, onKnowledgesChange }: KnowledgesListProps)
     setFormData({ name: "", min: 0 });
     setIsAdding(false);
     setEditingId(null);
-  };
-
-  const getTypeLabel = (type: string) => {
-    return Knowledge_TYPES.find((t) => t.value === type)?.label || type;
   };
 
   const getDisciplineLabel = (disciplineValue: string) => {

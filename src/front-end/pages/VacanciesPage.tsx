@@ -70,7 +70,7 @@ function VacanciesPage({ colorType, onBack }: VacanciesPageProps) {
                 placeholder="Buscar por título, equipe ou local..."
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                className="pl-10"
+                className="text-black pl-10"
               />
             </div>
             <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>

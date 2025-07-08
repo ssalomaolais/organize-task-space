@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +7,11 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Profile } from "@/types/auth";
 import { ListValue } from "@/types/task";
+import ResponsibleList from "@/components/task/ResponsibleList";
+import { Responsible } from "@/types/task";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import UserGeneralTab from "@/components/users/UserGeneralTab";
+import UserResponsiblesTab from "@/components/users/UserResponsiblesTab";
 
 interface UserFormProps {
   user?: Profile | null;
@@ -22,8 +26,11 @@ const UserForm = ({ user, stack, onSubmit, onCancel }: UserFormProps) => {
     email: '',
     role: 'user' as 'admin' | 'user',
     stack: '',
-    active: true
+    active: true,
+    responsibles: [] as Responsible[],
   });
+
+  const [activeTab, setActiveTab] = useState("general");
 
   useEffect(() => {
     if (user) {
@@ -32,7 +39,8 @@ const UserForm = ({ user, stack, onSubmit, onCancel }: UserFormProps) => {
         email: user.email,
         role: user.role,
         stack: user.stack || '',
-        active: user.active ?? true
+        active: user.active ?? true,
+        responsibles: user.responsibles || [],
       });
     }
   }, [user]);
@@ -42,95 +50,38 @@ const UserForm = ({ user, stack, onSubmit, onCancel }: UserFormProps) => {
     onSubmit(formData);
   };
 
+  const handleResponsiblesChange = (responsibles: Responsible[]) => {
+    setFormData(prev => ({ ...prev, responsibles }));
+  };
+
   const isEditing = !!user;
 
   return (
     <Dialog open={true} onOpenChange={() => onCancel()}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:min-w-[900px] min-h-[600px] flex flex-col !justify-start !items-start overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? 'Editar Usuário' : 'Novo Usuário'}
           </DialogTitle>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nome</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              required
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col flex-1">
+          <TabsContent value="general" className="flex-1 !mt-0">
+            <UserGeneralTab
+              formData={formData}
+              setFormData={setFormData}
+              isEditing={isEditing}
+              onCancel={onCancel}
+              onSubmit={handleSubmit}
+              stack={stack}
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-              required
-              disabled={isEditing}
+          </TabsContent>
+          <TabsContent value="responsibles" className="flex-1 !mt-0">
+            <UserResponsiblesTab
+              responsibles={formData.responsibles}
+              onResponsiblesChange={handleResponsiblesChange}
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="role">Função</Label>
-            <Select 
-              value={formData.role} 
-              onValueChange={(value: 'admin' | 'user') => setFormData(prev => ({ ...prev, role: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a função" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="user">Usuário</SelectItem>
-                <SelectItem value="admin">Administrador</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="stack">Stack</Label>
-            <Select 
-              value={formData.stack} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, stack: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a stack" />
-              </SelectTrigger>
-              <SelectContent>
-                {stack.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {isEditing && (
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="active"
-                checked={formData.active}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, active: checked }))}
-              />
-              <Label htmlFor="active">Usuário ativo</Label>
-            </div>
-          )}
-
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancelar
-            </Button>
-            <Button type="submit">
-              {isEditing ? 'Atualizar' : 'Criar'} Usuário
-            </Button>
-          </div>
-        </form>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

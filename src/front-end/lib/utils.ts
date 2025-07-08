@@ -117,6 +117,22 @@ export const getPreviewColorClass = (tailwindClass: string) => {
   return found ? found.preview : "bg-gray-500"; // Fallback
 }
 
+export const ResponsibleTypes = [
+  { value: "instructor", label: "Instrutor" },
+  { value: "responsible_dnw", label: "Responsável DNW" },
+  { value: "responsible_rh", label: "Responsável RH" },
+  { value: "manager", label: "Gestor" },
+  { value: "coordinator", label: "Coordenador" },
+  { value: "facilitator", label: "Facilitador" },
+  { value: "interviewer", label: "Entrevistador" },
+  { value: "reference", label: "Referência" },
+  { value: "other", label: "Outro" },
+];
+
+export const getResponsibleTypesLabel = (type: string) => {
+  return ResponsibleTypes.find((t) => t.value === type)?.label || type;
+};
+
 // Funções utilitárias para criptografia AES-GCM
 export async function encryptData(data: string, keyString: string): Promise<string> {
   const enc = new TextEncoder();

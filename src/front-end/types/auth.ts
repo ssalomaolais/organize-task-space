@@ -1,3 +1,4 @@
+import { Responsible } from "@/types/task";
 
 export type UserRole = 'admin' | 'user';
 
@@ -19,6 +20,7 @@ export interface Profile {
   active?: boolean;
   created_at: string;
   updated_at: string;
+  responsibles?: Responsible[];
 }
 
 export interface HashParams {

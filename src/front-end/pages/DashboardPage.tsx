@@ -26,6 +26,7 @@ import { EventsGridSVGExport } from "@/components/dashboard/EventsGridSVGExport"
 import { svgComponentToPngBase64 } from "@/lib/svg-to-image";
 import ReactDOMServer from "react-dom/server";
 import { drawCardsGridToCanvas } from "@/lib/draw-cards-grid-canvas";
+import FixedHorizontalScrollbar from "./FixedHorizontalScrollbar";
 
 interface DashboardProps {
     user: User;
@@ -172,8 +173,8 @@ function DashboardPage({ user, colorType }: DashboardProps) {
     }
 
     const renderGradeView = () => {
-        if (gradeLayout === "vertical") {
-            return (
+        const gradeContent = gradeLayout === "vertical"
+            ? (
                 <VerticalView
                     filteredTasks={filteredTasks}
                     selectedYear={new Date().getFullYear()}
@@ -188,9 +189,8 @@ function DashboardPage({ user, colorType }: DashboardProps) {
                     handleStatusChange={handleStatusChange}
                     handleTypeChange={handleTypeChange}
                 />
-            );
-        } else {
-            return (
+            )
+            : (
                 <HorizontalView
                     filteredTasks={filteredTasks}
                     selectedYear={new Date().getFullYear()}
@@ -205,7 +205,19 @@ function DashboardPage({ user, colorType }: DashboardProps) {
                     handleTypeChange={handleTypeChange}
                 />
             );
-        }
+
+        return (
+            <div className="relative">
+                <div
+                    id="grade-scroll-container"
+                    className="overflow-x-auto"
+                    style={{ paddingBottom: "40px" }}
+                >
+                    {gradeContent}
+                </div>
+                <FixedHorizontalScrollbar targetId="grade-scroll-container" />
+            </div>
+        );
     };
 
     const renderUpcomingView = () => {

@@ -7,25 +7,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Responsible, ListValue } from "@/types/task";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { useDiscipline } from "@/hooks/useDiscipline";
+import { ResponsibleTypes, getResponsibleTypesLabel } from "@/lib/utils"
 import DisciplineForm from "@/components/disciplines/DisciplineForm";
 
 interface ResponsibleListProps {
   responsibles: Responsible[];
   onResponsiblesChange: (responsibles: Responsible[]) => void;
+  showSyllabusField?: boolean;
+  showNotesField?: boolean;
 }
 
-const RESPONSIBLE_TYPES = [
-  { value: "instructor", label: "Instrutor" },
-  { value: "responsible_dnw", label: "Responsável DNW" },
-  { value: "responsible_rh", label: "Responsável RH" },
-  { value: "manager", label: "Gestor" },
-  { value: "coordinator", label: "Coordenador" },
-  { value: "facilitator", label: "Facilitador" },
-  { value: "interviewer", label: "Entrevistador" },
-  { value: "other", label: "Outro" },
-];
-
-const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleListProps) => {
+const ResponsibleList = ({ responsibles, onResponsiblesChange, showSyllabusField = true, showNotesField = false }: ResponsibleListProps) => {
   const { discipline, createDiscipline, fetchDiscipline } = useDiscipline();
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -36,6 +28,7 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
     discipline: "",
     email: "",
     syllabus: "",
+    notes: "",
   });
 
   const handleAdd = () => {
@@ -50,10 +43,11 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
       discipline: formData.discipline || undefined,
       email: formData.email || undefined,
       syllabus: formData.syllabus || undefined,
+      notes: formData.notes || undefined,
     };
 
     onResponsiblesChange([...responsibles, newResponsible]);
-    setFormData({ name: "", type: "", discipline: "", email: "", syllabus: "" });
+    setFormData({ name: "", type: "", discipline: "", email: "", syllabus: "", notes: "" });
     setIsAdding(false);
   };
 
@@ -65,6 +59,7 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
       discipline: responsible.discipline || "",
       email: responsible.email || "",
       syllabus: responsible.syllabus || "",
+      notes: responsible.notes || "",
     });
   };
 
@@ -82,12 +77,13 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
             discipline: formData.discipline || undefined,
             email: formData.email || undefined,
             syllabus: formData.syllabus || undefined,
+            notes: formData.notes || undefined,
           }
         : r
     );
 
     onResponsiblesChange(updatedResponsibles);
-    setFormData({ name: "", type: "", discipline: "", email: "", syllabus: "" });
+    setFormData({ name: "", type: "", discipline: "", email: "", syllabus: "", notes: "" });
     setEditingId(null);
   };
 
@@ -97,13 +93,9 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
   };
 
   const handleCancel = () => {
-    setFormData({ name: "", type: "", discipline: "", email: "", syllabus: "" });
+    setFormData({ name: "", type: "", discipline: "", email: "", syllabus: "", notes: "" });
     setIsAdding(false);
     setEditingId(null);
-  };
-
-  const getTypeLabel = (type: string) => {
-    return RESPONSIBLE_TYPES.find((t) => t.value === type)?.label || type;
   };
 
   const getDisciplineLabel = (disciplineValue: string) => {
@@ -170,7 +162,7 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  {RESPONSIBLE_TYPES.map((type) => (
+                  {ResponsibleTypes.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
                     </SelectItem>
@@ -179,7 +171,7 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
               </Select>
             </div>
             <div className="flex items-end gap-2 h-full">
-              {formData.type === "instructor" && (
+              {(formData.type === "instructor" || formData.type === "interviewer" || formData.type === "reference")  && (
                 <>
                   <div className="flex-1 flex flex-col justify-end h-full">
                     <Label htmlFor="responsible-discipline">Disciplina</Label>
@@ -206,8 +198,8 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
               )}
             </div>
 
-            {/* Campo Ementa só aparece se o tipo for instrutor */}
-            {formData.type === "instructor" && (
+            {/* Campo Ementa só aparece se o tipo for instrutor E showSyllabusField for true */}
+            {formData.type === "instructor" && showSyllabusField && (
               <div className="md:col-span-4">
                 <Label htmlFor="responsible-syllabus">Ementa</Label>
                 <textarea
@@ -216,6 +208,19 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
                   value={formData.syllabus}
                   onChange={(e) => setFormData({ ...formData, syllabus: e.target.value })}
                   placeholder="Ementa do responsável"
+                />
+              </div>
+            )}
+            {/* Campo Anotações só aparece se showNotesField for true */}
+            {showNotesField && (
+              <div className="md:col-span-4">
+                <Label htmlFor="responsible-notes">Anotações</Label>
+                <textarea
+                  id="responsible-notes"
+                  className="w-full min-h-[60px] border rounded p-2 resize-none"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Anotações do responsável"
                 />
               </div>
             )}
@@ -253,7 +258,7 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange }: ResponsibleList
                 <TableRow key={responsible.id}>
                   <TableCell className="font-medium">{responsible.name}</TableCell>
                   <TableCell>{responsible.email || "-"}</TableCell>
-                  <TableCell>{getTypeLabel(responsible.type)}</TableCell>
+                  <TableCell>{getResponsibleTypesLabel(responsible.type)}</TableCell>
                   <TableCell>{responsible.discipline ? getDisciplineLabel(responsible.discipline) : "-"}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">

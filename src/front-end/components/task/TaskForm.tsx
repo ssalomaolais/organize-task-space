@@ -389,12 +389,12 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               {showAdvancedFields ? (
                 <>
                   <ChevronUp className="h-4 w-4" />
-                  Menos...
+                  Menos
                 </>
               ) : (
                 <>
                   <ChevronDown className="h-4 w-4" />
-                  Mais...
+                  Mais
                 </>
               )}
             </Button>

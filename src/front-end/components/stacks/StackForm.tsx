@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ListValue } from "@/types/task";
+import { ListValue, Responsible } from "@/types/task";
 import { TailwindColors } from "@/lib/utils"; // Import TailwindColors
+import StackBasicTab from "./StackBasicTab";
+import StackResponsiblesTab from "./StackResponsiblesTab";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface StackFormProps {
   stack?: ListValue | null;
@@ -13,19 +13,28 @@ interface StackFormProps {
   onCancel: () => void;
 }
 
+// Novo tipo para StackForm
+interface StackFormData extends ListValue {
+  responsibles: Responsible[];
+}
+
 const StackForm = ({ stack, onSubmit, onCancel }: StackFormProps) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<StackFormData>({
     value: '',
     label: '',
-    color: TailwindColors[0].value // Default to the first color
+    color: TailwindColors[0].value, // Default to the first color
+    responsibles: [],
   });
+
+  const [activeTab, setActiveTab] = useState("basic");
 
   useEffect(() => {
     if (stack) {
       setFormData({
         value: stack.value,
         label: stack.label,
-        color: stack.color || TailwindColors[0].value // Fallback to default if color is missing
+        color: stack.color || TailwindColors[0].value, // Fallback to default if color is missing
+        responsibles: (stack as any).responsibles || [],
       });
     }
   }, [stack]);
@@ -39,56 +48,34 @@ const StackForm = ({ stack, onSubmit, onCancel }: StackFormProps) => {
 
   return (
     <Dialog open={true} onOpenChange={() => onCancel()}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="min-w-[900px] min-h-[650px] max-h-[90vh] overflow-y-auto transition-all duration-300">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? 'Editar Comunidade' : 'Nova Comunidade'}
           </DialogTitle>
         </DialogHeader>
-
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="value">Identificador (único)</Label>
-            <Input
-              id="value"
-              value={formData.value}
-              onChange={(e) => setFormData(prev => ({ ...prev, value: e.target.value }))}
-              required
-              disabled={isEditing}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="label">Nome da Comunidade</Label>
-            <Input
-              id="label"
-              value={formData.label}
-              onChange={(e) => setFormData(prev => ({ ...prev, label: e.target.value }))}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="color">Cor</Label>
-            <Select
-              value={formData.color}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, color: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione uma cor" />
-              </SelectTrigger>
-              <SelectContent>
-                {TailwindColors.map((colorOption) => (
-                  <SelectItem key={colorOption.value} value={colorOption.value}>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-4 h-4 rounded-full ${colorOption.preview}`}></div>
-                      <span>{colorOption.label}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full min-h-[650px]">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="basic">Principal</TabsTrigger>
+              <TabsTrigger value="responsibles">Contatos</TabsTrigger>
+            </TabsList>
+            <TabsContent value="basic">
+              <StackBasicTab
+                value={formData.value}
+                label={formData.label}
+                color={formData.color}
+                isEditing={isEditing}
+                onChange={(field, value) => setFormData(prev => ({ ...prev, [field]: value }))}
+              />
+            </TabsContent>
+            <TabsContent value="responsibles">
+              <StackResponsiblesTab
+                responsibles={formData.responsibles}
+                onResponsiblesChange={(responsibles) => setFormData(prev => ({ ...prev, responsibles }))}
+              />
+            </TabsContent>
+          </Tabs>
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancelar

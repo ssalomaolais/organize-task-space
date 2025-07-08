@@ -85,7 +85,7 @@ function UsersPage({ stack, colorType, onBack }: UsersPageProps) {
                 placeholder="Buscar por nome ou email..."
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10"
+                className="text-black pl-10"
               />
             </div>
             <Select onValueChange={handleStatusFilter} defaultValue="all">

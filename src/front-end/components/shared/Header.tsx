@@ -7,12 +7,12 @@ import { User as UserIcon, Settings, Key, LogOut } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import UsersPage from "@/pages/UsersPage";
 import EventTypesPageModal from "@/components/event_types/EventTypesPageModal";
-import StacksPageModal from "@/components/stacks/StacksPageModal";
+import CommunityPage from "@/pages/CommunityPage";
 import DisciplinesPageModal from "@/components/disciplines/DisciplinesPageModal";
 import { useStack } from "@/hooks/useStack";
 import DashboardPage from "@/pages/DashboardPage";
 import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
-import VacanciesPage from "@/components/vacancy/VacanciesPage";
+import VacanciesPage from "@/pages/VacanciesPage";
 import Footer from "./Footer";
 
 type ManagementPage = "none" | "users" | "event-types" | "stacks" | "disciplines" | "vacancies";
@@ -119,6 +119,8 @@ export const Header = ({ user, onLogout, initialManagementPage }: HeaderProps) =
           <UsersPage stack={stack} colorType={colorType} onBack={handleCloseModal} />
         ) : currentManagementPage === "vacancies" ? (
           <VacanciesPage colorType={colorType} onBack={handleCloseModal} />
+        ) : currentManagementPage === "stacks" ? (
+          <CommunityPage colorType={colorType} onBack={handleCloseModal} />
         ) : (
           <DashboardPage key={dashboardKey} colorType={colorType} user={user} />
         )}
@@ -128,10 +130,6 @@ export const Header = ({ user, onLogout, initialManagementPage }: HeaderProps) =
 
       {currentManagementPage === "event-types" && (
         <EventTypesPageModal onCancel={handleCloseModal} />
-      )}
-
-      {currentManagementPage === "stacks" && (
-        <StacksPageModal onCancel={handleCloseModal} />
       )}
 
       {currentManagementPage === "disciplines" && (

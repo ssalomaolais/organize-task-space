@@ -12,7 +12,8 @@ export const useEventType = () => {
   const fetchEventType = async (
     page: number = 1,
     pageSize: number = 50,
-    searchTerm: string = ''
+    searchTerm: string = '',
+    forceNoCache: boolean = false
   ) => {
     try {
       setLoading(true);
@@ -21,7 +22,7 @@ export const useEventType = () => {
       const today = new Date().toISOString().slice(0, 10);
       const cached = localStorage.getItem(cacheKey);
       const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      if (cached && key) {
+      if (!forceNoCache && cached && key) {
         try {
           const decrypted = await decryptData(cached, key);
           const parsed = JSON.parse(decrypted);
@@ -99,8 +100,8 @@ export const useEventType = () => {
 
       if (error) throw error;
 
-      setEventType(prev => [...prev, data]);
       clearEventTypeCache();
+      await fetchEventType(1, 50, '', true); // Força buscar do banco
       toast({
         title: "Sucesso!",
         description: "Tipo de evento criado com sucesso.",
@@ -128,10 +129,8 @@ export const useEventType = () => {
 
       if (error) throw error;
 
-      setEventType(prev => prev.map(item =>
-        item.value === value ? data : item
-      ));
       clearEventTypeCache();
+      await fetchEventType(1, 50, '', true); // Força buscar do banco
       toast({
         title: "Sucesso!",
         description: "Tipo de evento atualizado com sucesso.",
@@ -157,8 +156,8 @@ export const useEventType = () => {
 
       if (error) throw error;
 
-      setEventType(prev => prev.filter(item => item.value !== value));
       clearEventTypeCache();
+      await fetchEventType(1, 50, '', true); // Força buscar do banco
       toast({
         title: "Sucesso!",
         description: "Tipo de evento removido com sucesso.",

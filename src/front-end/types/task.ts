@@ -42,6 +42,7 @@ export interface Responsible {
   discipline?: string;
   email?: string;
   syllabus?: string;
+  notes?: string;
 }
 
 export interface Knowledge {
@@ -53,7 +54,7 @@ export interface Knowledge {
 export interface ListValue {
   value: string;
   label: string;
-  color?: string
+  color?: string;
 }
 
 export interface Comment {

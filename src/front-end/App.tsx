@@ -12,6 +12,7 @@ import Header from "@/components/shared/Header";
 import { Loading } from "@/components/shared/loading";
 import AuthPage from "@/components/auth/AuthPage";
 import VacanciesPage from "@/pages/VacanciesPage";
+import CommunityPage from "@/pages/CommunityPage";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,13 @@ function VacanciesRoute() {
   return <Header user={user} onLogout={signOut} initialManagementPage="vacancies" />;
 }
 
+function CommunityRoute() {
+  const { user, loading, signOut } = useAuth();
+  if (loading) return <Loading loading={loading} />;
+  if (!user) return <AuthPage />;
+  return <Header user={user} onLogout={signOut} initialManagementPage="stacks" />;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -41,6 +49,7 @@ const App = () => (
           <Route path="/index.html" element={<Index />} />
           <Route path="/user" element={<UserRoute />} />
           <Route path="/vacancies" element={<VacanciesRoute />} />
+          <Route path="/community" element={<CommunityRoute />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
