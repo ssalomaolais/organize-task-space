@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { Eye, EyeOff, Gamepad2, Mail, Lock, UserPlus } from "lucide-react";
 
 const AuthPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +22,7 @@ const AuthPage = () => {
     setIsLoading(true);
 
     const { error } = await signIn(loginData.email, loginData.password);
-    
+
     if (error) {
       toast({
         title: "Erro no login",
@@ -29,7 +30,7 @@ const AuthPage = () => {
         variant: "destructive",
       });
     }
-    
+
     setIsLoading(false);
   };
 
@@ -43,34 +44,44 @@ const AuthPage = () => {
           <CardTitle className="text-2xl">TaskFlow</CardTitle>
           <CardDescription className="color-minsait">Gerenciamento de Tarefas</CardDescription>
         </CardHeader>
-        
+
         <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={loginData.email}
-                    onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="password">Senha</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={loginData.password}
-                    onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Entrando..." : "Entrar"}
-                </Button>
-              </form>
-              <br/>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={loginData.email}
+                  onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
+                  required
+                  className="pl-10"
+                />
+              </div>
+
+            </div>
+            <div>
+              <Label htmlFor="password">Senha</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="password"
+                  type="password"
+                  value={loginData.password}
+                  onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                  required
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Entrando..." : "Entrar"}
+            </Button>
+          </form>
+          <br />
         </CardContent>
       </Card>
     </div>

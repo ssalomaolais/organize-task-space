@@ -5,12 +5,12 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import "@/CalendarView.css";
 import { User as UserIcon, Settings, Key, LogOut } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import UsersPage from "@/components/users/UsersPage";
+import UsersPage from "@/pages/UsersPage";
 import EventTypesPageModal from "@/components/event_types/EventTypesPageModal";
 import StacksPageModal from "@/components/stacks/StacksPageModal";
 import DisciplinesPageModal from "@/components/disciplines/DisciplinesPageModal";
 import { useStack } from "@/hooks/useStack";
-import Dashboard from "@/components/dashboard/Dashboard";
+import DashboardPage from "@/pages/DashboardPage";
 import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
 import VacanciesPage from "@/components/vacancy/VacanciesPage";
 import Footer from "./Footer";
@@ -20,10 +20,11 @@ type ManagementPage = "none" | "users" | "event-types" | "stacks" | "disciplines
 interface HeaderProps {
   user: User;
   onLogout: () => void;
+  initialManagementPage?: ManagementPage;
 }
 
-export const Header = ({ user, onLogout }: HeaderProps) => {
-  const [currentManagementPage, setCurrentManagementPage] = useState<ManagementPage>("none");
+export const Header = ({ user, onLogout, initialManagementPage }: HeaderProps) => {
+  const [currentManagementPage, setCurrentManagementPage] = useState<ManagementPage>(initialManagementPage || "none");
   const [colorType] = useState<string>("minsait");
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [dashboardKey, setDashboardKey] = useState(0); // Para forçar refresh do dashboard
@@ -119,7 +120,7 @@ export const Header = ({ user, onLogout }: HeaderProps) => {
         ) : currentManagementPage === "vacancies" ? (
           <VacanciesPage colorType={colorType} onBack={handleCloseModal} />
         ) : (
-          <Dashboard key={dashboardKey} colorType={colorType} user={user} />
+          <DashboardPage key={dashboardKey} colorType={colorType} user={user} />
         )}
       </main>
 

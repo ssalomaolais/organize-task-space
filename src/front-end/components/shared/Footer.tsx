@@ -29,10 +29,10 @@ const Footer = () => {
   };
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white px-4 py-2 shadow-sm">
+    <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 minsait px-0 py-0 shadow-sm">
       <div className="flex items-center justify-center">
-        <span className="text-sm text-gray-600">
-          Delivery Network - Versão {generateVersion()}
+        <span className="text-sm text-white-600">
+          <p>Versão {generateVersion()} &copy; 2025 Minsait, Delivery Networks</p>
         </span>
       </div>
     </footer>
