@@ -1,24 +1,18 @@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
 import { Label } from "@/components/ui/label";
-import { SeniorityOptions } from "@/lib/utils";
+import { SeniorityOptions, RegimeOptions } from "@/lib/utils";
 
-const regimeOptions = [
-  { value: "offsite", label: "Offsite" },
-  { value: "hybrid", label: "Híbrido" },
-];
-
-interface VacancyGeneralTabProps {
+interface VacancyFormGeneralTabProps {
   formData: any;
   handleChange: (field: string, value: any) => void;
   onCancel: () => void;
   handleSubmit: (e: React.FormEvent) => void;
 }
 
-const VacancyGeneralTab = ({ formData, handleChange, onCancel, handleSubmit }: VacancyGeneralTabProps) => (
-  <form onSubmit={handleSubmit} className="">
+const VacancyFormGeneralTab = ({ formData, handleChange, onCancel, handleSubmit }: VacancyFormGeneralTabProps) => (
+  <div className="space-y-4">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <Label className="block mb-1">Título *</Label>
@@ -43,10 +37,10 @@ const VacancyGeneralTab = ({ formData, handleChange, onCancel, handleSubmit }: V
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div>
         <Label className="block mb-1">Regime de Trabalho *</Label>
-        <Select value={formData.regime} onValueChange={v => handleChange("regime", v as "offsite" | "hybrid") }>
+        <Select value={formData.regime} onValueChange={v => handleChange("regime", v) }>
           <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
           <SelectContent>
-            {regimeOptions.map(opt => (
+            {RegimeOptions.map(opt => (
               <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
             ))}
           </SelectContent>
@@ -83,8 +77,7 @@ const VacancyGeneralTab = ({ formData, handleChange, onCancel, handleSubmit }: V
         Ativa
       </label>
     </div>
-
-  </form>
+  </div>
 );
 
-export default VacancyGeneralTab; 
+export default VacancyFormGeneralTab; 

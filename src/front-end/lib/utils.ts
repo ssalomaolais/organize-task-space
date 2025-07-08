@@ -101,6 +101,17 @@ export const TimeSlots = [
   //"20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"
 ];
 
+export const RegimeOptions = [
+  { value: "offsite", label: "Offsite" },
+  { value: "hybrid", label: "Híbrido" },
+  { value: "físico", label: "Físico" },
+];
+
+export const getRegimeOptionsLabel = (value:string):string =>{
+  const found = RegimeOptions.find((e) => e.value === value);
+  return found ? found.label : "";
+}
+
 export const getPreviewColorClass = (tailwindClass: string) => {
   const found = TailwindColors.find(tc => tc.value === tailwindClass);
   return found ? found.preview : "bg-gray-500"; // Fallback

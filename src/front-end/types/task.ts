@@ -24,6 +24,7 @@ export interface Task {
   seniority?: number;
   schedule?: Schedule[];
   vacancy: string;
+  requirement?:string;
 }
 
 export interface Schedule {
@@ -74,6 +75,7 @@ export interface Vacancy {
   local: string;
   detail: string;
   knowledge: string;
+  requirement: string;
   knowledges: Array<{
     knowledge: string;
     required: boolean;

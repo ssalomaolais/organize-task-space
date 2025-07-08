@@ -121,7 +121,7 @@ const KnowledgeList = ({ knowledges, onKnowledgesChange }: KnowledgeListProps) =
       )}
 
       {/* Lista de Conhecimentos */}
-      {knowledges.length > 0 && (
+      {knowledges && knowledges.length > 0 && (
         <div className="border rounded-lg">
           <table className="w-full">
             <thead>
@@ -132,7 +132,7 @@ const KnowledgeList = ({ knowledges, onKnowledgesChange }: KnowledgeListProps) =
               </tr>
             </thead>
             <tbody>
-              {knowledges.map((k) => (
+              {knowledges?.map((k) => (
                 <tr key={k.id}>
                   <td className="p-2 font-medium">{k.knowledge}</td>
                   <td className="p-2">{k.required ? "Sim" : "Não"}</td>
@@ -163,7 +163,7 @@ const KnowledgeList = ({ knowledges, onKnowledgesChange }: KnowledgeListProps) =
         </div>
       )}
 
-      {knowledges.length === 0 && !isAdding && !editingId && (
+      {(!knowledges || knowledges.length === 0) && !isAdding && !editingId && (
         <div className="text-center py-8 text-muted-foreground">
           Nenhum conhecimento adicionado ainda.
         </div>

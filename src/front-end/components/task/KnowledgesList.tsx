@@ -68,7 +68,7 @@ const KnowledgesList = ({ knowledges, onKnowledgesChange }: KnowledgesListProps)
         ? {
             ...r,
             name: formData.name,
-            type: formData.min,
+            min: formData.min,
           }
         : r
     );
@@ -109,7 +109,7 @@ const KnowledgesList = ({ knowledges, onKnowledgesChange }: KnowledgesListProps)
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Responsáveis</h3>
+        <h3 className="text-lg font-medium">Conhecimentos</h3>
         {!isAdding && (
           <Button
             type="button"
@@ -119,7 +119,7 @@ const KnowledgesList = ({ knowledges, onKnowledgesChange }: KnowledgesListProps)
             className="flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
-            Adicionar Responsável
+            Adicionar Conhecimento
           </Button>
         )}
       </div>
@@ -143,7 +143,7 @@ const KnowledgesList = ({ knowledges, onKnowledgesChange }: KnowledgesListProps)
                 id="Knowledge-min"
                 type="number"
                 value={formData.min}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, min: parseInt(e.target.value) || 0 })}
                 placeholder="Tempo Mínimo"
               />
             </div>
@@ -164,7 +164,7 @@ const KnowledgesList = ({ knowledges, onKnowledgesChange }: KnowledgesListProps)
         </div>
       )}
 
-      {/* Lista de Responsáveis */}
+      {/* Lista de Conhecimentos */}
       {knowledges.length > 0 && (
         <div className="border rounded-lg">
           <Table>
@@ -209,7 +209,7 @@ const KnowledgesList = ({ knowledges, onKnowledgesChange }: KnowledgesListProps)
 
       {knowledges.length === 0 && !isAdding && (
         <div className="text-center py-8 text-muted-foreground">
-          Nenhum responsável adicionado ainda.
+          Nenhum conhecimento adicionado ainda.
         </div>
       )}
 

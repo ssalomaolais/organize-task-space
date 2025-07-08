@@ -3,17 +3,12 @@ import { useState } from "react";
 import { Vacancy } from "@/types/task";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-import VacancyGeneralTab from "./VacancyGeneralTab";
+import VacancyFormGeneralTab from "./VacancyFormGeneralTab";
 import VacancyKnowledgesTab from "./VacancyKnowledgesTab";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
-const regimeOptions = [
-  { value: "offsite", label: "Offsite" },
-  { value: "hybrid", label: "Híbrido" },
-  { value: "físico", label: "Físico" },
-];
 
 interface VacancyFormProps {
   vacancy?: Vacancy | null;
@@ -40,6 +35,7 @@ const VacancyForm = ({ vacancy, onSubmit, onCancel }: VacancyFormProps) => {
     local: vacancy?.local || "",
     detail: vacancy?.detail || "",
     knowledge: vacancy?.knowledge || "",
+    requirement: vacancy?.requirement || "",
     knowledges: ensureKnowledgeIds(vacancy?.knowledges),
     active: vacancy?.active ?? true,
   });
@@ -55,18 +51,19 @@ const VacancyForm = ({ vacancy, onSubmit, onCancel }: VacancyFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    formData.knowledges = [];
     onSubmit(formData);
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <Tabs defaultValue="geral" className="w-full min-h-[600px]">
+      <Tabs defaultValue="geral" className="w-full min-h-[700px]">
         <TabsList className="grid w-full grid-cols-2 mb-4">
           <TabsTrigger value="geral">Geral</TabsTrigger>
           <TabsTrigger value="conhecimentos">Conhecimentos</TabsTrigger>
         </TabsList>
         <TabsContent value="geral">
-          <VacancyGeneralTab
+          <VacancyFormGeneralTab
             formData={formData}
             handleChange={handleChange}
             onCancel={onCancel}
@@ -74,9 +71,15 @@ const VacancyForm = ({ vacancy, onSubmit, onCancel }: VacancyFormProps) => {
           />
         </TabsContent>
         <TabsContent value="conhecimentos">
-          <div>
-            <Label className="block mb-1">Conhecimentos</Label>
-            <Textarea value={formData.knowledge} onChange={e => handleChange("knowledge", e.target.value)} rows={25} />
+          <div className="space-y-4">
+            <div>
+              <Label className="block mb-1">Conhecimentos Requeridos</Label>
+              <Textarea value={formData.requirement} onChange={e => handleChange("requirement", e.target.value)} rows={12} />
+            </div>
+            <div>
+              <Label className="block mb-1">Conhecimentos Diferenciais</Label>
+              <Textarea value={formData.knowledge} onChange={e => handleChange("knowledge", e.target.value)} rows={12} />
+            </div>
           </div>
         </TabsContent>
       </Tabs>

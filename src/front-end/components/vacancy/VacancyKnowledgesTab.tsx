@@ -1,17 +1,14 @@
 import KnowledgeList from "./KnowledgeList";
 
 interface VacancyKnowledgesTabProps {
-  knowledge: string;
-  knowledges: Array<{ id: string; knowledge: string; required: boolean }>;
+  formData: any;
   onKnowledgesChange: (knowledges: Array<{ id: string; knowledge: string; required: boolean }>) => void;
 }
 
-const VacancyKnowledgesTab = ({ knowledge, knowledges, onKnowledgesChange }: VacancyKnowledgesTabProps) => (
-
-
+const VacancyKnowledgesTab = ({ formData, onKnowledgesChange }: VacancyKnowledgesTabProps) => (
   <div className="">
     <KnowledgeList
-      knowledges={knowledges}
+      knowledges={formData.knowledge || []}
       onKnowledgesChange={onKnowledgesChange}
     />
   </div>
