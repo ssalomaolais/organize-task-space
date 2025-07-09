@@ -55,6 +55,13 @@ export interface ListValue {
   value: string;
   label: string;
   color?: string;
+  archetype?: Array<{
+    seniority: number;
+    competencies: Array<{
+      name: string;
+      minGrade: number;
+    }>;
+  }>;
 }
 
 export interface Comment {
@@ -81,6 +88,7 @@ export interface Vacancy {
     knowledge: string;
     required: boolean;
   }>;
+  questions?: string;
   active: boolean;
   created_at: string;
   updated_at: string;

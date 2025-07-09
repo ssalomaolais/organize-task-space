@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Task } from "@/types/task";
-import { TaskStatusOptions, getStatusColor, SeniorityOptions } from "@/lib/utils";
+import { TaskStatusOptions, getStatusColor, getSeniorityLabel } from "@/lib/utils";
 import { UserRole } from "@/types/auth";
 import { Calendar, Clock,  User as UserIcon, AlertCircle, Play, CheckCircle, XCircle } from "lucide-react";
 import { useState } from 'react';
@@ -110,13 +110,6 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
   const peopleColorClass = "bg-gray-100 text-gray-800";
   const peopleNoHoverClass = getNoHoverColorClasses(peopleColorClass);
 
-  const getSeniorityLabel = (value: number) => {
-    if (value < 0)
-      return "";
-    const wR =  SeniorityOptions.find(opt => opt.value == value)?.label || value;
-
-    return wR;
-  };
 
   return (
     <Card>

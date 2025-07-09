@@ -6,6 +6,8 @@ import { TailwindColors } from "@/lib/utils"; // Import TailwindColors
 import StackBasicTab from "./StackBasicTab";
 import StackResponsiblesTab from "./StackResponsiblesTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SeniorityOptions } from "@/lib/utils";
+import CompetenciesEditor from "./CompetenciesEditor";
 
 interface StackFormProps {
   stack?: ListValue | null;
@@ -14,8 +16,12 @@ interface StackFormProps {
 }
 
 // Novo tipo para StackForm
-interface StackFormData extends ListValue {
+interface StackFormData extends Omit<ListValue, 'archetype'> {
   responsibles: Responsible[];
+  archetype: {
+    seniority: number;
+    competencies: { name: string; minGrade: number }[];
+  }[];
 }
 
 const StackForm = ({ stack, onSubmit, onCancel }: StackFormProps) => {
@@ -24,6 +30,7 @@ const StackForm = ({ stack, onSubmit, onCancel }: StackFormProps) => {
     label: '',
     color: TailwindColors[0].value, // Default to the first color
     responsibles: [],
+    archetype: [],
   });
 
   const [activeTab, setActiveTab] = useState("basic");
@@ -35,6 +42,7 @@ const StackForm = ({ stack, onSubmit, onCancel }: StackFormProps) => {
         label: stack.label,
         color: stack.color || TailwindColors[0].value, // Fallback to default if color is missing
         responsibles: (stack as any).responsibles || [],
+        archetype: stack.archetype || [],
       });
     }
   }, [stack]);
@@ -56,9 +64,10 @@ const StackForm = ({ stack, onSubmit, onCancel }: StackFormProps) => {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full min-h-[650px]">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsList className="grid w-full grid-cols-3 mb-4">
               <TabsTrigger value="basic">Principal</TabsTrigger>
               <TabsTrigger value="responsibles">Contatos</TabsTrigger>
+              <TabsTrigger value="archetype">Itens de Avaliação</TabsTrigger>
             </TabsList>
             <TabsContent value="basic">
               <StackBasicTab
@@ -74,6 +83,14 @@ const StackForm = ({ stack, onSubmit, onCancel }: StackFormProps) => {
                 responsibles={formData.responsibles}
                 onResponsiblesChange={(responsibles) => setFormData(prev => ({ ...prev, responsibles }))}
               />
+            </TabsContent>
+            <TabsContent value="archetype">
+              <div className="space-y-4">
+                <CompetenciesEditor
+                  competencies={formData.archetype as any}
+                  onChange={archetype => setFormData(prev => ({ ...prev, archetype }))}
+                />
+              </div>
             </TabsContent>
           </Tabs>
           <div className="flex justify-end space-x-2 pt-4">

@@ -107,16 +107,6 @@ export const RegimeOptions = [
   { value: "físico", label: "Físico" },
 ];
 
-export const getRegimeOptionsLabel = (value:string):string =>{
-  const found = RegimeOptions.find((e) => e.value === value);
-  return found ? found.label : "";
-}
-
-export const getPreviewColorClass = (tailwindClass: string) => {
-  const found = TailwindColors.find(tc => tc.value === tailwindClass);
-  return found ? found.preview : "bg-gray-500"; // Fallback
-}
-
 export const ResponsibleTypes = [
   { value: "instructor", label: "Instrutor" },
   { value: "responsible_dnw", label: "Responsável DNW" },
@@ -128,6 +118,26 @@ export const ResponsibleTypes = [
   { value: "reference", label: "Referência" },
   { value: "other", label: "Outro" },
 ];
+
+export  const getSeniorityLabel = (value: number) => {
+  if (value < 0)
+    return "";
+  const wR =  SeniorityOptions.find(opt => opt.value == value)?.label || value;
+
+  return wR;
+};
+
+export const getRegimeOptionsLabel = (value:string):string =>{
+  const found = RegimeOptions.find((e) => e.value === value);
+  return found ? found.label : "";
+}
+
+export const getPreviewColorClass = (tailwindClass: string) => {
+  const found = TailwindColors.find(tc => tc.value === tailwindClass);
+  return found ? found.preview : "bg-gray-500"; // Fallback
+}
+
+
 
 export const getResponsibleTypesLabel = (type: string) => {
   return ResponsibleTypes.find((t) => t.value === type)?.label || type;

@@ -3,12 +3,11 @@ import { useState } from "react";
 import { Vacancy } from "@/types/task";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-import VacancyFormGeneralTab from "./VacancyFormGeneralTab";
-import VacancyKnowledgesTab from "./VacancyKnowledgesTab";
+import VacancyFormGeneralTabWrapper from "./VacancyFormGeneralTabWrapper";
+import VacancyFormKnowledgesTab from "./VacancyFormKnowledgesTab";
+import VacancyFormQuestionsTab from "./VacancyFormQuestionsTab";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-
+import { getSeniorityLabel} from "@/lib/utils";
 
 interface VacancyFormProps {
   vacancy?: Vacancy | null;
@@ -38,7 +37,10 @@ const VacancyForm = ({ vacancy, onSubmit, onCancel }: VacancyFormProps) => {
     requirement: vacancy?.requirement || "",
     knowledges: ensureKnowledgeIds(vacancy?.knowledges),
     active: vacancy?.active ?? true,
+    questions: vacancy?.questions || "",
   });
+  const [questionsResult, setQuestionsResult] = useState<string>("");
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
 
   const handleChange = (field: keyof typeof formData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -47,6 +49,42 @@ const VacancyForm = ({ vacancy, onSubmit, onCancel }: VacancyFormProps) => {
   // Knowledges dynamic list
   const handleKnowledgesChange = (newKnowledges: Array<{ id: string; knowledge: string; required: boolean }>) => {
     setFormData((prev) => ({ ...prev, knowledges: ensureKnowledgeIds(newKnowledges) }));
+  };
+
+  const handleQuestionsChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, questions: value }));
+  };
+
+  const handleGenerateQuestions = async () => {
+    setLoadingQuestions(true);
+    setQuestionsResult("");
+    try {
+      // Lê o systemPrompt de um arquivo externo
+      const promptRes = await fetch("/SystemPrompt.txt");
+      const systemPrompt = await promptRes.text();
+      const userPrompt = `Título: ${formData.title}\nSenioridade: ${getSeniorityLabel(formData.seniority)}\nConhecimentos requeridos: ${formData.requirement}\nConhecimentos desejados: ${formData.knowledge}\nPrincipais responsabilidades: ${formData.daytoday}`;
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${import.meta.env.VITE_IA_KEY}`
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ]
+        })
+      });
+      const data = await response.json();
+      const result = data.choices?.[0]?.message?.content || "Erro ao gerar questões.";
+      setQuestionsResult(result);
+    } catch (err) {
+      setQuestionsResult("Erro ao gerar questões.");
+    } finally {
+      setLoadingQuestions(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -58,12 +96,13 @@ const VacancyForm = ({ vacancy, onSubmit, onCancel }: VacancyFormProps) => {
   return (
     <form onSubmit={handleSubmit}>
       <Tabs defaultValue="geral" className="w-full min-h-[700px]">
-        <TabsList className="grid w-full grid-cols-2 mb-4">
+        <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value="geral">Geral</TabsTrigger>
           <TabsTrigger value="conhecimentos">Conhecimentos</TabsTrigger>
+          <TabsTrigger value="questoes">Questões</TabsTrigger>
         </TabsList>
         <TabsContent value="geral">
-          <VacancyFormGeneralTab
+          <VacancyFormGeneralTabWrapper
             formData={formData}
             handleChange={handleChange}
             onCancel={onCancel}
@@ -71,16 +110,19 @@ const VacancyForm = ({ vacancy, onSubmit, onCancel }: VacancyFormProps) => {
           />
         </TabsContent>
         <TabsContent value="conhecimentos">
-          <div className="space-y-4">
-            <div>
-              <Label className="block mb-1">Conhecimentos Requeridos</Label>
-              <Textarea value={formData.requirement} onChange={e => handleChange("requirement", e.target.value)} rows={12} />
-            </div>
-            <div>
-              <Label className="block mb-1">Conhecimentos Diferenciais</Label>
-              <Textarea value={formData.knowledge} onChange={e => handleChange("knowledge", e.target.value)} rows={12} />
-            </div>
-          </div>
+          <VacancyFormKnowledgesTab
+            formData={formData}
+            handleChange={handleChange}
+          />
+        </TabsContent>
+        <TabsContent value="questoes">
+          <VacancyFormQuestionsTab
+            formData={formData}
+            handleQuestionsChange={handleQuestionsChange}
+            handleGenerateQuestions={handleGenerateQuestions}
+            loadingQuestions={loadingQuestions}
+            questionsResult={questionsResult}
+          />
         </TabsContent>
       </Tabs>
       <div className="flex gap-2 justify-end">

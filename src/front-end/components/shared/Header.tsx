@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { User } from "@/types/auth";
 import { Button } from "@/components/ui/button";
-import "react-big-calendar/lib/css/react-big-calendar.css";
 import "@/CalendarView.css";
 import { User as UserIcon, Settings, Key, LogOut } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
