@@ -184,7 +184,7 @@ const TaskBasicTab = ({
         </div>
         
         <div className="flex flex-col justify-end h-full">
-          <Label htmlFor="people">Número de Pessoas</Label>
+          <Label htmlFor="people">Número de Participantes</Label>
           <Input
             id="people"
             type="number"
