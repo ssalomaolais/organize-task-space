@@ -69,7 +69,7 @@ const TaskBasicTab = ({
               placeholder="Ex: #Jornada Cloud, #Aculturamento de IA "
             />
           </div>
-          <div className="w-64 flex flex-col">
+          <div className="w-64 flex flex-col relative">
             <Label htmlFor="origin">Origem</Label>
             <Select
               value={formData.origin !== undefined && formData.origin !== null ? formData.origin.toString() : ""}
@@ -86,6 +86,16 @@ const TaskBasicTab = ({
                 ))}
               </SelectContent>
             </Select>
+            {formData.origin !== undefined && formData.origin !== null && (
+              <button
+                type="button"
+                className="absolute right-2 top-8 text-gray-400 hover:text-gray-600"
+                onClick={() => onInputChange("origin", null)}
+                title="Limpar seleção"
+              >
+                ×
+              </button>
+            )}
           </div>
         </div>
         <div className="md:col-span-2 flex flex-col justify-end h-full">

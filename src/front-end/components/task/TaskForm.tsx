@@ -72,7 +72,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     seniority: -1,
     schedule: [] as Schedule[],
     vacancy: "",
-    origin: 0, // Valor padrão para origin
+    origin: null, // Valor padrão para origin
     summary: "" // Valor padrão para summary
   });
 
