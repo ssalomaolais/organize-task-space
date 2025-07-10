@@ -85,7 +85,7 @@ export const EventsGridView = ({
 
               <div className="flex justify-between items-end">
                 <p style={{ color: cardStyle.descriptionText }} className="text-xs leading-snug w-2/3 text-left">
-                    {task.description}
+                    {task.summary ? task.summary : task.description}
                 </p>
                 <div
                   style={{ color: cardStyle.participantText }}

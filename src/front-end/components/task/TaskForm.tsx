@@ -71,7 +71,9 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     syllabus: "",
     seniority: -1,
     schedule: [] as Schedule[],
-    vacancy: ""
+    vacancy: "",
+    origin: 0, // Valor padrão para origin
+    summary: "" // Valor padrão para summary
   });
 
   const [showNewEventTypeModal, setShowNewEventTypeModal] = useState(false);
@@ -112,7 +114,9 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
         syllabus: task.syllabus || "",
         seniority: task.seniority,
         schedule: task.schedule || [],
-        vacancy: task.vacancy || ""
+        vacancy: task.vacancy || "",
+        origin: task.origin !== undefined && task.origin !== null ? task.origin : null,
+        summary: task.summary || ""
       });
 
       // Verificar se há dados nas abas avançadas para mostrar automaticamente
@@ -177,6 +181,8 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
       start_date: formData.start_date,
       end_date: formData.end_date,
       event_type: formData.event_type,
+      origin: formData.origin,
+      summary: formData.summary,
     });
   };
 
@@ -217,13 +223,13 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
 
       if (currentEndDate <= currentStartDate) {
         // Mostrar erro apenas se ambos os campos estiverem preenchidos
-        if (prev.start_date && prev.end_date) {
+        /*if (prev.start_date && prev.end_date) {
           toast({
             title: "Erro de Data/Hora",
             description: "A data e hora de fim deve ser posterior à data e hora de início.",
             variant: "destructive",
           });
-        }
+        }*/
         
         // Auto-adjust logic apenas para start_date
         if (field === 'start_date') {
@@ -304,7 +310,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               {showAdvancedFields && (
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="basic">Principal</TabsTrigger>
-                  <TabsTrigger value="responsibles">Responsáveis</TabsTrigger>
+                  <TabsTrigger value="responsibles">Envolvidos</TabsTrigger>
                   {formData.event_type === 'ET' ? (
                     <TabsTrigger value="vaga">Vaga</TabsTrigger>
 
@@ -346,6 +352,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                         <TaskDetailsTab
                           formData={formData}
                           onInputChange={handleInputChange}
+                          event_type={formData.event_type}
                         />
                       </TabsContent>
                       <TabsContent value="schedule">

@@ -16,12 +16,17 @@ interface StackFormProps {
 }
 
 // Novo tipo para StackForm
+interface Competency {
+  id: string;
+  name: string;
+  minGrade: number;
+  seniority: number;
+  discipline: string;
+}
+
 interface StackFormData extends Omit<ListValue, 'archetype'> {
   responsibles: Responsible[];
-  archetype: {
-    seniority: number;
-    competencies: { name: string; minGrade: number }[];
-  }[];
+  archetype: Competency[];
 }
 
 const StackForm = ({ stack, onSubmit, onCancel }: StackFormProps) => {
@@ -37,12 +42,30 @@ const StackForm = ({ stack, onSubmit, onCancel }: StackFormProps) => {
 
   useEffect(() => {
     if (stack) {
+      let archetype: Competency[] = [];
+      if (Array.isArray(stack.archetype) && stack.archetype.length > 0) {
+        // If already flat, just assign
+        if ('id' in stack.archetype[0]) {
+          archetype = stack.archetype as Competency[];
+        } else {
+          // Convert from grouped to flat
+          archetype = (stack.archetype as any[]).flatMap((group) =>
+            (group.competencies || []).map((c: any) => ({
+              id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).substring(2, 9),
+              name: c.name,
+              minGrade: c.minGrade,
+              seniority: group.seniority,
+              discipline: c.discipline || "",
+            }))
+          );
+        }
+      }
       setFormData({
         value: stack.value,
         label: stack.label,
         color: stack.color || TailwindColors[0].value, // Fallback to default if color is missing
         responsibles: (stack as any).responsibles || [],
-        archetype: stack.archetype || [],
+        archetype,
       });
     }
   }, [stack]);

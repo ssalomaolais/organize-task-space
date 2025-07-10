@@ -19,14 +19,17 @@ export const useEventType = () => {
       setLoading(true);
       const cacheKey = `eventTypeCache_${page}_${pageSize}_${searchTerm}`;
       const cacheDateKey = `eventTypeCacheDate_${page}_${pageSize}_${searchTerm}`;
-      const today = new Date().toISOString().slice(0, 10);
+      //const today = new Date().toISOString().slice(0, 10);
+      const now = Date.now();
       const cached = localStorage.getItem(cacheKey);
       const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
       if (!forceNoCache && cached && key) {
         try {
           const decrypted = await decryptData(cached, key);
           const parsed = JSON.parse(decrypted);
-          if (parsed.today === today) {
+
+          if (now - Number(parsed.timestamp) < 30 * 60 * 1000){
+          //if (parsed.today === today) {
             setEventType(parsed.values);
             setTotalCount(parsed.count);
             setLoading(false);
@@ -62,7 +65,7 @@ export const useEventType = () => {
       setTotalCount(count || 0);
       // Salvar no cache criptografado
       if (key) {
-        const encrypted = await encryptData(JSON.stringify({ today, values, count }), key);
+        const encrypted = await encryptData(JSON.stringify({ timestamp:now, values, count }), key);
         localStorage.setItem(cacheKey, encrypted);
       }
     } catch (error) {

@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SeniorityOptions } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useDiscipline } from "@/hooks/useDiscipline";
 
 interface VacanciesPageProps {
   colorType: string;
@@ -20,6 +21,7 @@ interface VacanciesPageProps {
 
 function VacanciesPage({ colorType, onBack }: VacanciesPageProps) {
   const { vacancies, loading, totalCount, fetchVacancies, createVacancy, updateVacancy } = useVacancies();
+  const { discipline } = useDiscipline();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -57,6 +59,10 @@ function VacanciesPage({ colorType, onBack }: VacanciesPageProps) {
     : vacancies.filter(v => statusFilter === "active" ? v.active : !v.active);
 
   const getSeniorityLabel = (value: number) => SeniorityOptions.find(opt => opt.value === value)?.label || value;
+
+  const getDisciplineLabel = (disciplineId: string) => {
+    return discipline.find(d => d.value === disciplineId)?.label || "";
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -127,6 +133,7 @@ function VacanciesPage({ colorType, onBack }: VacanciesPageProps) {
                     <TableRow>
                       <TableHead>Título</TableHead>
                       <TableHead>Equipe</TableHead>
+                      <TableHead>Disciplina</TableHead>
                       <TableHead>Regime</TableHead>
                       <TableHead>Local</TableHead>
                       <TableHead>Senioridade</TableHead>
@@ -141,6 +148,7 @@ function VacanciesPage({ colorType, onBack }: VacanciesPageProps) {
                       <TableRow key={vacancy.id}>
                         <TableCell className="font-medium">{vacancy.title}</TableCell>
                         <TableCell>{vacancy.teams}</TableCell>
+                        <TableCell>{getDisciplineLabel(vacancy.disciplineId || "")}</TableCell>
                         <TableCell>{vacancy.regime === "offsite" ? "Offsite" : "Híbrido"}</TableCell>
                         <TableCell>{vacancy.local}</TableCell>
                         <TableCell>{getSeniorityLabel(vacancy.seniority)}</TableCell>

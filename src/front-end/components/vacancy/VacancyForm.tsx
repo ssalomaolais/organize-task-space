@@ -8,6 +8,7 @@ import VacancyFormKnowledgesTab from "./VacancyFormKnowledgesTab";
 import VacancyFormQuestionsTab from "./VacancyFormQuestionsTab";
 import { Button } from "@/components/ui/button";
 import { getSeniorityLabel} from "@/lib/utils";
+import { useDiscipline } from "@/hooks/useDiscipline";
 
 interface VacancyFormProps {
   vacancy?: Vacancy | null;
@@ -23,10 +24,13 @@ const ensureKnowledgeIds = (knowledges: any[] = []) =>
   }));
 
 const VacancyForm = ({ vacancy, onSubmit, onCancel }: VacancyFormProps) => {
+  const { discipline } = useDiscipline();
+  
   const [formData, setFormData] = useState<Omit<Vacancy, "id" | "created_at" | "updated_at">>({
     title: vacancy?.title || "",
     teams: vacancy?.teams || "",
     daytoday: vacancy?.daytoday || "",
+    disciplineId: vacancy?.disciplineId || "",
     seniority: vacancy?.seniority ?? -1,
     regime: vacancy?.regime || "offsite",
     quantity: vacancy?.quantity || 1,
@@ -107,6 +111,7 @@ const VacancyForm = ({ vacancy, onSubmit, onCancel }: VacancyFormProps) => {
             handleChange={handleChange}
             onCancel={onCancel}
             handleSubmit={handleSubmit}
+            disciplines={discipline}
           />
         </TabsContent>
         <TabsContent value="conhecimentos">

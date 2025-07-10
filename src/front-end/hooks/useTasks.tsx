@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Task, ListValue } from "@/types/task";
 import { toast } from "@/hooks/use-toast";
-import { encryptData, decryptData } from "@/lib/utils";
+import { encryptData, decryptData, CacheItem } from "@/lib/utils";
+
+const cache = new Map<string, CacheItem>();
 
 export const useTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -11,16 +13,14 @@ export const useTasks = () => {
   const fetchTasks = async () => {
     try {
       const cacheKey = `tasksCache`;
-      const cacheDateKey = `tasksCacheDate`;
-      const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const cached = localStorage.getItem(cacheKey);
+      const cached = cache.get(cacheKey); 
       const now = Date.now();
-      if (cached && key) {
+
+      if (cached) {
         try {
-          const decrypted = await decryptData(cached, key);
-          const parsed = JSON.parse(decrypted);
-          if (now - Number(parsed.date) < 10 * 60 * 1000) { // 10 minutos
-            setTasks(parsed.tasks);
+
+          if (cached &&  now - Number(cached.timestamp) < 10 * 60 * 1000){
+            setTasks(cached.data);
             setLoading(false);
             return;
           }
@@ -40,12 +40,13 @@ export const useTasks = () => {
         responsibles: task.responsibles || [],
         schedule: task.schedule || []
       }));
-      setTasks(typedTasks);
       // Salvar no cache criptografado
-      if (key) {
-        const encrypted = await encryptData(JSON.stringify({ date: String(now), tasks: typedTasks }), key);
-        localStorage.setItem(cacheKey, encrypted);
-      }
+      cache.set(cacheKey, {
+        timestamp: now,
+        data: typedTasks || [],
+      });
+      setTasks(typedTasks);
+
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast({
@@ -85,6 +86,7 @@ export const useTasks = () => {
         .insert([{
           title: taskData.title,
           subtitle: taskData.subtitle,
+          summary: taskData.summary,
           description: taskData.description,
           responsible: taskData.responsible,
           start_date: taskData.start_date,
@@ -144,7 +146,8 @@ export const useTasks = () => {
       const updateData: any = {};
 
       if (taskData.title) updateData.title = taskData.title;
-      if (taskData.subtitle) updateData.subtitle = taskData.subtitle;      
+      if (taskData.subtitle) updateData.subtitle = taskData.subtitle;  
+      if (taskData.summary) updateData.summary = taskData.summary;    
       if (taskData.description) updateData.description = taskData.description;
       if (taskData.responsible) updateData.responsible = taskData.responsible;
       if (taskData.start_date) updateData.start_date = taskData.start_date;

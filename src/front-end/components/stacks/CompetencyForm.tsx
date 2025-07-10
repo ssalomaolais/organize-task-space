@@ -3,11 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SeniorityOptions } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useDiscipline } from "@/hooks/useDiscipline";
+import DisciplineForm from "@/components/disciplines/DisciplineForm";
 
 export interface CompetencyFormValues {
   name: string;
   minGrade: number;
   seniority: number;
+  discipline: string;
 }
 
 interface CompetencyFormProps {
@@ -18,25 +22,49 @@ interface CompetencyFormProps {
 }
 
 const CompetencyForm: React.FC<CompetencyFormProps> = ({ initialValue, onSubmit, onCancel, isEditing }) => {
+  const { discipline, createDiscipline, fetchDiscipline } = useDiscipline();
   const [formData, setFormData] = useState<CompetencyFormValues>({
     name: "",
     minGrade: 0,
     seniority: -1,
+    discipline: "",
   });
+  const [showNewDisciplineModal, setShowNewDisciplineModal] = useState(false);
 
   useEffect(() => {
-    if (initialValue) setFormData(initialValue);
+    if (initialValue) {
+      console.log('CompetencyForm initialValue:', initialValue);
+      setFormData({
+        name: initialValue.name || "",
+        minGrade: initialValue.minGrade ?? 0,
+        seniority: initialValue.seniority ?? -1,
+        discipline: initialValue.discipline || "",
+      });
+    }
   }, [initialValue]);
 
+  useEffect(() => {
+    console.log('CompetencyForm formData:', formData);
+  }, [formData]);
+
   const handleAddOrUpdate = () => {
-    if (!formData.name.trim() || formData.seniority === -1) return;
+    if (!formData.name.trim() || formData.seniority === -1 || !formData.discipline.trim()) return;
     onSubmit(formData);
-    setFormData({ name: "", minGrade: 0, seniority: -1 });
+    setFormData({ name: "", minGrade: 0, seniority: -1, discipline: "" });
+  };
+
+  const handleNewDisciplineSubmit = async (newDisciplineData: Omit<{ value: string; label: string; color?: string }, 'id'>) => {
+    const result = await createDiscipline(newDisciplineData);
+    if (result.data) {
+      await fetchDiscipline();
+      setFormData(prev => ({ ...prev, discipline: result.data.value }));
+      setShowNewDisciplineModal(false);
+    }
   };
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <Label htmlFor="competency-seniority">Senioridade *</Label>
           <select
@@ -73,12 +101,35 @@ const CompetencyForm: React.FC<CompetencyFormProps> = ({ initialValue, onSubmit,
             placeholder="Nota mínima"
           />
         </div>
+        <div className="flex items-end gap-2 h-full">
+          <div className="flex-1 flex flex-col justify-end h-full">
+            <Label htmlFor="competency-discipline">Disciplina *</Label>
+            <Select
+              value={formData.discipline}
+              onValueChange={value => setFormData({ ...formData, discipline: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a disciplina" />
+              </SelectTrigger>
+              <SelectContent>
+                {discipline.map((disc) => (
+                  <SelectItem key={disc.value} value={disc.value}>
+                    {disc.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button type="button" variant="outline" size="icon" onClick={() => setShowNewDisciplineModal(true)}>
+            +
+          </Button>
+        </div>
       </div>
       <div className="flex gap-2">
         <Button
           type="button"
           onClick={handleAddOrUpdate}
-          disabled={!formData.name || formData.seniority === -1}
+          disabled={!formData.name || formData.seniority === -1 || !formData.discipline}
         >
           {isEditing ? "Atualizar" : "Adicionar"}
         </Button>
@@ -86,6 +137,12 @@ const CompetencyForm: React.FC<CompetencyFormProps> = ({ initialValue, onSubmit,
           Cancelar
         </Button>
       </div>
+      {showNewDisciplineModal && (
+        <DisciplineForm
+          onSubmit={handleNewDisciplineSubmit}
+          onCancel={() => setShowNewDisciplineModal(false)}
+        />
+      )}
     </div>
   );
 };

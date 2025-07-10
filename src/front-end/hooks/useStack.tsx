@@ -17,14 +17,16 @@ export const useStack = () => {
     try {
       setLoading(true);
       const cacheKey = `stackCache_${page}_${pageSize}_${searchTerm}`;
-      const today = new Date().toISOString().slice(0, 10);
+      //const today = new Date().toISOString().slice(0, 10);
       const cached = localStorage.getItem(cacheKey);
       const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const now = Date.now();
       if (cached && key) {
         try {
           const decrypted = await decryptData(cached, key);
           const parsed = JSON.parse(decrypted);
-          if (parsed.today === today) {
+          if (now - Number(parsed.timestamp) < 10 * 60 * 1000){
+          //if (parsed.today === today) {
             setStack(parsed.values);
             setTotalCount(parsed.count);
             setLoading(false);
@@ -60,7 +62,7 @@ export const useStack = () => {
       setTotalCount(count || 0);
       // Salvar no cache criptografado
       if (key) {
-        const encrypted = await encryptData(JSON.stringify({ today, values, count }), key);
+        const encrypted = await encryptData(JSON.stringify({ timestamp:now, values, count }), key);
         localStorage.setItem(cacheKey, encrypted);
       }
     } catch (error) {

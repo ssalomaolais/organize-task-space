@@ -191,6 +191,7 @@ export const SVGCard: React.FC<SVGCardProps> = ({
 interface EventData {
   title: string;
   description: string;
+  summary: string;
   date: string;
   people: number;
 }
@@ -258,7 +259,7 @@ export const EventsGridSVGExport: React.FC<EventsGridSVGExportProps> = ({ events
             width={cardWidth}
             height={cardHeight}
             title={event.title}
-            description={event.description}
+            description={event.summary ? event.summary:  event.description}
             date={event.date}
             people={event.people}
             palette={scheme}

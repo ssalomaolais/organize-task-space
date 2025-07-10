@@ -13,9 +13,10 @@ interface TaskDetailsTabProps {
     seniority: number;
   };
   onInputChange: (field: keyof Task, value: string | number) => void;
+  event_type: string;
 }
 
-const TaskDetailsTab = ({ formData, onInputChange }: TaskDetailsTabProps) => {
+const TaskDetailsTab = ({ formData, onInputChange, event_type }: TaskDetailsTabProps) => {
   return (
     <div className="">
       
@@ -27,20 +28,23 @@ const TaskDetailsTab = ({ formData, onInputChange }: TaskDetailsTabProps) => {
             value={formData.syllabus}
             onChange={(e) => onInputChange("syllabus", e.target.value)}
             placeholder="Descrição da ementa"
-            rows={3}
+            rows={20}
           />
         </div>        
-        <div className="flex flex-col">
-          <Label htmlFor="student_count">Qtde Aluno</Label>
-          <Input
-            id="student_count"
-            type="number"
-            min="0"
-            value={formData.student_count}
-            onChange={(e) => onInputChange("student_count", parseInt(e.target.value) || 0)}
-            placeholder="Quantidade de alunos"
-          />
-        </div>
+        {/* Only show student_count if event_type is JP */}
+        {event_type === "JP" && (
+          <div className="flex flex-col">
+            <Label htmlFor="student_count">Qtde Aluno</Label>
+            <Input
+              id="student_count"
+              type="number"
+              min="0"
+              value={formData.student_count}
+              onChange={(e) => onInputChange("student_count", parseInt(e.target.value) || 0)}
+              placeholder="Quantidade de alunos"
+            />
+          </div>
+        )}
         
         <div className="flex flex-col">
           <Label htmlFor="vacancy_count">Qtde Vagas</Label>
@@ -53,7 +57,8 @@ const TaskDetailsTab = ({ formData, onInputChange }: TaskDetailsTabProps) => {
             placeholder="Quantidade de vagas"
           />
         </div>
-        
+        {/* Only show student_count if event_type is JP */}
+        {event_type === "JP" && (        
         <div className="flex flex-col">
           <Label htmlFor="seniority">Senioridade</Label>
           <Select 
@@ -73,6 +78,7 @@ const TaskDetailsTab = ({ formData, onInputChange }: TaskDetailsTabProps) => {
             </SelectContent>
           </Select>
         </div>
+        )}
       </div>
     </div>
   );

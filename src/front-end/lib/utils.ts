@@ -7,11 +7,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const getFormatDate = (data:string) =>{
+export interface CacheItem {
+  timestamp: number;
+  data: any;
+}
+
+export const getFormatDate = (data: string) => {
   const formattedStartDate = new Date(data).toISOString().slice(0, 16)
   //const formattedStartDate = data ? new Date(data).toISOString().split('T')[0] : ''
 
-    return formattedStartDate;
+  return formattedStartDate;
 }
 
 export const getStatusColor = (status) => {
@@ -53,7 +58,7 @@ export const NextEventsOptions = [
   { value: "grade", label: "Kanban" },
   { value: "calendar", label: "Calendário" },
   { value: "upcoming", label: "Próximos Eventos" },
-  { value: "events-grid", label: "Apresentação" }, 
+  { value: "events-grid", label: "Apresentação" },
 ]
 
 export const GradeLayoutOptions = [
@@ -62,7 +67,7 @@ export const GradeLayoutOptions = [
 ]
 
 export const SeniorityOptions = [
-  { value: -1, label: "Não se aplica" },  
+  { value: -1, label: "Não se aplica" },
   { value: 0, label: "Jovem Aprendiz" },
   { value: 1, label: "Júnior" },
   { value: 2, label: "Pleno" },
@@ -70,6 +75,13 @@ export const SeniorityOptions = [
   { value: 4, label: "Especialista" },
 ]
 
+export const OriginOptions = [
+  { value: 1, label: "Queremos conhecer você" },
+  { value: 2, label: "Estratégia Minsait" },
+  { value: 3, label: "Apoio Operações" },
+  { value: 4, label: "Outras" },
+
+]
 
 export const TailwindColors = [
   { value: "bg-gray-100 text-gray-800", label: "Cinza", preview: "bg-gray-500" },
@@ -119,15 +131,15 @@ export const ResponsibleTypes = [
   { value: "other", label: "Outro" },
 ];
 
-export  const getSeniorityLabel = (value: number) => {
+export const getSeniorityLabel = (value: number) => {
   if (value < 0)
     return "";
-  const wR =  SeniorityOptions.find(opt => opt.value == value)?.label || value;
+  const wR = SeniorityOptions.find(opt => opt.value == value)?.label || value;
 
   return wR;
 };
 
-export const getRegimeOptionsLabel = (value:string):string =>{
+export const getRegimeOptionsLabel = (value: string): string => {
   const found = RegimeOptions.find((e) => e.value === value);
   return found ? found.label : "";
 }

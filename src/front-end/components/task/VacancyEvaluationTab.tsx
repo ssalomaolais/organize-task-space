@@ -1,28 +1,38 @@
 import React, { useState } from "react";
-import { Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from "docx";
+import { Document, Packer, Paragraph, Table, TableCell, TableRow, WidthType } from "docx";
 import { saveAs } from "file-saver";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Vacancy } from "@/types/task";
 
-const initialCompetencies = [
-  { name: ".Net Conceito", status: "Atende", grade: "7", observation: "Necessita revisar o funcionamento do IEnumerable vs IQueryable e Memory Stack." },
-  { name: "C#, .NET Framework", status: "Atende", grade: "8", observation: "Errou a questão de como declarar da divisão por zero." },
-  { name: "Angular Conceito", status: "Atende", grade: "6", observation: "Necessita Revisar, conceitos." },
-  { name: "Angular", status: "Atende", grade: "6", observation: "Revisar o Angular, como por exemplo Forms reativos, padrões de roteamento." },
-  { name: "Css", status: "Atende", grade: "10", observation: "N/A" },
-  { name: "Javascript/TypeScript", status: "Atende", grade: "8", observation: "N/A" },
-  { name: "Banco de dados", status: "Atende", grade: "8", observation: "Necessita revisar as sintaxes de SQL (principalmente sobre questão de left, right outter Join)." },
-  { name: "Git e GitHub", status: "Atende", grade: "10", observation: "N/A" },
-  { name: "CI/CD", status: "Atende", grade: "", observation: "Mais como usuário" },
-  { name: "Solid", status: "Não Atende", grade: "3", observation: "Necessita revisar os conceitos." },
-  { name: "Arquitetura e Design Patterns", status: "Atende", grade: "10", observation: "N/A" },
-  { name: "Testes Automatizados", status: "Atende", grade: "", observation: "Trabalha com QA" },
-];
+interface VacancyEvaluationTabProps {
+  selectedVacancy: Vacancy;
+}
 
-const VacancyEvaluationTab = () => {
+const defaultStatus = "Atende";
+
+const VacancyEvaluationTab = ({ selectedVacancy }: VacancyEvaluationTabProps) => {
+  // Inicializa competências baseadas nos conhecimentos da vaga
+  const initialCompetencies = (selectedVacancy.knowledges || []).map(k => ({
+    name: k.knowledge,
+    status: defaultStatus,
+    grade: "",
+    observation: ""
+  }));
+
   const [interviewSummary, setInterviewSummary] = useState("");
   const [competencies, setCompetencies] = useState(initialCompetencies);
   const [finalNotes, setFinalNotes] = useState("");
+
+  // Atualiza competências se selectedVacancy mudar
+  React.useEffect(() => {
+    setCompetencies((selectedVacancy.knowledges || []).map(k => ({
+      name: k.knowledge,
+      status: defaultStatus,
+      grade: "",
+      observation: ""
+    })));
+  }, [selectedVacancy]);
 
   const handleCompetencyChange = (index, field, value) => {
     const updated = [...competencies];
@@ -169,7 +179,6 @@ const VacancyEvaluationTab = () => {
           Exportar para Word
         </button>
       </div>
-      
     </div>
   );
 };

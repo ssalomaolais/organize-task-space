@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Edit, Trash2 } from "lucide-react";
@@ -12,6 +12,7 @@ interface Competency {
   name: string;
   minGrade: number;
   seniority: number;
+  discipline: string;
 }
 
 interface CompetenciesEditorProps {
@@ -59,18 +60,24 @@ const CompetenciesEditor: React.FC<CompetenciesEditorProps> = ({ competencies, o
   };
 
   const handleStartEdit = (id: string) => {
+    console.log('handleStartEdit called with id:', id);
     setEditingId(id);
     setIsAdding(false);
   };
+
+  useEffect(() => {
+    console.log('CompetenciesEditor editingId:', editingId);
+    console.log('CompetenciesEditor editingCompetency:', editingId ? competencies.find(c => c.id === editingId) : undefined);
+  }, [editingId, competencies]);
 
   const handleImport = () => {
     const lines = importText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
     const newCompetencies: Competency[] = [];
     let error = "";
     for (const line of lines) {
-      const [seniorityLabel, name, minGradeStr] = line.split("|").map(s => s.trim());
+      const [seniorityLabel, name, minGradeStr, discipline] = line.split("|").map(s => s.trim());
       const seniorityOpt = SeniorityOptions.find(opt => opt.label.toLowerCase() === (seniorityLabel || "").toLowerCase());
-      if (!seniorityOpt || !name || !minGradeStr) {
+      if (!seniorityOpt || !name || !minGradeStr || !discipline) {
         error = `Linha inválida: "${line}"`;
         break;
       }
@@ -84,6 +91,7 @@ const CompetenciesEditor: React.FC<CompetenciesEditorProps> = ({ competencies, o
         name,
         minGrade,
         seniority: seniorityOpt.value,
+        discipline,
       });
     }
     if (error) {
@@ -147,10 +155,12 @@ const CompetenciesEditor: React.FC<CompetenciesEditorProps> = ({ competencies, o
       {editingId && editingCompetency && (
         <div className="border rounded-lg p-4 bg-gray-50">
           <CompetencyForm
+            key={editingId}
             initialValue={{
-              name: editingCompetency.name,
-              minGrade: editingCompetency.minGrade,
-              seniority: editingCompetency.seniority,
+              name: editingCompetency.name || "",
+              minGrade: editingCompetency.minGrade ?? 0,
+              seniority: editingCompetency.seniority ?? -1,
+              discipline: editingCompetency.discipline || "",
             }}
             onSubmit={values => handleEdit(editingId, values)}
             onCancel={handleCancel}
@@ -170,6 +180,7 @@ const CompetenciesEditor: React.FC<CompetenciesEditorProps> = ({ competencies, o
                   <TableRow>
                     <TableHead>Nome</TableHead>
                     <TableHead>Nota mínima</TableHead>
+                    <TableHead>Disciplina</TableHead>
                     <TableHead className="w-[100px]">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -178,6 +189,7 @@ const CompetenciesEditor: React.FC<CompetenciesEditorProps> = ({ competencies, o
                     <TableRow key={c.id}>
                       <TableCell className="font-medium">{c.name}</TableCell>
                       <TableCell>{c.minGrade}</TableCell>
+                      <TableCell>{c.discipline}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button
@@ -219,12 +231,12 @@ const CompetenciesEditor: React.FC<CompetenciesEditorProps> = ({ competencies, o
             <DialogTitle>Importar Competências</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <label className="block font-medium">Cole o texto no formato:<br /><span className="text-xs">Senioridade|Nome|Nota</span></label>
+            <label className="block font-medium">Cole o texto no formato:<br /><span className="text-xs">Senioridade|Nome|Nota|Disciplina</span></label>
             <Textarea
               rows={8}
               value={importText}
               onChange={e => setImportText(e.target.value)}
-              placeholder={"Júnior|.Net Conceito|7\nJúnior|Javascript/TypeScript|7\nPleno|.Net Conceito|7"}
+              placeholder={"Júnior|.Net Conceito|7|.Net\nJúnior|Javascript|7|.Net\nPleno|.Net Conceito|7|.Net"}
             />
             {importError && <div className="text-red-500 text-sm">{importError}</div>}
             <div className="flex gap-2 justify-end pt-2">

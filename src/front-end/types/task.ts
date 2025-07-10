@@ -25,6 +25,8 @@ export interface Task {
   schedule?: Schedule[];
   vacancy: string;
   requirement?:string;
+  origin?: number; // Novo campo para origem
+  summary?: string; // Novo campo para resumo adicional
 }
 
 export interface Schedule {
@@ -56,11 +58,11 @@ export interface ListValue {
   label: string;
   color?: string;
   archetype?: Array<{
+    id: string;
+    name: string;
+    minGrade: number;
     seniority: number;
-    competencies: Array<{
-      name: string;
-      minGrade: number;
-    }>;
+    discipline: string;
   }>;
 }
 
@@ -76,6 +78,7 @@ export interface Vacancy {
   title: string;
   teams: string;
   daytoday: string;
+  disciplineId?: string; // Novo campo para vincular à disciplina
   seniority: -1 | 0 | 1 | 2 | 3 | 4; // 0=Jovem Aprendiz, 1=Júnior, 2=Pleno, 3=Senior, 4=Especialista
   regime: "offsite" | "hybrid" | "físico";
   quantity: number;

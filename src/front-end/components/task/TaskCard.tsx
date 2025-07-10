@@ -176,7 +176,7 @@ const TaskCard = ({ task, stack, eventType, onEdit, onDelete, onStatusChange, on
 
             {task.responsibles && task.responsibles.length > 0 && (
               <div className="space-y-1">
-                <div className="text-xs text-gray-500 font-medium">Responsáveis:</div>
+                <div className="text-xs text-gray-500 font-medium">Envolvidos:</div>
                 {task.responsibles.slice(0, 2).map((responsible) => (
                   <div key={responsible.id} className="flex items-center gap-1 text-xs text-gray-500">
                     <span className="w-2 h-2 rounded-full bg-blue-400"></span>

@@ -3,15 +3,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { SeniorityOptions, RegimeOptions } from "@/lib/utils";
+import { ListValue } from "@/types/task";
 
 interface VacancyFormGeneralTabProps {
   formData: any;
   handleChange: (field: string, value: any) => void;
   onCancel: () => void;
   handleSubmit: (e: React.FormEvent) => void;
+  disciplines: ListValue[];
 }
 
-const VacancyFormGeneralTab = ({ formData, handleChange, onCancel, handleSubmit }: VacancyFormGeneralTabProps) => (
+const VacancyFormGeneralTab = ({ formData, handleChange, onCancel, handleSubmit, disciplines }: VacancyFormGeneralTabProps) => (
   <div className="space-y-4">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
@@ -22,6 +24,21 @@ const VacancyFormGeneralTab = ({ formData, handleChange, onCancel, handleSubmit 
         <Label className="block mb-1">Link Gupy</Label>
         <Input value={formData.gupylink} onChange={e => handleChange("gupylink", e.target.value)} />
       </div>
+    </div>
+    <div>
+      <Label className="block mb-1">Disciplina</Label>
+      <Select 
+        value={formData.disciplineId || "none"} 
+        onValueChange={v => handleChange("disciplineId", v === "none" ? "" : v)}
+      >
+        <SelectTrigger><SelectValue placeholder="Selecione uma disciplina" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">Nenhuma disciplina</SelectItem>
+          {disciplines.map(discipline => (
+            <SelectItem key={discipline.value} value={discipline.value}>{discipline.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
     <div>
       <Label className="block mb-1">Senioridade *</Label>

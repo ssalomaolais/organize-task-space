@@ -13,6 +13,7 @@ import {
   CommandEmpty,
 } from "@/components/ui/command";
 import { useState } from "react";
+import { useDiscipline } from "@/hooks/useDiscipline";
 
 interface VacancyGeneralTabProps {
   selectedVacancy: Vacancy | undefined;
@@ -80,12 +81,18 @@ const VacancyGeneralTab = ({
   handleClearSelection,
   vacancies
 }: VacancyGeneralTabProps) => {
+  const { discipline } = useDiscipline();
+  
   const seniorityLabel = (selectedVacancy && typeof selectedVacancy.seniority !== 'undefined' && SeniorityOptions)
     ? (SeniorityOptions.find(opt => opt.value === selectedVacancy.seniority)?.label || "")
     : "";
 
   const getRegimeLabel = (regime: string) => {
     return getRegimeOptionsLabel(regime);
+  };
+
+  const getDisciplineLabel = (disciplineId: string) => {
+    return discipline.find(d => d.value === disciplineId)?.label || "";
   };
 
   return (
@@ -122,13 +129,23 @@ const VacancyGeneralTab = ({
         </div>
       </div>
 
-      <div className="flex flex-col">
-        <Label htmlFor="seniority">Senioridade</Label>
-        <Input
-          id="seniority"
-          value={seniorityLabel}
-          disabled
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col">
+          <Label htmlFor="discipline">Disciplina</Label>
+          <Input
+            id="discipline"
+            value={selectedVacancy && selectedVacancy.disciplineId ? getDisciplineLabel(selectedVacancy.disciplineId) : ""}
+            disabled
+          />
+        </div>
+        <div className="flex flex-col">
+          <Label htmlFor="seniority">Senioridade</Label>
+          <Input
+            id="seniority"
+            value={seniorityLabel}
+            disabled
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
