@@ -12,7 +12,7 @@ export interface CardData {
   };
 }
 
-export function drawCardsGridToCanvas(cards: CardData[], options?: { width?: number; height?: number; scale?: number }) {
+export function drawCardsGridToCanvas(cards: CardData[], options?: { width?: number; height?: number; scale?: number; minRows?: number }) {
   const scale = options?.scale || 1;
   // Parâmetros do card
   const cardWidth = 150 * scale;
@@ -22,7 +22,10 @@ export function drawCardsGridToCanvas(cards: CardData[], options?: { width?: num
   const marginX = 8 * scale;
   const marginY = 8 * scale;
   const numberOfColumns = 6;
-  const rows = Math.ceil(cards.length / numberOfColumns);
+  let rows = Math.ceil(cards.length / numberOfColumns);
+  if (options?.minRows) {
+    rows = Math.max(options.minRows, rows);
+  }
   const canvasWidth = marginX * 2 + numberOfColumns * cardWidth + (numberOfColumns - 1) * gapX;
   const canvasHeight = marginY * 2 + rows * cardHeight + (rows - 1) * gapY;
 

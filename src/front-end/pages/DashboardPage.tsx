@@ -16,7 +16,7 @@ import { VerticalView } from "@/components/dashboard/VerticalView";
 import { UpcomingView } from "@/components/dashboard/UpcomingView";
 import { EventsGridView } from "@/components/dashboard/EventsGridView";
 import { PowerPointExportModal } from "@/components/dashboard/PowerPointExportModal";
-import { exportGridImageToPowerPoint } from "@/lib/powerpoint-export";
+import { exportGridImageToPowerPoint, exportToPowerPoint, exportCardsGridToPowerPoint } from "@/lib/powerpoint-export";
 import { TaskStatusOptions, NextEventsOptions, GradeLayoutOptions } from "@/lib/utils";
 import { Loading } from "@/components/shared/loading";
 import { MultiSelect, Option } from "@/components/ui/multi-select";
@@ -27,6 +27,7 @@ import { svgComponentToPngBase64 } from "@/lib/svg-to-image";
 import ReactDOMServer from "react-dom/server";
 import { drawCardsGridToCanvas } from "@/lib/draw-cards-grid-canvas";
 import FixedHorizontalScrollbar from "./FixedHorizontalScrollbar";
+import { formatDate2 } from "@/lib/date-validation";
 
 interface DashboardProps {
     user: User;
@@ -138,15 +139,79 @@ function DashboardPage({ user, colorType }: DashboardProps) {
             console.error('Failed to update task type:', result.error);
         }
     };
-    const handlePowerPointExport = async (title: string) => {
+   const handlePowerPointExport = async (title: string) => {
         try {
             if (viewMode === "events-grid") {
-                // ... lógica de exportação ...
+                // Montar dados dos cards
+                const paletteObj = {
+                    minsait: {
+                        cardBackground: "#4f062a",
+                        titleText: "#e4023f",
+                        dateText: "#ffffff",
+                        descriptionText: "#ffffff",
+                        participantText: "#ffffff"
+                    },
+                    minsaitLight: {
+                        cardBackground: "#ffffff",
+                        titleText: "#63284b",
+                        dateText: "#6b7280",
+                        descriptionText: "#ff3d88",
+                        participantText: "#63284b"
+                    },
+                    indra: {
+                        cardBackground: "#00434F",
+                        titleText: "#FFFFFF",
+                        dateText: "#FFFFFF",
+                        descriptionText: "#FFFFFF",
+                        participantText: "#FFFFFF"
+                    },
+                    indraLight: {
+                        cardBackground: "#ADD8E6",
+                        titleText: "#000000",
+                        dateText: "#000000",
+                        descriptionText: "#000000",
+                        participantText: "#000000"
+                    }
+                };
+                const cards = filteredTasks.map((task, i) => {
+                    const row = Math.floor(i / 6);
+                    const scheme = palette === "minsait"
+                        ? (row + i) % 2 !== 0 ? paletteObj.minsaitLight : paletteObj.minsait
+                        : (row + i) % 2 !== 0 ? paletteObj.indraLight : paletteObj.indra;
+                    return {
+                        title: task.title,
+                        description: task.summary? task.summary : task.description || "",
+                        date: formatDate2(task.start_date),
+                        people: task.people || 0,
+                        palette: scheme
+                    };
+                });
+                
+                // Verificar se precisa quebrar em múltiplos slides
+                const cardsPerSlide = 12; // 2 linhas de 6 cards
+                const numberOfSlides = Math.ceil(cards.length / cardsPerSlide);
+                
+                if (numberOfSlides === 1) {
+                    // Caso simples: apenas um slide
+                    const scale = 2; // Mantém a qualidade
+                    const canvas = drawCardsGridToCanvas(cards, { scale });
+                    const imageBase64 = canvas.toDataURL("image/png");
+                    await exportGridImageToPowerPoint({ imageBase64, title, cards });
+                } else {
+                    // Caso múltiplos slides: usar a função que já suporta paginação
+                    await exportCardsGridToPowerPoint({ cards, title, paletteType: palette });
+                }
+                
+                toast.success("Apresentação PowerPoint exportada com sucesso!");
+            } else {
+                toast.error("A exportação como imagem só está disponível no modo apresentação (Events Grid)");
             }
         } catch (error) {
-            toast.error("Erro ao exportar para PowerPoint");
+            console.error("Erro ao exportar PowerPoint:", error);
+            toast.error("Erro ao exportar apresentação PowerPoint");
         }
     };
+
     const getAvailableSemesters = (): Option[] => {
         const semesters = new Set<string>();
         tasks.forEach((task) => {

@@ -32,6 +32,8 @@ export const useVacancies = () => {
 
       const { data, error, count } = await query;
       if (error) throw error;
+      console.log('useVacancies - fetched data:', data);
+      console.log('useVacancies - first vacancy knowledges:', data?.[0]?.knowledges);
       setVacancies(data || []);
       setTotalCount(count || 0);
     } catch (error) {
@@ -48,12 +50,15 @@ export const useVacancies = () => {
 
   const createVacancy = async (vacancyData: Omit<Vacancy, "id" | "created_at" | "updated_at">) => {
     try {
+      console.log('useVacancies - creating vacancy with data:', vacancyData);
+      console.log('useVacancies - knowledges being saved:', vacancyData.knowledges);
       const { data, error } = await supabase
         .from("vacancy")
         .insert([vacancyData])
         .select()
         .single();
       if (error) throw error;
+      console.log('useVacancies - created vacancy:', data);
       setVacancies((prev) => [data, ...prev]);
       toast({
         title: "Sucesso!",
@@ -73,6 +78,8 @@ export const useVacancies = () => {
 
   const updateVacancy = async (vacancyId: string, vacancyData: Partial<Vacancy>) => {
     try {
+      console.log('useVacancies - updating vacancy with data:', vacancyData);
+      console.log('useVacancies - knowledges being updated:', vacancyData.knowledges);
       const { data, error } = await supabase
         .from("vacancy")
         .update(vacancyData)
@@ -80,6 +87,7 @@ export const useVacancies = () => {
         .select()
         .single();
       if (error) throw error;
+      console.log('useVacancies - updated vacancy:', data);
       setVacancies((prev) => prev.map((v) => (v.id === vacancyId ? data : v)));
       toast({
         title: "Sucesso!",

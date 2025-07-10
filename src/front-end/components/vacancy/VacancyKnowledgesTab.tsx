@@ -8,7 +8,7 @@ interface VacancyKnowledgesTabProps {
 const VacancyKnowledgesTab = ({ formData, onKnowledgesChange }: VacancyKnowledgesTabProps) => (
   <div className="">
     <KnowledgeList
-      knowledges={formData.knowledge || []}
+      knowledges={formData.knowledges || []}
       onKnowledgesChange={onKnowledgesChange}
     />
   </div>

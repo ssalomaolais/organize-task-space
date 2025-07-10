@@ -1,9 +1,7 @@
 // src/components/dashboard/EventsGridView.tsx
 
 import { Task } from "@/types/task";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-
+import { formatDate2 } from "@/lib/date-validation"
 type PaletteType = "minsait" | "indra";
 
 interface EventsGridViewProps {
@@ -76,7 +74,7 @@ export const EventsGridView = ({
             >
               <div className="flex-grow text-left cursor-pointer" onClick={() => setEditingTask(task)}>
                   <p style={{ color: cardStyle.dateText }} className="font-semibold text-sm mb-1">
-                      {format(new Date(task.start_date), "dd/MM HH'h'", { locale: ptBR })}
+                      {formatDate2(new Date(task.start_date))}
                   </p>
                   <h3 style={{ color: cardStyle.titleText }} className="text-base font-bold">
                       {task.title}

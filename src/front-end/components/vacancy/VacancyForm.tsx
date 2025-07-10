@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import VacancyFormGeneralTabWrapper from "./VacancyFormGeneralTabWrapper";
 import VacancyFormKnowledgesTab from "./VacancyFormKnowledgesTab";
 import VacancyFormQuestionsTab from "./VacancyFormQuestionsTab";
+import VacancyKnowledgesTab from "./VacancyKnowledgesTab";
 import { Button } from "@/components/ui/button";
 import { getSeniorityLabel} from "@/lib/utils";
 import { useDiscipline } from "@/hooks/useDiscipline";
@@ -93,16 +94,16 @@ const VacancyForm = ({ vacancy, onSubmit, onCancel }: VacancyFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    formData.knowledges = [];
     onSubmit(formData);
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <Tabs defaultValue="geral" className="w-full min-h-[700px]">
-        <TabsList className="grid w-full grid-cols-3 mb-4">
+        <TabsList className="grid w-full grid-cols-4 mb-4">
           <TabsTrigger value="geral">Geral</TabsTrigger>
           <TabsTrigger value="conhecimentos">Conhecimentos</TabsTrigger>
+          <TabsTrigger value="lista-conhecimentos">Lista de Conhecimentos</TabsTrigger>
           <TabsTrigger value="questoes">Questões</TabsTrigger>
         </TabsList>
         <TabsContent value="geral">
@@ -118,6 +119,12 @@ const VacancyForm = ({ vacancy, onSubmit, onCancel }: VacancyFormProps) => {
           <VacancyFormKnowledgesTab
             formData={formData}
             handleChange={handleChange}
+          />
+        </TabsContent>
+        <TabsContent value="lista-conhecimentos">
+          <VacancyKnowledgesTab
+            formData={formData}
+            onKnowledgesChange={handleKnowledgesChange}
           />
         </TabsContent>
         <TabsContent value="questoes">

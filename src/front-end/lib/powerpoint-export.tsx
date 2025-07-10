@@ -5,6 +5,7 @@ import { ptBR } from "date-fns/locale";
 import { SVGCard } from "@/components/dashboard/EventsGridSVGExport";
 import { svgComponentToPngBase64 } from "@/lib/svg-to-image";
 import React from "react";
+import { drawCardsGridToCanvas } from "@/lib/draw-cards-grid-canvas";
 
 type PaletteType = "minsait" | "indra";
 
@@ -26,6 +27,13 @@ interface CardData {
   description: string;
   date: string;
   people: number;
+  palette: {
+    cardBackground: string;
+    titleText: string;
+    dateText: string;
+    descriptionText: string;
+    participantText: string;
+  };
 }
 
 interface ExportCardsGridOptions {
@@ -214,7 +222,8 @@ function addHexCard(slide: any, task: Task, x: number, y: number, w: number, h: 
     x: x + 0.08, y: y + 0.45, w: w - 0.16, h: 0.5, fontSize: 14, color: scheme.titleText, bold: true, fontFace: fontFamily
   });
   // Descrição
-  const description = (task.description || "").length > 90 ? task.description.substring(0, 90) + "..." : task.description;
+  let description = task.summary ? task.summary : task.description;
+  description = (description || "").length > 90 ? description.substring(0, 90) + "..." : description;
   slide.addText(description, {
     x: x + 0.08, y: y + 1.05, w: w - 0.16, h: 0.7, fontSize: 10, color: scheme.descriptionText, fontFace: fontFamily
   });
@@ -298,15 +307,24 @@ export const exportGridImageToPowerPoint = async ({ imageBase64, title, cards = 
   img.src = imageBase64;
   await new Promise((resolve) => { img.onload = resolve; });
   const pxToIn = (px: number) => px / 96;
-  //const wIn = pxToIn(img.width);
-  //const hIn = pxToIn(img.height);
-  //
-  const wX1 = 960.0 / img.width;
-
-  const wIn = pxToIn(960);
-  const hIn = pxToIn(img.height * wX1);
-                  //const slideWidth = 1920; // ou 1280
-                //const slideHeight = 1080; // ou 720
+  
+  // Calcular dimensões para caber no slide
+  const slideWidth = 960; // Largura do slide em px
+  const slideHeight = 540; // Altura do slide em px (16:9)
+  const maxImageHeight = slideHeight * 0.7; // 70% da altura do slide para a imagem
+  
+  let wIn, hIn;
+  
+  if (img.height <= maxImageHeight) {
+    // Imagem cabe no slide, usar largura completa
+    wIn = pxToIn(slideWidth);
+    hIn = pxToIn(img.height * (slideWidth / img.width));
+  } else {
+    // Imagem é muito alta, redimensionar para caber
+    const scale = maxImageHeight / img.height;
+    wIn = pxToIn(img.width * scale);
+    hIn = pxToIn(maxImageHeight);
+  }
 
   const slide = pptx.addSlide();
   slide.background = { fill: '#E3E2DA' };
@@ -317,66 +335,16 @@ export const exportGridImageToPowerPoint = async ({ imageBase64, title, cards = 
     { text: firstWord + (rest.length ? ' ' : ''), options: { color: '#e4023f', fontSize: 24, bold: true } },
     { text: rest.join(' '), options: { color: '#4f062a', fontSize: 24, bold: true } }
   ], { x: 0.08, y: 0.2, w: 8, h: 0.5, align: 'left' });
-
-  //const pageCards = cards.slice(i, i + cardsPerSlide);
-
-  // Título no topo à esquerda
-  //slide.addText(title, {
-  //  x: 0.2, y: 0.2, w: 5, h: 0.5, fontSize: 24, color: '#222', bold: true, align: "left"
-  //});
   
-  // Imagem do grid
+  // Imagem do grid centralizada
+  const imageX = (10 - wIn) / 2; // Centralizar horizontalmente
   slide.addImage({
     data: imageBase64,
-    x: 0,
+    x: imageX,
     y: 0.8,
     w: wIn,
     h: hIn
   });
-  
-/*
-	slide.addShape("rect", {
-		x: 0.12,
-		y: 1.10,
-		w: 1.55,
-		h: 2.0,
-		fill: { color: "#4f062a" },
-		points: [
-			{ x: 0.0, y: 0.0 },
-			{ x: 0.5, y: 1.0 },
-			{ x: 1.0, y: 0.8 },
-
-		],
-	});
-
-
-  let wX=0.098;
-
-  for(var x=0;x < Math.min(6, cards.length); x++){
-    /*slide.addText(cards[x].title, {
-      x: wX, y: 1.12, w: 1.6, h: 0.6, fontSize: 8.5, color: '#FF0054', bold: true, align: "left", fontFace: "ForFuture Sans", valign: "top"
-    });
-
-    slide.addText(cards[x].description, {
-      x: wX, y: 1.82, w: 1, h: 0.6, fontSize: 7.5, color: '#FFFFFF', bold: false, align: "left", fontFace: "ForFuture Sans", valign: "top"
-    });
-    
-    // Adicionar SVG do polígono como imagem
-    const svgWidth = 180; // px
-    const svgHeight = 120; // px
-    const svgPolygon = `<svg width='${svgWidth}' height='${svgHeight}' xmlns='http://www.w3.org/2000/svg'><polygon points='28,18 208,18 218,24 218,132 208,138 28,138 18,132 18,24' fill='#4f062a' stroke='#e4023f' stroke-width='2'/></svg>`;
-    const svgBase64 = `data:image/svg+xml;base64,${btoa(svgPolygon)}`;
-    slide.addImage({
-      data: svgBase64,
-      x: wX - 0.1,
-      y: 1.0,
-      w: 1.8,
-      h: 1.2
-    });
-
-    wX += 1.64;
-  }
-*/
 
   const fileName = `apresentacao_grid_${Date.now()}.pptx`;
   await pptx.writeFile({ fileName });
@@ -392,90 +360,48 @@ export async function exportCardsGridToPowerPoint({ cards, title, paletteType = 
   const numberOfColumns = 6;
   const numberOfRows = 2;
   const cardsPerSlide = numberOfColumns * numberOfRows;
-  const cardWidthPx = 200;
-  const cardHeightPx = 120;
-  const gapXPx = 18;
-  const gapYPx = 18;
-  // Conversão px -> pptx (1pt = 1/72in, 1in = 96px, 1pptx = 1in)
-  const pxToIn = (px: number) => px / 96;
-  const cardWidth = pxToIn(cardWidthPx);
-  const cardHeight = pxToIn(cardHeightPx);
-  const gapX = pxToIn(gapXPx);
-  const gapY = pxToIn(gapYPx);
-  const marginX = pxToIn(18);
-  const marginY = pxToIn(18) + 0.5; // espaço para título
-
-  // Paleta
-  const palette = {
-    minsait: {
-      fontFamily: "Segoe UI, Tahoma, Geneva, Verdana, sans-serif",
-      schemes: {
-        dark: { cardBackground: "#4f062a", titleText: "#e4023f", dateText: "#ffffff", descriptionText: "#ffffff", participantText: "#ffffff" },
-        light: { cardBackground: "#ffffff", titleText: "#63284b", dateText: "#6b7280", descriptionText: "#ff3d88", participantText: "#63284b" }
-      }
-    },
-    indra: {
-      fontFamily: "Segoe UI, Tahoma, Geneva, Verdana, sans-serif",
-      schemes: {
-        dark: { cardBackground: "#00434F", titleText: "#FFFFFF", dateText: "#FFFFFF", descriptionText: "#FFFFFF", participantText: "#FFFFFF" },
-        light: { cardBackground: "#ADD8E6", titleText: "#000000", dateText: "#000000", descriptionText: "#000000", participantText: "#000000" }
-      }
-    }
-  };
-  const currentPalette = palette[paletteType];
-
-  // Função para alternar cor do card
-  const getScheme = (idx: number, row: number) => {
-    return (row + idx) % 2 !== 0 ? currentPalette.schemes.light : currentPalette.schemes.dark;
-  };
 
   // Paginar os cards
   for (let i = 0; i < cards.length; i += cardsPerSlide) {
+    const pageCards = cards.slice(i, i + cardsPerSlide);
+    // Gerar imagem do grid via canvas
+    const scale = 2;
+    const canvas = drawCardsGridToCanvas(pageCards, { scale, minRows: 2 });
+    const imageBase64 = canvas.toDataURL("image/png");
+
+    // Converter dimensões da imagem para polegadas
+    const img = new window.Image();
+    img.src = imageBase64;
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise((resolve) => { img.onload = resolve; });
+    const pxToIn = (px: number) => px / 96;
+    const slideWidth = 960; // px
+    const slideHeight = 540; // px (16:9)
+    const maxImageHeight = slideHeight * 0.7;
+    let wIn, hIn;
+    if (img.height <= maxImageHeight) {
+      wIn = pxToIn(slideWidth);
+      hIn = pxToIn(img.height * (slideWidth / img.width));
+    } else {
+      const scaleImg = maxImageHeight / img.height;
+      wIn = pxToIn(img.width * scaleImg);
+      hIn = pxToIn(maxImageHeight);
+    }
     const slide = pptx.addSlide();
-    // Fundo do slide
     slide.background = { fill: '#E3E2DA' };
-    // Título: primeira palavra em minsait, resto em #222
     const [firstWord, ...rest] = title.split(' ');
     slide.addText([
       { text: firstWord + (rest.length ? ' ' : ''), options: { color: '#e4023f', fontSize: 24, bold: true } },
       { text: rest.join(' '), options: { color: '#222', fontSize: 24, bold: true } }
-    ], { x: 0.5, y: 0.2, w: 8, h: 0.5, align: 'left' });
-    const pageCards = cards.slice(i, i + cardsPerSlide);
-    // Gerar PNG de cada card
-    for (let idx = 0; idx < pageCards.length; idx++) {
-      const card = pageCards[idx];
-      const row = Math.floor(idx / numberOfColumns);
-      const col = idx % numberOfColumns;
-      const x = marginX + col * (cardWidth + gapX);
-      const y = marginY + row * (cardHeight + gapY);
-      const scheme = getScheme(idx, row);
-      // Gerar SVGCard
-      const svgElement = (
-        <SVGCard
-          x={0}
-          y={0}
-          width={cardWidthPx}
-          height={cardHeightPx}
-          title={card.title}
-          description={card.description}
-          date={card.date}
-          people={card.people}
-          palette={scheme}
-          fontFamily={currentPalette.fontFamily}
-          titleFontFamily={currentPalette.fontFamily}
-        />
-      );
-      // Converter SVG para PNG
-      // eslint-disable-next-line no-await-in-loop
-      const imageBase64 = await svgComponentToPngBase64(svgElement, cardWidthPx, cardHeightPx);
-      slide.addImage({
-        data: imageBase64,
-        x,
-        y,
-        w: cardWidth,
-        h: cardHeight
-      });
-    }
+    ], { x: 0.15, y: 0.2, w: 8, h: 0.5, align: 'left' });
+    const imageX = (10 - wIn) / 2;
+    slide.addImage({
+      data: imageBase64,
+      x: imageX,
+      y: 0.8,
+      w: wIn,
+      h: hIn
+    });
   }
   const fileName = `apresentacao_cards_${Date.now()}.pptx`;
   await pptx.writeFile({ fileName });

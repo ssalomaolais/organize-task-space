@@ -12,6 +12,10 @@ interface VacancyEvaluationTabProps {
 const defaultStatus = "Atende";
 
 const VacancyEvaluationTab = ({ selectedVacancy }: VacancyEvaluationTabProps) => {
+  // Debug: log the selectedVacancy object
+  console.log('VacancyEvaluationTab - selectedVacancy:', selectedVacancy);
+  console.log('VacancyEvaluationTab - knowledges:', selectedVacancy?.knowledges);
+  
   // Inicializa competências baseadas nos conhecimentos da vaga
   const initialCompetencies = (selectedVacancy.knowledges || []).map(k => ({
     name: k.knowledge,
@@ -26,6 +30,7 @@ const VacancyEvaluationTab = ({ selectedVacancy }: VacancyEvaluationTabProps) =>
 
   // Atualiza competências se selectedVacancy mudar
   React.useEffect(() => {
+    console.log('VacancyEvaluationTab - useEffect - knowledges:', selectedVacancy?.knowledges);
     setCompetencies((selectedVacancy.knowledges || []).map(k => ({
       name: k.knowledge,
       status: defaultStatus,
@@ -104,7 +109,7 @@ const VacancyEvaluationTab = ({ selectedVacancy }: VacancyEvaluationTabProps) =>
   };
 
   return (
-    <div className="mx-auto py-1 space-y-8">
+    <div className="mx-auto py-1 space-y-4">
       <div>
         <Label className="block mb-1">Resumo da Entrevista</Label>
         <Textarea
@@ -115,7 +120,7 @@ const VacancyEvaluationTab = ({ selectedVacancy }: VacancyEvaluationTabProps) =>
         />
       </div>
       <div>
-        <h3 className="text-lg font-medium mb-2">Avaliação Técnica</h3>
+        <Label className="block mb-1">Avaliação Técnica</Label>
         <div className="overflow-x-auto">
           <table className="min-w-full border text-sm">
             <thead>
@@ -163,7 +168,7 @@ const VacancyEvaluationTab = ({ selectedVacancy }: VacancyEvaluationTabProps) =>
         </div>
       </div>
       <div>
-        <h3 className="text-lg font-medium mb-2">Observações Finais</h3>
+        <Label className="block mb-1">Observações Finais</Label>
         <textarea
           className="w-full border rounded p-2 min-h-[80px]"
           placeholder="Observações finais sobre o candidato..."

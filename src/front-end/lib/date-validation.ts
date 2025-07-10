@@ -1,5 +1,6 @@
 import { toast } from "@/hooks/use-toast";
-
+import { ptBR } from "date-fns/locale";
+import { format } from "date-fns";
 /**
  * Valida se uma data não é anterior ao ano 2000
  * @param date - Data a ser validada
@@ -47,16 +48,16 @@ export function validateTaskDates(startDate: Date, endDate: Date): boolean {
   if (!validateDateNotBefore2000(startDate, "data de início")) {
     return false;
   }
-  
+
   if (!validateDateNotBefore2000(endDate, "data de fim")) {
     return false;
   }
-  
+
   // Validar se a data de fim é posterior à data de início
   if (!validateEndDateAfterStartDate(startDate, endDate)) {
     return false;
   }
-  
+
   return true;
 }
 
@@ -76,4 +77,30 @@ export function validateDateString(dateString: string): boolean {
     return false;
   }
   return true;
-} 
+}
+
+export const formatDate = (date) => {
+  if (!date) return "";
+
+  const dateObj = new Date(date);
+  const userTimezoneOffset = dateObj.getTimezoneOffset() * 60000;
+  const adjustedDate = new Date(dateObj.getTime() + userTimezoneOffset);
+
+  return adjustedDate.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+export const formatDate2 = (date) => {
+  if (!date) return "";
+
+  const dateObj = new Date(date);
+  const userTimezoneOffset = dateObj.getTimezoneOffset() * 60000;
+  const adjustedDate = new Date(dateObj.getTime() + userTimezoneOffset);
+
+  return format(adjustedDate, "dd/MM HH'h'", { locale: ptBR });
+};
