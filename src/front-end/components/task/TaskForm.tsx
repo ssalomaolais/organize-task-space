@@ -291,7 +291,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className={`${showAdvancedFields ? 'max-w-6xl' : 'max-w-2xl'} max-h-[90vh] overflow-y-auto transition-all duration-300`}>
+      <DialogContent className={`${showAdvancedFields ? 'max-w-6xl' : 'max-w-2xl'} max-h-[90vh] overflow-y-auto transition-all duration-300 min-h-[920px] flex flex-col`}>
         <DialogHeader>
           <DialogTitle>
             {task ? "Editar Tarefa" : "Nova Tarefa"}
@@ -304,11 +304,11 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 ">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full min-h-[650px]">
-            <div className="">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-y-auto space-y-4">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="grid w-full min-h-[730px]">
+            <div>
               {showAdvancedFields && (
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="flex w-full justify-start gap-x-2">
                   <TabsTrigger value="basic">Principal</TabsTrigger>
                   <TabsTrigger value="responsibles">Envolvidos</TabsTrigger>
                   {formData.event_type === 'ET' ? (
@@ -386,7 +386,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
             </div>
           </Tabs>
 
-          <div className="flex gap-2 justify-between pt-4">
+          <div id="buttonFooter" className="flex gap-2 justify-between pt-4 flex-shrink-0 bg-white border-t sticky bottom-0 z-10">
             <Button
               type="button"
               variant="outline"

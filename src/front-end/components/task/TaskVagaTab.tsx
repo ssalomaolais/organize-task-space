@@ -65,7 +65,7 @@ const TaskVagaTab = ({ formData, vacancies, selectedVacancyId, setSelectedVacanc
       </TabsContent>
       
       <TabsContent value="avaliacao">
-        <VacancyEvaluationTab selectedVacancy={selectedVacancy} />
+        <VacancyEvaluationTab selectedVacancy={selectedVacancy} taskStackValue={formData.stack} />
       </TabsContent>
     </Tabs>
   );

@@ -196,7 +196,7 @@ function VacanciesPage({ colorType, onBack }: VacanciesPageProps) {
       {/* Modal de formulário */}
       {showVacancyForm && (
         <Dialog open={showVacancyForm} onOpenChange={() => { setShowVacancyForm(false); setEditingVacancy(null); }}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto transition-all duration-300">
+          <DialogContent className="max-w-6xl  min-h[900px] overflow-y-auto transition-all duration-300">
             <DialogHeader>
               <DialogTitle>{editingVacancy ? "Editar Vaga" : "Nova Vaga"}</DialogTitle>
               <DialogDescription>

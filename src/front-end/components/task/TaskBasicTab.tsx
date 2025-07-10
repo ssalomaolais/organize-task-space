@@ -61,12 +61,12 @@ const TaskBasicTab = ({
         </div>
         <div className="md:col-span-2 flex flex-row gap-2 items-end">
           <div className="flex-1 flex flex-col">
-            <Label htmlFor="subtitle">Sub Título</Label>
+            <Label htmlFor="subtitle">Tags</Label>
             <Input
               id="subtitle"
               value={formData.subtitle}
               onChange={(e) => onInputChange("subtitle", e.target.value)}
-              placeholder="Digite o sub-título da tarefa"
+              placeholder="Ex: #Jornada Cloud, #Aculturamento de IA "
             />
           </div>
           <div className="w-64 flex flex-col">
@@ -184,7 +184,7 @@ const TaskBasicTab = ({
         </div>
         
         <div className="flex flex-col justify-end h-full">
-          <Label htmlFor="people">Número de Pessoas</Label>
+          <Label htmlFor="people">Número de Participantes</Label>
           <Input
             id="people"
             type="number"
