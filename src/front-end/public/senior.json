@@ -1,0 +1,14 @@
+[
+    { "name": ".Net Conceito", "status": "", "grade": "", "observation": "N/A" },
+    { "name": "C#, .NET Framework", "status": "", "grade": "", "observation": "N/A" },
+    { "name": "Angular Conceito", "status": "", "grade": "", "observation": "N/A" },
+    { "name": "Angular", "status": "", "grade": "", "observation": "N/A" },
+    { "name": "Css", "status": "", "grade": "", "observation": "N/A" },
+    { "name": "Javascript/TypeScript", "status": "", "grade": "", "observation": "N/A" },
+    { "name": "Banco de dados", "status": "", "grade": "", "observation": "" },
+    { "name": "Git e GitHub", "status": "", "grade": "", "observation": "" },
+    { "name": "CI/CD", "status": "", "grade": "", "observation": "" },
+    { "name": "Solid", "status": "Não ", "grade": "", "observation": "" },
+    { "name": "Arquitetura e Design Patterns", "status": "", "grade": "", "observation": "" },
+    { "name": "Testes Automatizados", "status": "", "grade": "", "observation": "" }
+]

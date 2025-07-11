@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+src/front-end/.env.local
+
+# Build versioning
+.build-counter.json

@@ -1,7 +1,4 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
-name: Node.js CI
+name: Node.js CI/CD
 
 on:
   push:
@@ -9,42 +6,71 @@ on:
     paths-ignore:
       - 'README.md'
       - 'docs/**'
-  #pull_request:
-  #  branches: [ "main" ]
+
 jobs:
-  build:
+  build-and-deploy:
     if: contains(github.event.head_commit.message, 'deploy')
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [20.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
     - uses: actions/checkout@v4
     
-    - name: Install Node.js
-      uses: actions/setup-node@v1
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
       with:
         node-version: '20'
+        cache: 'npm'
+    
+    - name: Cache node modules
+      uses: actions/cache@v3
+      id: npm-cache
+      with:
+        path: |
+          node_modules
+          **/node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
     
     - name: Install dependencies
       run: |
-        npm install
+        if [ ! -d "node_modules" ]; then
+          npm ci
+        fi
+        npm install react-big-calendar
+    
+    - name: Verify dependencies
+      run: npm list react-big-calendar
+    
+    - name: Generate Build Version
+      id: build-version
+      run: |
+        # Gera o número da versão e captura a saída
+        BUILD_NUMBER=$(node scripts/build-version.js)
+        echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+        echo "Build number generated: $BUILD_NUMBER"
     
     - name: Build App
       run: |
-        npm run build
-        
+        npm run build || (echo "Build failed, listing react-big-calendar files:" && ls -R node_modules/react-big-calendar && exit 1)
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        VITE_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.VITE_SUPABASE_SERVICE_ROLE_KEY }}
+        BUILD_NUMBER: ${{ steps.build-version.outputs.build_number }}
+
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v2
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1  # Altere para sua região
+        aws-region: us-east-1
     
     - name: Deploy to S3
       run: aws s3 sync dist/ s3://dnw-taskflow --delete
       
-    - name: Invalidar o Cache 
+    - name: Invalidate CloudFront Cache
       run: aws cloudfront create-invalidation --distribution-id E37SVYBKKI3F0P --path "/*"
