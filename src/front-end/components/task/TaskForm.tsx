@@ -58,7 +58,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     hours: 0,
     people: 0,
     status: "Pendente",
-    stack: user.role === "user" ? user.stack : "Java",
+    stack: "",
     event_type: "Outros",
     // Campos adicionais
     responsibles: [] as Responsible[],
@@ -320,6 +320,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
                   formData={formData}
                   startDateTime={startDateTime}
                   endDateTime={endDateTime}
+                  user={user}
                   stack={stack}
                   eventType={eventType}
                   onInputChange={handleInputChange}
@@ -385,7 +386,7 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
               <Button type="button" variant="outline" onClick={onCancel}>
                 Cancelar
               </Button>
-              {(user?.stack == "DNW" || user?.stack.indexOf(task.stack) > -1) && (
+              {(!task || user?.stack == "DNW" || user?.stack.indexOf(task?.stack) > -1) && (
                 <>
                   <Button type="button" variant="outline" onClick={() => task && onDelete(task.id)} disabled={!task}>
                     Excluir

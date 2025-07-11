@@ -114,7 +114,7 @@ const ResponsibleList = ({ responsibles, onResponsiblesChange, showSyllabusField
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Responsáveis</h3>
+        <h5 className="text-lg font-medium">Pessoas</h5>
         {!isAdding && (
           <Button
             type="button"

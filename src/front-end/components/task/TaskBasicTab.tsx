@@ -5,9 +5,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Task, Responsible, ListValue } from "@/types/task";
-import { TaskStatusOptions, OriginOptions } from '@/lib/utils';
+import { TaskStatusOptions, OriginOptions } from "@/lib/utils";
+import { User } from "@/types/auth";
 
 interface TaskBasicTabProps {
+  user: User;
   formData: {
     title: string;
     subtitle: string;
@@ -28,8 +30,8 @@ interface TaskBasicTabProps {
   stack: ListValue[];
   eventType: ListValue[];
   onInputChange: (field: keyof Task, value: string | number) => void;
-  onInputDataChange: (field: 'start_date' | 'end_date', value: string) => void;
-  onInputDataBlur: (field: 'start_date' | 'end_date', value: string) => void;
+  onInputDataChange: (field: "start_date" | "end_date", value: string) => void;
+  onInputDataBlur: (field: "start_date" | "end_date", value: string) => void;
   onShowNewStackModal: () => void;
   onShowNewEventTypeModal: () => void;
 }
@@ -40,34 +42,30 @@ const TaskBasicTab = ({
   endDateTime,
   stack,
   eventType,
+  user,
   onInputChange,
   onInputDataChange,
   onInputDataBlur,
   onShowNewStackModal,
-  onShowNewEventTypeModal
+  onShowNewEventTypeModal,
 }: TaskBasicTabProps) => {
+
+  let wStack = stack;
+  if (user?.stack != "DNW" && formData.title === "") {
+    wStack = stack.filter((item) => user?.stack.includes(item.value));
+  }
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="md:col-span-2 flex flex-col justify-end h-full">
           <Label htmlFor="title">Título *</Label>
-          <Input
-            id="title"
-            value={formData.title}
-            onChange={(e) => onInputChange("title", e.target.value)}
-            placeholder="Digite o título da tarefa"
-            required
-          />
+          <Input id="title" value={formData.title} onChange={(e) => onInputChange("title", e.target.value)} placeholder="Digite o título da tarefa" required />
         </div>
         <div className="md:col-span-2 flex flex-row gap-2 items-end">
           <div className="flex-1 flex flex-col">
             <Label htmlFor="subtitle">Tags</Label>
-            <Input
-              id="subtitle"
-              value={formData.subtitle}
-              onChange={(e) => onInputChange("subtitle", e.target.value)}
-              placeholder="Ex: #Jornada Cloud, #Aculturamento de IA "
-            />
+            <Input id="subtitle" value={formData.subtitle} onChange={(e) => onInputChange("subtitle", e.target.value)} placeholder="Ex: #Jornada Cloud, #Aculturamento de IA " />
           </div>
           <div className="w-64 flex flex-col relative">
             <Label htmlFor="origin">Origem</Label>
@@ -87,12 +85,7 @@ const TaskBasicTab = ({
               </SelectContent>
             </Select>
             {formData.origin !== undefined && formData.origin !== null && (
-              <button
-                type="button"
-                className="absolute right-2 top-8 text-gray-400 hover:text-gray-600"
-                onClick={() => onInputChange("origin", null)}
-                title="Limpar seleção"
-              >
+              <button type="button" className="absolute right-2 top-8 text-gray-400 hover:text-gray-600" onClick={() => onInputChange("origin", null)} title="Limpar seleção">
                 ×
               </button>
             )}
@@ -100,13 +93,7 @@ const TaskBasicTab = ({
         </div>
         <div className="md:col-span-2 flex flex-col justify-end h-full">
           <Label htmlFor="description">Resumo *</Label>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) => onInputChange("description", e.target.value)}
-            placeholder="Descreva a tarefa em detalhes"
-            rows={6}
-          />
+          <Textarea id="description" value={formData.description} onChange={(e) => onInputChange("description", e.target.value)} placeholder="Descreva a tarefa em detalhes" rows={6} />
         </div>
         <div className="md:col-span-2 flex flex-col justify-end h-full">
           <Label htmlFor="summary">Resumo Adicional</Label>
@@ -118,30 +105,21 @@ const TaskBasicTab = ({
             rows={3}
           />
         </div>
-        
+
         <div className="flex flex-col justify-end h-full">
           <Label htmlFor="responsible">Responsável *</Label>
-          <Input
-            id="responsible"
-            value={formData.responsible}
-            onChange={(e) => onInputChange("responsible", e.target.value)}
-            placeholder="Nome do responsável"
-            required
-          />
+          <Input id="responsible" value={formData.responsible} onChange={(e) => onInputChange("responsible", e.target.value)} placeholder="Nome do responsável" required />
         </div>
-        
+
         <div className="flex items-end gap-2 h-full">
           <div className="flex-1 flex flex-col justify-end h-full">
             <Label htmlFor="stack">Comunidade *</Label>
-            <Select 
-              onValueChange={(value) => onInputChange("stack", value)} 
-              value={formData.stack || ""}                
-            >
+            <Select onValueChange={(value) => onInputChange("stack", value)} value={formData.stack || ""}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione a stack" />
+                <SelectValue placeholder="Selecione" />
               </SelectTrigger>
               <SelectContent>
-                {stack.map((stack) => (
+                {wStack.map((stack) => (
                   <SelectItem key={stack.value} value={stack.value}>
                     {stack.label}
                   </SelectItem>
@@ -153,7 +131,7 @@ const TaskBasicTab = ({
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-        
+
         <div className="flex flex-col justify-end h-full">
           <Label htmlFor="start_date">Data e Hora de Início *</Label>
           <Input
@@ -165,9 +143,9 @@ const TaskBasicTab = ({
             onChange={(e) => onInputDataChange("start_date", e.target.value)}
             onBlur={(e) => onInputDataBlur("start_date", e.target.value)}
             required
-          />              
+          />
         </div>
-        
+
         <div className="flex flex-col justify-end h-full">
           <Label htmlFor="end_date">Data e Hora Fim * </Label>
           <Input
@@ -180,37 +158,20 @@ const TaskBasicTab = ({
             required
           />
         </div>
-        
+
         <div className="flex flex-col justify-end h-full">
           <Label htmlFor="hours">Horas Estimadas</Label>
-          <Input
-            id="hours"
-            type="number"
-            min="0"
-            value={formData.hours || 0}
-            onChange={(e) => onInputChange("hours", parseInt(e.target.value) || 0)}
-            placeholder="Ex: 40"
-          />
+          <Input id="hours" type="number" min="0" value={formData.hours || 0} onChange={(e) => onInputChange("hours", parseInt(e.target.value) || 0)} placeholder="Ex: 40" />
         </div>
-        
+
         <div className="flex flex-col justify-end h-full">
           <Label htmlFor="people">Número de Participantes</Label>
-          <Input
-            id="people"
-            type="number"
-            min="0"
-            value={formData.people || 0}
-            onChange={(e) => onInputChange("people", parseInt(e.target.value) || 0)}
-            placeholder="Ex: 2"
-          />
+          <Input id="people" type="number" min="0" value={formData.people || 0} onChange={(e) => onInputChange("people", parseInt(e.target.value) || 0)} placeholder="Ex: 2" />
         </div>
-        
+
         <div className="flex flex-col justify-end h-full">
           <Label htmlFor="status">Status *</Label>
-          <Select 
-            onValueChange={(value) => onInputChange("status", value)} 
-            value={formData.status || ""}
-          >
+          <Select onValueChange={(value) => onInputChange("status", value)} value={formData.status || ""}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione o status" />
             </SelectTrigger>
@@ -223,14 +184,11 @@ const TaskBasicTab = ({
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="flex items-end gap-2 h-full">
           <div className="flex-1 flex flex-col justify-end h-full">
             <Label htmlFor="event_type">Tipo de Evento *</Label>
-            <Select 
-              onValueChange={(value) => onInputChange("event_type", value)} 
-              value={formData.event_type || ""}
-            >
+            <Select onValueChange={(value) => onInputChange("event_type", value)} value={formData.event_type || ""}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de evento" />
               </SelectTrigger>
@@ -252,4 +210,4 @@ const TaskBasicTab = ({
   );
 };
 
-export default TaskBasicTab; 
+export default TaskBasicTab;
