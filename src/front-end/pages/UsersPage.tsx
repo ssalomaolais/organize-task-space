@@ -143,7 +143,7 @@ function UsersPage({ stack, colorType, onBack }: UsersPageProps) {
                       <TableHead>Nome</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Função</TableHead>
-                      <TableHead>Stack</TableHead>
+                      <TableHead>Comunidade</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Criado em</TableHead>
                       <TableHead>Ações</TableHead>

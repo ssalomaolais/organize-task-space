@@ -3,7 +3,6 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import TaskCard from "../task/TaskCard";
 import { getMonthName, getMonthFromDate } from "@/lib/utils";
 import { Task } from "@/types/task";
-import { UserRole } from "@/types/auth";
 import { ListValue } from "@/types/task";
 import React from "react";
 
@@ -12,16 +11,17 @@ interface HorizontalViewProps {
   stack: ListValue[];
   eventType: ListValue[];
   selectedYear: number;
-  role: UserRole;
+  role: string;
   showCardContent: boolean;
   colorType:string;
   setEditingTask: (task: Task) => void;
   handleDeleteTask: (taskId: string) => void;
   handleStatusChange: (taskId: string, newStatus: string) => void;
   handleTypeChange: (taskId: string, newType: string) => void;
+  hasPermissionToEdit: (taskId: string, showMsg:boolean) => boolean;
 }
 
-export const HorizontalView = ({ role, showCardContent, filteredTasks, selectedYear, stack, eventType, setEditingTask, handleDeleteTask, handleStatusChange, handleTypeChange }: HorizontalViewProps) => {
+export const HorizontalView = ({ role, showCardContent, filteredTasks, selectedYear, stack, eventType, hasPermissionToEdit, setEditingTask, handleDeleteTask, handleStatusChange, handleTypeChange }: HorizontalViewProps) => {
 
   const getTasksByMonth = (year: number, month: number) => {
     return filteredTasks.filter((task) => {
@@ -90,6 +90,7 @@ export const HorizontalView = ({ role, showCardContent, filteredTasks, selectedY
                                 onDelete={handleDeleteTask}
                                 onStatusChange={handleStatusChange}
                                 onTypeChange={handleTypeChange}
+                                hasPermissionToEdit={hasPermissionToEdit}
                                 userRole={role}
                                 showContent={showCardContent}
                               />

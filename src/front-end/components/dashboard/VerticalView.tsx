@@ -3,7 +3,6 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import TaskCard from "../task/TaskCard";
 import { getMonthName, getMonthFromDate, getSemesterFromDate, getSemesterName } from "@/lib/utils";
 import { Task } from "@/types/task";
-import { UserRole } from "@/types/auth";
 import { ListValue } from "@/types/task";
 import React from "react";
 
@@ -13,16 +12,17 @@ interface VerticalViewProps {
   eventType: ListValue[];
   selectedYear: number;
   selectedSemesters: string[];
-  role: UserRole;
+  role: string;
   showCardContent: boolean;
   colorType: string;
   setEditingTask: (task: Task) => void;
   handleDeleteTask: (taskId: string) => void;
   handleStatusChange: (taskId: string, newStatus: string) => void;
   handleTypeChange: (taskId: string, newType: string) => void;
+  hasPermissionToEdit: (taskId: string, showMsg:boolean) => boolean;
 }
 
-export const VerticalView = ({ role, showCardContent, filteredTasks, selectedYear, selectedSemesters, stack, eventType, setEditingTask, handleDeleteTask, handleStatusChange, handleTypeChange }: VerticalViewProps) => {
+export const VerticalView = ({ role, showCardContent, filteredTasks, selectedYear, selectedSemesters, stack, eventType, hasPermissionToEdit, setEditingTask, handleDeleteTask, handleStatusChange, handleTypeChange }: VerticalViewProps) => {
   const getTasksBySemester = (year: number, semester: number) => {
     return filteredTasks.filter((task) => {
       const startDate = new Date(task.start_date);
@@ -117,6 +117,7 @@ export const VerticalView = ({ role, showCardContent, filteredTasks, selectedYea
                                       task={task}
                                       stack={stack}
                                       eventType={eventType}
+                                      hasPermissionToEdit={hasPermissionToEdit}
                                       onEdit={setEditingTask}
                                       onDelete={handleDeleteTask}
                                       onStatusChange={handleStatusChange}

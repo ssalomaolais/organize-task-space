@@ -80,7 +80,14 @@ export const OriginOptions = [
   { value: 2, label: "Estratégia Minsait" },
   { value: 3, label: "Apoio Operações" },
   { value: 4, label: "Outras" },
+]
 
+
+export const RoleOptions = [
+  { value: "admin", label: "Administrador" },
+  { value: "super", label: "Coordenador" },
+  { value: "interviewer", label: "Entrevistador" },
+  { value: "user", label: "Usuário" },
 ]
 
 export const TailwindColors = [

@@ -3,7 +3,6 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import TaskCard from "../task/TaskCard";
 import { getMonthName, getMonthFromDate } from "@/lib/utils";
 import { Task } from "@/types/task";
-import { UserRole } from "@/types/auth";
 import { ListValue } from "@/types/task";
 import React from "react";
 
@@ -12,15 +11,16 @@ interface UpcomingViewProps {
   stack: ListValue[];
   eventType: ListValue[];  
   selectedYear: number;
-  role:UserRole;
+  role:string;
   showCardContent:boolean;
   setEditingTask: (task:Task) => void;
   handleDeleteTask: (taskId:string) => void;
   handleStatusChange: (taskId: string, newStatus: string)=> void;
   handleTypeChange: (taskId: string, newType: string)=> void;
+  hasPermissionToEdit: (taskId: string, showMsg:boolean) => boolean;
 }
 
-export const UpcomingView = ({ role, showCardContent, filteredTasks, selectedYear, stack, eventType, setEditingTask, handleDeleteTask, handleStatusChange, handleTypeChange }: UpcomingViewProps) => {
+export const UpcomingView = ({ role, showCardContent, filteredTasks, selectedYear, stack, eventType, hasPermissionToEdit, setEditingTask, handleDeleteTask, handleStatusChange, handleTypeChange }: UpcomingViewProps) => {
 
   const getUpcomingTasksByMonth = (year: number, month: number) => {
     return filteredTasks.filter((task) => {
@@ -94,7 +94,8 @@ export const UpcomingView = ({ role, showCardContent, filteredTasks, selectedYea
                             <TaskCard
                               task={task}
                               stack={stack}
-                              eventType={eventType}                            
+                              eventType={eventType}  
+                              hasPermissionToEdit={hasPermissionToEdit}                          
                               onEdit={setEditingTask}
                               onDelete={handleDeleteTask}
                               onStatusChange={handleStatusChange}
