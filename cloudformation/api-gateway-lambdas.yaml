@@ -128,7 +128,7 @@ Resources:
       Timeout: 30
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      CodeUri: s3://sam/taskflow-lambdas.zip # REPLACE THIS
       Events:
         Api:
           Type: Api
@@ -147,7 +147,7 @@ Resources:
       Timeout: 30
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      CodeUri: s3://sam/taskflow-lambdas.zip # REPLACE THIS
       Events:
         Api:
           Type: Api
@@ -166,7 +166,7 @@ Resources:
       Timeout: 30
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      CodeUri: s3://sam/taskflow-lambdas.zip # REPLACE THIS
       Events:
         Api:
           Type: Api
@@ -185,7 +185,7 @@ Resources:
       Timeout: 30
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      CodeUri: s3://sam/taskflow-lambdas.zip # REPLACE THIS
       Events:
         Api:
           Type: Api
@@ -204,7 +204,7 @@ Resources:
       Timeout: 30
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      CodeUri: s3://sam/taskflow-lambdas.zip # REPLACE THIS
       Events:
         Api:
           Type: Api
@@ -223,7 +223,7 @@ Resources:
       Timeout: 30
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      CodeUri: s3://sam/taskflow-lambdas.zip # REPLACE THIS
       Events:
         Api:
           Type: Api
@@ -242,7 +242,7 @@ Resources:
       Timeout: 30
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      CodeUri: s3://sam/taskflow-lambdas.zip # REPLACE THIS
       Events:
         Api:
           Type: Api
@@ -261,7 +261,7 @@ Resources:
       Timeout: 30
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      CodeUri: s3://sam/taskflow-lambdas.zip # REPLACE THIS
       Events:
         Api:
           Type: Api
@@ -280,7 +280,7 @@ Resources:
       Timeout: 30
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      CodeUri: s3://sam/taskflow-lambdas.zip # REPLACE THIS
       Events:
         Api:
           Type: Api
@@ -299,7 +299,7 @@ Resources:
       Timeout: 30
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      CodeUri: s3://sam/taskflow-lambdas.zip # REPLACE THIS
       Events:
         Api:
           Type: Api
@@ -318,7 +318,7 @@ Resources:
       Timeout: 30
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      CodeUri: s3://sam/taskflow-lambdas.zip # REPLACE THIS
       Events:
         Api:
           Type: Api
@@ -337,7 +337,7 @@ Resources:
       Timeout: 30
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri: s3://YOUR_S3_BUCKET_NAME/YOUR_S3_KEY_PREFIX/taskflow-lambdas.zip # REPLACE THIS
+      CodeUri: s3://sam/taskflow-lambdas.zip # REPLACE THIS
       Events:
         Api:
           Type: Api
