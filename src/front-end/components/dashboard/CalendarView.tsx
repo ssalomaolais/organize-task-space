@@ -75,7 +75,13 @@ export const CalendarView = ({ tasks, user, stack, eventType, onUpdateTask, onDe
     // Se o evento se estende por múltiplos dias, criar eventos recorrentes
     const events = [];
     const currentDate = new Date(startDate);
-    const endOfDay = new Date(endDate);
+    let endOfDay = new Date(endDate);
+    // Limitar endOfDay para no máximo 12 meses a partir da data atual
+    const maxEndDate = new Date();
+    maxEndDate.setMonth(maxEndDate.getMonth() + 12);
+    if (endOfDay > maxEndDate) {
+      endOfDay = maxEndDate;
+    }
     
     while (currentDate <= endOfDay) {
       // Verificar se é fim de semana (0 = domingo, 6 = sábado)

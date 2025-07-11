@@ -6,7 +6,7 @@ import { Task, Responsible, Schedule } from "@/types/task";
 import { User } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
 import { ListValue } from "@/types/task";
-import { validateTaskDates, validateDateString, validateDateNotBefore2000 } from "@/lib/date-validation";
+import { validateTaskDates, validateDateString, validateDateNotBefore2000, validateDateNotAfter12Months } from "@/lib/date-validation";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useVacancies } from "@/hooks/useVacancies";
 import { Label } from "@/components/ui/label";
@@ -166,6 +166,11 @@ const TaskForm = ({ task, user, stack, eventType, onSubmit, onCancel, onDelete }
     // Validar datas usando função centralizada
     const startDate = new Date(formData.start_date);
     const endDate = new Date(formData.end_date);
+
+    // Nova validação: datas não podem ser superiores a 12 meses da data atual
+    if (!validateDateNotAfter12Months(startDate, "data de início") || !validateDateNotAfter12Months(endDate, "data de fim")) {
+      return;
+    }
 
     if (!validateTaskDates(startDate, endDate)) {
       return;

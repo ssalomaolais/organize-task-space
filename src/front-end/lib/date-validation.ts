@@ -79,6 +79,26 @@ export function validateDateString(dateString: string): boolean {
   return true;
 }
 
+/**
+ * Valida se uma data não está a mais de 12 meses da data atual
+ * @param date - Data a ser validada
+ * @param fieldName - Nome do campo para exibir na mensagem de erro
+ * @returns true se a data é válida, false caso contrário
+ */
+export function validateDateNotAfter12Months(date: Date, fieldName: string = "data"): boolean {
+  const now = new Date();
+  const maxDate = new Date(now.getFullYear(), now.getMonth() + 12, now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+  if (date > maxDate) {
+    toast({
+      title: "Erro de Data",
+      description: `A ${fieldName} não pode ser superior a 12 meses a partir de hoje. Por favor, selecione uma data válida.`,
+      variant: "destructive",
+    });
+    return false;
+  }
+  return true;
+}
+
 export const formatDate = (date) => {
   if (!date) return "";
 

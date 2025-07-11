@@ -24,18 +24,31 @@ markdown
 ### Perguntas Técnicas - Desenvolvedor Back-End Pleno  
 **Fundamentos:**  
 1. Explique a diferença entre Task.Run() e async/await em C#. Quando você usaria cada abordagem? 
+Resposta esperada:
+Task.Run() executa código em um thread pool (offloading), ideal para operações CPU-bound. async/await é para operações I/O-bound (ex: chamadas a APIs, DB), liberando a thread durante a espera. Evitar Task.Run() em contextos já assíncronos para não criar threads desnecessárias
 ---
 2. Como você implementaria um endpoint que retorna os boletos de um cliente paginados, com filtros por status (pago, pendente)? Inclua aspectos como parâmetros de rota, validação e formato de resposta 
+Resposta esperada: 
+Usaria GET /api/boletos?clienteId=123&status=pago&page=1&pageSize=10. Validaria os parâmetros com FluentValidation e retornaria um objeto padronizado com data, totalPages e status HTTP 200 (ou 404 se não encontrado).
 ---
 **Prática:**  
 3. Um endpoint de pagamento está retornando HTTP 500 em produção. Como você investigaria e resolveria?
+Resposta esperada:   
+Verificaria logs (CloudWatch), rastreamento distribuído (X-Ray), e métricas (ex: alto consumo de CPU). Analisaria exceções recentes e replicaria o erro em staging com os mesmos parâmetros.
 ---
 4. Como você projetaria um sistema para notificar clientes sobre boletos pagos usando SQS/SNS? 
+Resposta esperada: 
+O microsserviço de pagamentos publicaria um evento no SNS (tópico "pagamentos"), com SQS como subscriber para filas de email/SMS. Incluiria idempotência (ID de correlação) e DLQ para falha  
 ---
 **Desejáveis (Docker/AWS):**  
 5. Quando você optaria por usar Lambda em vez de um serviço rodando em ECS/Fargate?
+Resposta esperada:
+Lambda para tarefas event-driven (ex: processar upload de arquivos), com execução esporádica e curta duração. Fargate para processos longos ou com necessidade de estado (ex: workers contínuos)
+
 ---
 6. Quais são os principais desafios ao migrar uma API de .NET Core 3.1 para .NET 8?
+Resposta esperada:
+Atualizar pacotes NuGet com versões compatíveis, ajustar breaking changes (ex: mudanças no sistema de autenticação), e testar performance (ex: novas otimizações no Kestrel) 
 
 Regras:
 Mantenha o tom profissional e técnico, mas evite jargões excessivos. 
