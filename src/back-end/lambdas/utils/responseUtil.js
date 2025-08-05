@@ -10,4 +10,15 @@ export class ResponseUtil {
             body: JSON.stringify({ message, data }),
         };
     }
+
+    static checkMethod (event, type, body) {
+        if (event.httpMethod !== type) {
+            return ResponseUtil.createResponse(405, "Method Not Allowed", `Only accpets ${type} method is allowed.`);
+        }
+        if (body && !event.body) {
+            return ResponseUtil.createResponse(400, "Bad Request", "Event body is required.");
+        }
+
+        return {statusCode:200};
+    }
 }

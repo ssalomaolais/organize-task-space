@@ -6,9 +6,12 @@ const stackService = new Stack();
 export const getStacksController = async (event) => {
     console.log('Received event (GET /stacks):', JSON.stringify(event, null, 2));
 
-    if (event.httpMethod !== "GET") {
-        return ResponseUtil.createResponse(405, "Method Not Allowed", "Only GET method is allowed.");
+    const resultMethod = ResponseUtil.checkMethod(event,"GET",false);
+
+    if (resultMethod.statusCode != 200){
+        return resultMethod;
     }
+    
     try {
         const result = await stackService.get();
         return ResponseUtil.createResponse(200, result?.message, result?.data);

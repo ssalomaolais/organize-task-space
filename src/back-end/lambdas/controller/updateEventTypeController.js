@@ -7,9 +7,12 @@ const eventTypeService = new EventType();
 export const updateEventTypeController = async (event) => {
     console.log('Received event (PUT /event-types/{value}):', JSON.stringify(event, null, 2));
 
-    if (event.httpMethod !== "PUT") {
-        return ResponseUtil.createResponse(405, "Method Not Allowed", "Only PUT method is allowed.");
+    const resultMethod = ResponseUtil.checkMethod(event,"PUT",false);
+
+    if (resultMethod.statusCode != 200){
+        return resultMethod;
     }
+
     if (!event.pathParameters || !event.pathParameters.value) {
         return ResponseUtil.createResponse(400, "Bad Request", "Event type value is required.");
     }

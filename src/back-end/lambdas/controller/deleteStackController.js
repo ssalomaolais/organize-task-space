@@ -6,9 +6,12 @@ const stackService = new Stack();
 export const deleteStackController = async (event) => {
     console.log('Received event (DELETE /stacks/{value}):', JSON.stringify(event, null, 2));
 
-    if (event.httpMethod !== "DELETE") {
-        return ResponseUtil.createResponse(405, "Method Not Allowed", "Only DELETE method is allowed.");
+    const resultMethod = ResponseUtil.checkMethod(event,"DELETE",false);
+
+    if (resultMethod.statusCode != 200){
+        return resultMethod;
     }
+
     if (!event.pathParameters || !event.pathParameters.value) {
         return ResponseUtil.createResponse(400, "Bad Request", "Stack value is required.");
     }

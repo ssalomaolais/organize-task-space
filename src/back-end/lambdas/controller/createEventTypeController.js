@@ -1,15 +1,16 @@
 import { ResponseUtil } from "../utils/responseUtil.js";
 import { EventType } from "../services/eventType.js";
+
 const eventType = new EventType();
 export const createEventTypeController = async (event) => {
     console.log('Received event (POST /event-types):', JSON.stringify(event, null, 2));
 
-    if (event.httpMethod !== "POST") {
-        throw new Error("Only accpets POST method.");
+    const resultMethod = ResponseUtil.checkMethod(event,"POST",true);
+
+    if (resultMethod.statusCode != 200){
+        return resultMethod;
     }
-    if (!event.body) {
-        throw new Error("Event body as required.");
-    }
+
     try {
         const body = JSON.parse(event.body); // Use JSON.parse directly as parseUtil is not imported here
         const result = await eventType.create(body);
