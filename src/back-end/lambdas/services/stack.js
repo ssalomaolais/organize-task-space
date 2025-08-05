@@ -4,6 +4,7 @@ export class Stack {
   constructor() {
     this.objectDynamoDB = new ObjectDynamoDB();
     this.tableName = "stack";  
+    this.messageName = "Comunidade";
   }
 
   async create(body) {
@@ -22,7 +23,7 @@ export class Stack {
       };
 
       await this.objectDynamoDB.putObject(params);
-      return { message: "Comunidade criada com sucesso", data: newStack };
+      return { message: `${this.messageName} criada com sucesso`, data: newStack };
     } catch (err) {
       throw err;
     }
@@ -35,7 +36,7 @@ export class Stack {
       };
 
       const dbResult = await this.objectDynamoDB.getObjects(params);
-      return { message: "Comunidades carregadas com sucesso", data: dbResult.data };
+      return { message: `${this.messageName} carregadas com sucesso`, data: dbResult.data };
     } catch (err) {
       throw err;
     }
@@ -66,7 +67,7 @@ export class Stack {
       };
 
       const dbResult = await this.objectDynamoDB.updateObject(params);
-      return { message: "Comunidade atualizada com sucesso", data: dbResult.data };
+      return { message: `${this.messageName} atualizada com sucesso`, data: dbResult.data };
     } catch (err) {
       throw err;
     }
@@ -80,7 +81,7 @@ export class Stack {
       };
 
       await this.objectDynamoDB.deleteObject(params);
-      return { message: "Comunidade removida com sucesso" };
+      return { message: `${this.messageName} removida com sucesso` };
     } catch (err) {
       throw err;
     }

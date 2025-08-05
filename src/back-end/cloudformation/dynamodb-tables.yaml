@@ -31,7 +31,7 @@ Resources:
   TasksTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: tasks
+      TableName: prd-tasks
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
@@ -60,7 +60,7 @@ Resources:
   StackTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: stack
+      TableName: prd-stack
       AttributeDefinitions:
         - AttributeName: value
           AttributeType: S
@@ -73,7 +73,7 @@ Resources:
   EventTypeTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: event_type
+      TableName: prd-event_type
       AttributeDefinitions:
         - AttributeName: value
           AttributeType: S

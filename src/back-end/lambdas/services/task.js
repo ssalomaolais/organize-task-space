@@ -5,6 +5,7 @@ export class Task {
   constructor() {
     this.objectDynamoDB = new ObjectDynamoDB();
     this.tableName = "tasks";  
+    this.messageName = "Tarefa";
   }
 
   async create(body) {
@@ -24,7 +25,7 @@ export class Task {
       };
 
       await this.objectDynamoDB.putObject(params);
-      return { message: "Tarefa criada com sucesso", data: newTask };
+      return { message: `${this.messageName} criada com sucesso`, data: newTask };
     } catch (err) {
       throw err;
     }
@@ -37,7 +38,7 @@ export class Task {
       };
 
       const dbResult = await this.objectDynamoDB.getObjects(params);
-      return { message: "Tarefas carregadas com sucesso", data: dbResult.data };
+      return { message: `${this.messageName} carregadas com sucesso`, data: dbResult.data };
     } catch (err) {
       throw err;
     }
@@ -68,7 +69,7 @@ export class Task {
       };
 
       const dbResult = await this.objectDynamoDB.updateObject(params);
-      return { message: "Tarefa atualizada com sucesso", data: dbResult.data };
+      return { message: `${this.messageName} atualizada com sucesso`, data: dbResult.data };
     } catch (err) {
       throw err;
     }
@@ -82,7 +83,7 @@ export class Task {
       };
 
       await this.objectDynamoDB.deleteObject(params);
-      return { message: "Tarefa removida com sucesso" };
+      return { message: `${this.messageName} removida com sucesso` };
     } catch (err) {
       throw err;
     }
